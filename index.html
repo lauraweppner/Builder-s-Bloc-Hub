@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Builder's Bloc Hub</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; background-color: #f4f4f9; text-align: center; color: #222; }
+        h1 { font-weight: 700; margin-bottom: 25px; }
+        .division-block { max-width: 450px; margin: 15px auto; text-align: left; background: white; border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.05); overflow: hidden; }
+        .division-btn { width: 100%; background-color: #007bff; color: white; padding: 16px; font-size: 18px; font-weight: bold; border: none; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .division-btn:active { background-color: #0056b3; }
+        /* Hides the file rows initially until clicked */
+        .document-list { display: none; padding: 10px 15px; background: #fff; }
+        .doc-link { display: block; color: #1a73e8; padding: 12px 10px; text-decoration: none; border-bottom: 1px solid #eee; font-size: 16px; font-weight: 500; }
+        .doc-link:last-child { border-bottom: none; }
+        .doc-link:active { background-color: #f0f4f9; }
+    </style>
+</head>
+<body>
+
+    <h1>Builder's Bloc Hub</h1>
+
+    <!-- CARPENTRY -->
+    <div class="division-block">
+        <button class="division-btn" onclick="toggleMenu(this)">🔨 Carpentry <span>▼</span></button>
+        <div class="document-list">
+            <a href="Daily_Safety_Plan_Log.html" class="doc-link">📋 Daily Safety Plan Log</a>
+            <a href="Safety_Meeting_Report.pdf" class="doc-link">🦺 Safety Meeting Report</a>
+            <a href="Carpentry_Payroll.html" class="doc-link">💰 Carpentry Payroll (Pending)</a>
+            <a href="Field_Reports.html" class="doc-link">📊 Field Reports (Pending)</a>
+        </div>
+    </div>
+
+    <!-- FOUNDATIONS -->
+    <div class="division-block">
+        <button class="division-btn" onclick="toggleMenu(this)">🧱 Foundations <span>▼</span></button>
+        <div class="document-list">
+            <a href="Day_Planner.html" class="doc-link">📅 Day Planner</a>
+            <a href="Foundations_Hazard_Observation_Sheet.pdf" class="doc-link">⚠️ Foundations Hazard Observation Sheet</a>
+            <a href="Foundations_Payroll.html" class="doc-link">💰 Foundations Payroll (Pending)</a>
+        </div>
+    </div>
+
+    <!-- FLATWORK -->
+    <div class="division-block">
+        <button class="division-btn" onclick="toggleMenu(this)">🏁 Flatwork <span>▼</span></button>
+        <div class="document-list">
+            <a href="Day_Planner.html" class="doc-link">📅 Day Planner</a>
+            <a href="Flatwork_Payroll.html" class="doc-link">💰 Flatwork Payroll (Pending)</a>
+        </div>
+    </div>
+
+    <!-- PLUMBING -->
+    <div class="division-block">
+        <button class="division-btn" onclick="toggleMenu(this)">💧 Plumbing <span>▼</span></button>
+        <div class="document-list">
+            <a href="Plumbing_Payroll.html" class="doc-link">💰 Plumbing Payroll (Pending)</a>
+            <a href="Plumbing_Inspection.html" class="doc-link">🔍 Plumbing Inspection (Pending)</a>
+        </div>
+    </div>
+
+    <!-- DRYWALL -->
+    <div class="division-block">
+        <button class="division-btn" onclick="toggleMenu(this)">⬜ Drywall <span>▼</span></button>
+        <div class="document-list">
+            <a href="Day_Planner.html" class="doc-link">📅 Day Planner</a>
+            <a href="Drywall_Payroll.html" class="doc-link">💰 Drywall Payroll (Pending)</a>
+        </div>
+    </div>
+
+    <script>
+        // Collapsible dropdown menu mechanics
+        function toggleMenu(button) {
+            const list = button.nextElementSibling;
+            const arrow = button.querySelector('span');
+            if (list.style.display === "block") {
+                list.style.display = "none";
+                arrow.textContent = "▼";
+            } else {
+                list.style.display = "block";
+                arrow.textContent = "▲";
+            }
+        }
+
+        // Activates background offline storage
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
+</body>
+</html>
