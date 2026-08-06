@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Field Calendar — Builder's Bloc</title>
+<style>
+:root{
+  --ink:#16181d; --ink2:#4a5160; --ink3:#7b8494;
+  --line:#c9ced8; --line2:#e4e8ef;
+  --paper:#ffffff; --bg:#eef1f6; --band:#d9dde5;
+  --accent:#7a3b12;
+  --accent-bg:#fdf5ee;
+  --ok:#1d7a4c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:40;
+  background:#1f2530; color:#e9edf4;
+  border-bottom:1px solid #0d1117;
+}
+.topbar-in{max-width:1120px;margin:0 auto;padding:9px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-weight:700;letter-spacing:.02em;font-size:14px;white-space:nowrap}
+.brand span{color:#9aa6b8;font-weight:500}
+.spacer{flex:1}
+.tbtn{
+  background:#2c3543;border:1px solid #3c4757;color:#dbe2ec;
+  padding:6px 11px;border-radius:7px;cursor:pointer;font-size:13px;line-height:1;
+}
+.tbtn:hover{background:#38424f}
+.tbtn.on{background:#7a3b12;border-color:#94491a;color:#fff}
+.saveflag{font-size:12px;color:#8fd3ac;min-width:64px;text-align:right}
+
+/* ---------- date nav ---------- */
+.datebar{
+  background:#fff;border-bottom:1px solid var(--line);
+  position:sticky;top:41px;z-index:35;
+}
+.datebar-in{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.nav{
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--line);
+  background:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center
+}
+.nav:hover{background:#f4f6fa}
+.today-date{font-size:20px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.today-date .dow{color:var(--accent)}
+.pill{
+  font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;
+  background:var(--accent-bg);color:var(--accent);border:1px solid #e8d5c2;
+  padding:3px 8px;border-radius:99px
+}
+.pill.gray{background:#f1f3f7;color:var(--ink3);border-color:var(--line2)}
+input[type=date]{
+  border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;font-size:13px;background:#fff
+}
+.mini{font-size:12px;color:var(--ink3)}
+
+/* ---------- page ---------- */
+.wrap{max-width:1120px;margin:0 auto;padding:16px}
+.sheet{
+  background:var(--paper);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 1px 2px rgba(16,20,30,.05),0 8px 24px rgba(16,20,30,.05);
+  overflow:hidden
+}
+.quote{
+  background:var(--band);padding:10px 14px;font-size:14px;line-height:1.4;
+  border-bottom:1px solid var(--line);font-style:italic
+}
+.topic{
+  padding:8px 14px;border-bottom:1px solid var(--line);font-size:14px;background:#fafbfd
+}
+.topic b{font-style:normal;color:var(--accent);font-weight:700}
+
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:stretch}
+.col{min-width:0}
+.col.left{border-right:1px solid var(--line)}
+.col.right{display:flex;flex-direction:column}
+.col.right .sec{flex:1;display:flex;flex-direction:column;border-bottom:0}
+.col.right textarea.f{flex:1;resize:none}
+
+.sec{border-bottom:1px solid var(--line)}
+.sec:last-child{border-bottom:0}
+.sec-h{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 12px;background:#f4f6fa;border-bottom:1px solid var(--line2);
+  font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2)
+}
+.sec-h .sub{margin-left:auto;font-size:11px;font-weight:600;color:var(--ink3);text-transform:none;letter-spacing:0}
+.rowgrid{display:flex;flex-direction:column}
+.r{display:grid;border-bottom:1px solid var(--line2)}
+.r.two{grid-template-columns:1fr 88px}
+.r.jobs{grid-template-columns:26px 1fr 74px}
+.cell{position:relative;border-right:1px solid var(--line2)}
+.cell:last-child{border-right:0}
+input.f,textarea.f{
+  width:100%;border:0;outline:0;background:transparent;font:inherit;
+  padding:7px 10px;color:var(--ink);display:block
+}
+input.f{height:34px}
+input.f:focus,textarea.f:focus{background:#fffbf2;box-shadow:inset 0 0 0 2px #eccfae}
+textarea.f{resize:vertical;min-height:var(--mh,84px);line-height:1.5}
+.ck{display:flex;align-items:center;justify-content:center;height:34px}
+.ck input{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
+.done input.f{text-decoration:line-through;color:var(--ink3)}
+.addrow{
+  padding:5px 10px;font-size:12px;color:var(--accent);cursor:pointer;background:#fff;
+  border:0;text-align:left;width:100%
+}
+.addrow:hover{background:var(--accent-bg)}
+.notes-lines{padding:0}
+.foot{
+  padding:10px 14px;text-align:center;font-size:13px;color:var(--ink2);
+  border-top:1px solid var(--line);background:#fafbfd
+}
+.hrs-total{font-variant-numeric:tabular-nums}
+
+/* week strip */
+.week{display:flex;gap:5px;margin:0 0 14px;flex-wrap:wrap}
+.wd{
+  flex:1;min-width:0;border:1px solid var(--line);background:#fff;border-radius:8px;
+  padding:6px 2px;text-align:center;cursor:pointer;line-height:1.2
+}
+.wd:hover{background:#f4f6fa}
+.wd.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+.wd .d1{font-size:10px;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+.wd .d2{font-size:17px;font-weight:700}
+.wd .dot{width:5px;height:5px;border-radius:99px;background:var(--accent);margin:2px auto 0;opacity:0}
+.wd.has .dot{opacity:1}
+.wd.sel .dot{background:#fff}
+
+/* reference view */
+.ref{display:none}
+.ref.show{display:block}
+.day.hide{display:none}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:16px;overflow:hidden}
+.card h2{margin:0;padding:10px 14px;font-size:13px;text-transform:uppercase;letter-spacing:.07em;background:#f4f6fa;border-bottom:1px solid var(--line)}
+.card .body{padding:12px 14px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border:1px solid var(--line2);padding:5px 8px;text-align:left;vertical-align:top}
+th{background:#f7f9fc;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);position:sticky;top:0}
+.scroll{max-height:460px;overflow:auto}
+.search{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;margin-bottom:10px}
+.fgrid{columns:4;column-gap:18px;font-size:13px;font-variant-numeric:tabular-nums}
+.fgrid div{break-inside:avoid;display:flex;justify-content:space-between;border-bottom:1px dotted var(--line2);padding:2px 0}
+.calc{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.calcbox{border:1px solid var(--line2);border-radius:8px;padding:12px}
+.calcbox h3{margin:0 0 8px;font-size:13px}
+.calcbox label{display:block;font-size:12px;color:var(--ink2);margin:6px 0 2px}
+.calcbox input,.calcbox select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font:inherit}
+.result{margin-top:10px;padding:8px 10px;background:var(--accent-bg);border:1px solid #e8d5c2;border-radius:8px;font-weight:700;color:var(--accent)}
+.hint{font-size:12px;color:var(--ink3);margin-top:6px}
+
+/* ---------- in-page dialogs (iOS blocks native confirm/alert) ---------- */
+.overlay{
+  position:fixed;inset:0;z-index:100;background:rgba(16,20,30,.45);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)
+}
+.modal{
+  background:#fff;border-radius:14px;max-width:400px;width:100%;
+  box-shadow:0 20px 50px rgba(10,14,22,.3);padding:20px;text-align:left
+}
+.modal h3{margin:0 0 6px;font-size:17px}
+.modal p{margin:0 0 16px;font-size:14px;color:var(--ink2);line-height:1.45}
+.mbtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.mbtn{
+  border:1px solid var(--line);background:#fff;color:var(--ink);
+  padding:10px 16px;border-radius:9px;font-size:15px;cursor:pointer;min-height:44px
+}
+.mbtn:hover{background:#f4f6fa}
+.mbtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.mbtn.danger{background:#a32c1c;border-color:#a32c1c;color:#fff}
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:110;
+  background:#1f2530;color:#e9edf4;padding:11px 18px;border-radius:10px;font-size:14px;
+  box-shadow:0 8px 24px rgba(10,14,22,.3);max-width:90vw;text-align:center
+}
+
+@media (max-width:860px){
+  .cols{grid-template-columns:1fr}
+  .col.left{border-right:0;border-bottom:1px solid var(--line)}
+  .fgrid{columns:2}
+  .calc{grid-template-columns:1fr}
+}
+
+/* ---------- print: current day only ---------- */
+@media print{
+  body{background:#fff;font-size:10.5px}
+  .topbar,.datebar,.week,.ref,.noprint{display:none !important}
+  .wrap{padding:0;max-width:none}
+  .sheet{border:1.2px solid #000;border-radius:0;box-shadow:none}
+  .quote{background:#d9d9d9 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+    padding:5px 8px;font-size:10.5px}
+  .topic{padding:4px 8px;font-size:10.5px;background:#fff !important}
+  .sec-h{padding:3px 8px;font-size:9px;background:#fff !important;border-bottom:1px solid #000}
+  .foot{padding:5px 8px;font-size:10px;background:#fff !important}
+  .cell,.r,.sec,.col.left,.quote,.topic,.foot{border-color:#000 !important}
+  .cols{grid-template-columns:1fr 1fr !important}
+  .col.left{border-right:1px solid #000 !important;border-bottom:0 !important}
+  input.f,textarea.f{padding:2px 5px;font-size:10.5px}
+  input.f{height:19px}
+  textarea.f{min-height:calc(var(--mh,84px) * .5);line-height:1.35}
+  .col.right textarea.f{min-height:0}
+  .ck{height:19px}
+  .ck input{width:11px;height:11px}
+  .addrow{display:none}
+  input.f:focus,textarea.f:focus{background:transparent !important;box-shadow:none !important}
+  @page{margin:11mm}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">Field Calendar <span>· Builder's Bloc</span></div>
+    <div class="spacer"></div>
+    <button class="tbtn on" id="tabDay">Day</button>
+    <button class="tbtn" id="tabRef">Reference</button>
+    <input type="text" id="ownerIn" placeholder="Whose calendar?" autocomplete="off"
+           style="min-height:34px;padding:5px 10px;border:1px solid #c9d3e0;border-radius:8px;
+                  font:inherit;font-size:13px;width:150px;margin-right:6px">
+    <button class="tbtn" id="btnExport">Export PDF</button>
+    <button class="tbtn" id="btnBackup">Backup</button>
+    <button class="tbtn" id="btnImport">Import</button>
+    <input type="file" id="fileIn" accept=".json,application/json,text/plain" style="display:none">
+    <div class="saveflag" id="saveflag"></div>
+  </div>
+</div>
+
+<div class="datebar">
+  <div class="datebar-in">
+    <button class="nav" id="prev" title="Previous day">&#9664;</button>
+    <button class="nav" id="next" title="Next day">&#9654;</button>
+    <div class="today-date"><span class="dow" id="hdDow"></span><span id="hdRest"></span></div>
+    <span class="pill" id="pillToday" style="display:none">Today</span>
+    <span class="pill gray" id="pillFilled" style="display:none">Saved</span>
+    <div class="spacer"></div>
+    <input type="date" id="datePick">
+    <button class="tbtn" id="btnToday" style="background:#f1f3f7;color:#333;border-color:#c9ced8">Today</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="day" id="dayView">
+    <div class="week" id="weekStrip"></div>
+    <div class="sheet" id="sheet"></div>
+    <div class="mini noprint" style="margin-top:10px;display:flex;gap:14px;flex-wrap:wrap">
+      <span id="statusLine"></span>
+      <span class="spacer"></span>
+      <button class="tbtn" id="btnCarry" style="background:#f1f3f7;color:#333;border-color:#c9ced8">Carry unfinished tasks &rarr; next day</button>
+      <button class="tbtn" id="btnClear" style="background:#f1f3f7;color:#333;border-color:#c9ced8">Clear this day</button>
+    </div>
+  </div>
+
+  <div class="ref" id="refView">
+    <div class="card">
+      <h2>Concrete &amp; rock calculator</h2>
+      <div class="body">
+        <div class="calc">
+          <div class="calcbox">
+            <h3>Flatwork / slab</h3>
+            <label>Length (ft)</label><input type="number" id="cL" value="20">
+            <label>Width (ft)</label><input type="number" id="cW" value="20">
+            <label>Thickness</label>
+            <select id="cT">
+              <option value="80">4" slab — 80 sf per yard</option>
+              <option value="54">6" slab — 54 sf per yard</option>
+            </select>
+            <label>Rock thickness</label>
+            <select id="cR">
+              <option value="52">4" rock — 52 sf per ton</option>
+              <option value="0">none</option>
+            </select>
+            <div class="result" id="cOut"></div>
+            <div class="hint">Length &times; Width &divide; sf-per-yard. Rock: Length &times; Width &divide; 52.</div>
+          </div>
+          <div class="calcbox">
+            <h3>Piers / round footings</h3>
+            <label>Diameter (in)</label><input type="number" id="pD" value="12">
+            <label>Depth (ft)</label><input type="number" id="pH" value="4">
+            <label>Quantity</label><input type="number" id="pQ" value="1">
+            <div class="result" id="pOut"></div>
+            <div class="hint">&frac12;dia &times; &frac12;dia &times; 3.14 &times; depth &divide; 27 (feet).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Decimal equivalents</h2>
+      <div class="body">
+        <input class="search" id="fSearch" placeholder="Search a fraction or decimal (e.g. 3/8 or 0.375)">
+        <div class="fgrid" id="fGrid"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Vendor list</h2>
+      <div class="body">
+        <input class="search" id="vSearch" placeholder="Search vendors by name, city, phone…">
+        <div class="scroll"><table id="vTable"></table></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Customer list</h2>
+      <div class="body">
+        <input class="search" id="uSearch" placeholder="Search customers…">
+        <div class="scroll"><table id="uTable"></table></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Address book</h2>
+      <div class="body">
+        <input class="search" id="abName" placeholder="Add a contact — name">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:10px">
+          <input class="search" id="abWork" placeholder="Work phone" style="margin:0">
+          <input class="search" id="abCell" placeholder="Cell" style="margin:0">
+          <input class="search" id="abNote" placeholder="Notes" style="margin:0">
+          <button class="tbtn" id="abAdd" style="background:#7a3b12;color:#fff;border-color:#7a3b12">Add</button>
+        </div>
+        <table id="abTable"></table>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const DAYS={"01-01":["Resolve to get to know your employees better. It will build better working relationships.","Watch for ice & Snow!","Think about being safe every day."],"01-02":["Focus on the step in front of you, not the whole staircase","Think safety","Think about being safe every day."],"01-03":["Wise men learn more from fools than fools from the wise. --Cato the Elder","Teamwork","Think about being safe every day."],"01-04":["If a man does his best, what else is there? --General George S. Patton","Setting a good example in safety.","Think about being safe every day."],"01-05":["Where there is no struggle, there is no strength","Safety Attitudes","Think about being safe every day."],"01-06":["All people are equal, it is not birth, it is virtue alone that make the difference. --Voltaire","(PPE) Personal Protective Equipment (Use it)","Think about being safe every day.",1],"01-07":["Remember to block out time to spend with your family.","Be alert at all times.","Think about being safe every day.",1],"01-08":["If you think you can, you can. If you think you can't, you're right. - Mary Kay Ash","Start and finish safely.","Get your safety fix in 2006."],"01-09":["Success is a matter of luck. Ask any failure. -Earl Wilson","Stay on guard for safety.","Get your safety fix in 2006."],"01-10":["People don't notice whether it's winter or summer when they're happy. --Anton Chekhov","Don't take safety for granted.","Get your safety fix in 2006."],"01-11":["Laughter is the sun that drives winter from the human face. --Victor Hugo","Safety is your responsibility.","Get your safety fix in 2006."],"01-12":["What fire could ever equal the sunshine of a winter's day? --Henry David Thoreau","It could happen to you.","Get your safety fix in 2006."],"01-13":["Experience enables you to recognize a mistake when you make it again. --Franklin P. Jones","Compressed air.","Get your safety fix in 2006.",1],"01-14":["Plan a family activity and spend some quality time together.","Don\u2019t take safety for granted.","Get your safety fix in 2006.",1],"01-15":["Dare to be wrong and dream. --Frederick von Schiller","Take safety personally.","Safety boots put you one step ahead.-Kevin Fenwick"],"01-16":["If you think education is inexpensive, try ignorance. --Derek Bok","Accidents don't just happen.","Safety boots put you one step ahead.-Kevin Fenwick"],"01-17":["We must be the change we wish to see in the world. --Gandhi","Unsafe shortcuts.","Safety boots put you one step ahead.-Kevin Fenwick"],"01-18":["To make our way, we must have firm resolve, persistence, tenacity. We must gear ourselves to work hard all the way. We can never let up. --Ralph Bunche","Hidden Hazards.","Safety boots put you one step ahead.-Kevin Fenwick"],"01-19":["Whether you think that you can, or that you can't, you are usually right. --Henry Ford","Pinch Points.","Safety boots put you one step ahead.-Kevin Fenwick"],"01-20":["Speak when you are angry and you'll make the best speech you'll ever regret. --Lawrence J. Peter","Fire extinguishers.","Safety boots put you one step ahead.-Kevin Fenwick",1],"01-21":["Relax and enjoy your day. Everyone needs some down time.","Hand protection.","Safety boots put you one step ahead.-Kevin Fenwick",1],"01-22":["No one can make you feel small without your consent. --Eleanor Roosevelt","Look above and below.","Use the right tool-don't be a fool. -Kevin Fenwick"],"01-23":["Our only limitations are those we accept. --Mark Fournier","Slips and falls.","Use the right tool-don't be a fool. -Kevin Fenwick"],"01-24":["Talent does what it can; genius does what it must. --Edward George Bulwer-Lytton","Fall protection.","Use the right tool-don't be a fool. -Kevin Fenwick"],"01-25":["Problems worthy of attack prove their worth by fighting back. --Paul Erdos","1) Handrails are there to help. 2) Concrete trucks: handling concrete chutes and backing in trucks.","Use the right tool-don't be a fool. -Kevin Fenwick"],"01-26":["It's kind of fun to do the impossible. --Walt Disney","Little things that count.","Use the right tool-don't be a fool. -Kevin Fenwick"],"01-27":["I have not failed. I've just found 10,000 ways that won't work. -- Thomas Alva Edison","Hidden Hazards.","Use the right tool-don't be a fool. -Kevin Fenwick",1],"01-28":["A balanced life includes time for family/home, financial/career, mental/educational, physical/health, social/cultural, and spiritual/ethical.","If you are not confronting unsafe behavior, you are reinforcing it.","Use the right tool-don't be a fool. -Kevin Fenwick",1],"01-29":["Be nice to people on your way up because you meet them on your way down. --Jimmy Durante","Look out for falling objects.","Life's a gamble-play it safe.-Steve Blankenship"],"01-30":["The true measure of a man is how he treats someoe who can do him absolutely no good. --Samuel Johnson","Noise on the job.","Life's a gamble-play it safe.-Steve Blankenship"],"01-31":["Knowledge speaks, but wisdom listens. -Jimi Hendrix","Good housekeeping.","Life's a gamble-play it safe.-Steve Blankenship"],"02-01":["Obstacles are those frightful things you see when you take your eyes off your goal. --Henry Ford","Learn from near accidents.","Life's a gamble-play it safe.-Steve Blankenship"],"02-02":["The secret of success is to know something nobody else knows. -- Aristotle Onassis","Clean it up.","Life's a gamble-play it safe.-Steve Blankenship"],"02-03":["Make everything as simple as possible, but not simpler. --Albert Einstein","It will never happen to me.","Life's a gamble-play it safe.-Steve Blankenship",1],"02-04":["Start planning for your spring vacation.","Learn from near accidents.","Life's a gamble-play it safe.-Steve Blankenship",1],"02-05":["Our visions begin with our desires. --Audrie Lorde","Check your cords and hoses.","When all the bets are in, safety's sure to win. -Tim Lamprecht"],"02-06":["There is no future in any job. The future lies in the man who holds the job. --George Crane","Electrical hazards.","When all the bets are in, safety's sure to win. -Tim Lamprecht"],"02-07":["Wise men don't need advice. Fools won't take it. --Benjamin Franklin","Hand tool safety.","When all the bets are in, safety's sure to win. -Tim Lamprecht"],"02-08":["It's not what you do once in a while, it's what you do day in and day out that makes a difference. --Jenny Craig","Safety with a cutting tool.","When all the bets are in, safety's sure to win. -Tim Lamprecht"],"02-09":["It's not what you've got, it's what you use that makes a difference. -- Zig Ziglar","Power handsaw safety.","When all the bets are in, safety's sure to win. -Tim Lamprecht"],"02-10":["Change your thoughts and you change your world. --Norman Vincent Peale","Nailgun safety.","When all the bets are in, safety's sure to win. -Tim Lamprecht",1],"02-11":["Any place that anyone young can learn something from someone with experience is an educational institution. --Al Capp","Only superman can fly (wear fall protection).","When all the bets are in, safety's sure to win. -Tim Lamprecht",1],"02-12":["The fellow who never makes a mistake takes his orders from one who does. --Herbert Prochnow","Use the right tool for the job.","Safety is a lifestyle; live it! -Larry Baker"],"02-13":["Few things help an individual more than to place responsibility on him, and to let him know that you trust him. --Booker T. Washington","Powder-Actuated hand tools.","Safety is a lifestyle; live it! -Larry Baker"],"02-14":["Life is all about choices. Think them through.","Check guards on your saws.","Safety is a lifestyle; live it! -Larry Baker"],"02-15":["When you have a dream, you've got to grab it and never let go. -- Carol Burnett","(PPE) personal protective equipment (Use it).","Safety is a lifestyle; live it! -Larry Baker"],"02-16":["There can be no education without leisure, and without leisure education is worthless. --Sarah Josepha Hale","Your friend the hard hat.","Safety is a lifestyle; live it! -Larry Baker"],"02-17":["Let tomorrow come what may, for I have fully lived today. --Mark Fournier","Powertool Safety","Safety is a lifestyle; live it! -Larry Baker",1],"02-18":["VALENTINE'S DAY- Make a special effort for your loved one","Report all injuries!","Safety is a lifestyle; live it! -Larry Baker",1],"02-19":["Excitement is contagious, but so is negativity.","Eye protection.","Safety here because OSHA is near. -Steve Davis"],"02-20":["Did you quit because you reached the end or did you reach the end because you quit? --Mark Fournier","Hearing protection.","Safety here because OSHA is near. -Steve Davis"],"02-21":["Energy, like the biblical grain of mustard seed, will remove mountains. --Hosea Ballou","Hand Protection.","Safety here because OSHA is near. -Steve Davis"],"02-22":["What sculpture is to a block of marble, education is to the soul. -- Joseph Addison","Safe lifting.","Safety here because OSHA is near. -Steve Davis"],"02-23":["Act as if what you do makes a difference. It does. --William James","If it is heavy, get help.","Safety here because OSHA is near. -Steve Davis"],"02-24":["Dreams are\u2026illustrations from the book your soul is writing about you. --Marsha Norman","Safety doesn't stop at the exit.","Safety here because OSHA is near. -Steve Davis",1],"02-25":["attention you give, the more success and satisfaction you enjoy. --Paul J Meyer","School's out. Watch for those kids playing in the subdivision!","Safety here because OSHA is near. -Steve Davis",1],"02-26":["Success in life comes not from holding a good hand, but in playing a poor hand well. --Warren G. Lester","Ladder safety.","Safety is #1, don't be dumb. Steve Davis"],"02-27":["The secret to success is making your vocation your vacation. --Mark Twain","Step ladder safety.","Safety is #1, don't be dumb. Steve Davis"],"02-28":["There is no security on this earth; there is only opportunity. --Douglas MacArthur","Check your gas cans. Are they safe?","Safety is #1, don't be dumb. Steve Davis"],"02-29":["When choosing a path, take the more challenging one.","Compressed air.","Safety is #1, don't be dumb. Steve Davis"],"03-01":["I try to do the right thing at the right time. They may just be little things, but usually they make the difference between winning and losing. --Kareem Abdul-Jabar","1) Safe driving. 2) Be careful around gussets on trusses.","Safety is #1, don't be dumb. Steve Davis"],"03-02":["You've got to take the initiative and play your game\u2026confidence makes the difference. --Chris Evert Lloyd","Sprains and strains.","Safety is #1, don't be dumb. Steve Davis",1],"03-03":["How long has it been since you've played a board game, watched an old movie, or read a book?","Talk about safety all day.","Safety is #1, don't be dumb. Steve Davis",1],"03-04":["Education is that which discloses to the wise and disguises from the foolish their lack of understanding. --Ambrose Bierce","Seatbelts (it\u2019s the law)","Safety 1st! You may not get a second chance. -Ron Spoor"],"03-05":["You can't lead a calvary charge if you think you look funny on a horse. --John Peers","Weather (any hazards with today's weather)","Safety 1st! You may not get a second chance. -Ron Spoor"],"03-06":["If you can't make a mistake, you can't make anything. --Marva Collins","Fire extinguishers.","Safety 1st! You may not get a second chance. -Ron Spoor"],"03-07":["I've had dreams, and I've had nightmares. I overcame the nightmares because of my dreams. --Jonas Salk","Flammable Liquids","Safety 1st! You may not get a second chance. -Ron Spoor"],"03-08":["There is nothing wrong with making mistakes. Just don't respond with encores. --Unknown","Sprains and strains.","Safety 1st! You may not get a second chance. -Ron Spoor"],"03-09":["There is no education like adversity. --Benjamin Disraeli","Think safety","Safety 1st! You may not get a second chance. -Ron Spoor",1],"03-10":["Take a minute to call an old friend that you haven't see in awhile.","Watch for Safety hazards in whatever you do!","Safety 1st! You may not get a second chance. -Ron Spoor",1],"03-11":["The future belongs to those who believe in the beauty of their dreams. --Eleanor Roosevelt","Treat that cut or scrape.","Be a part of the future. Think safety first. -Willie Boyer"],"03-12":["Education should include knowledge of what to do with it. --Unknown","Safety doesn't stop at the exit.","Be a part of the future. Think safety first. -Willie Boyer"],"03-13":["Be sure to schedule your spring fishing tournaments.","Off-the-job safety.","Be a part of the future. Think safety first. -Willie Boyer"],"03-14":["Don't take life too seriously. You will never get out of it alive. -- Elbert Hubbard","On the job safety (practice it)","Be a part of the future. Think safety first. -Willie Boyer"],"03-15":["Most of us would rather be ruined by praise than praised by criticism. - -Norman Vincent Peale","Inspect all of your tools.","Be a part of the future. Think safety first. -Willie Boyer"],"03-16":["God's gifts put man's best dreams to shame.--Elizabeth Barrett Browning","What is safety?","Be a part of the future. Think safety first. -Willie Boyer",1],"03-17":["TAKE A LITTLE TIME TO ENJOY YOUR FAMILY","(PPE) Personal Protective Equipment (Use it)","Be a part of the future. Think safety first. -Willie Boyer",1],"03-18":["Visualize yourself at the top. --Paul J. Meyer","Report all injuries (big or small)","Be alert. Accidents don't just happen. Safety first. -Willie Boyer"],"03-19":["The responsibility of tolerance lies in those who have the wider vision. --George Eliot","Safety is a team sport.","Be alert. Accidents don't just happen. Safety first. -Willie Boyer"],"03-20":["ST. PATRICK'S DAY ~","Be a safety leader.","Be alert. Accidents don't just happen. Safety first. -Willie Boyer"],"03-21":["He who has a 'why' to live, can bear with almost any 'how'. --Friedrich Nietzsche","Don't take short cuts with safety.","Be alert. Accidents don't just happen. Safety first. -Willie Boyer"],"03-22":["You got to be careful if you don't know where you're going, because you might not get there. --Yogi Berra","Good work boots can save your feet.","Be alert. Accidents don't just happen. Safety first. -Willie Boyer"],"03-23":["It is not a bad idea to get in the habit of writing down one's thoughts. It saves one having to bother anyone else with them. --Isabel Colegate","Be alert at all times.","Be alert. Accidents don't just happen. Safety first. -Willie Boyer",1],"03-24":["Fish and visitors smell in three days. -Benjamin Franklin, Poor Richards 1736","Compressed air.","Be alert. Accidents don't just happen. Safety first. -Willie Boyer",1],"03-25":["There are no secrets to success. It is the result of preparation, hard work, and learning from failure. --Colin Powell (1937- )","Think about everything you do and decide if it's safe.","Keeping priorities straight; Our safety, our jobs, our future! -Willie Boyer"],"03-26":["It is wise to apply the oil of refined politeness to the mechanisms of friendship. --Colette (1873-1954, The Pure and Impure, 1932)","Check into safety awareness class.","Keeping priorities straight; Our safety, our jobs, our future! -Willie Boyer"],"03-27":["I often quote myself, it adds spice to my conversation. --George Bernard Shaw","If you have any questions regarding safety, contact Bob Walsh.","Keeping priorities straight; Our safety, our jobs, our future! -Willie Boyer"],"03-28":["Keep cool and you command everybody. --Louis de Saint-Just (1767- 1794)","Hand safety","Keeping priorities straight; Our safety, our jobs, our future! -Willie Boyer"],"03-29":["It's what you learn after you know it all that counts. --John Wooden","Talk about safety all day.","Keeping priorities straight; Our safety, our jobs, our future! -Willie Boyer"],"03-30":["The graveyards are full of indispensable men. --Charles de Gaulle","Don\u2019t take safety for granted.","Keeping priorities straight; Our safety, our jobs, our future! -Willie Boyer",1],"03-31":["Spend time with Family","Fire extinguishers.","Keeping priorities straight; Our safety, our jobs, our future! -Willie Boyer",1],"04-01":["Sometimes it is not enough to do our best; we must do what is required. --Sir Winston Churchill","Water-it does a body good.","Have pride in everything we do. -Eric Johnson"],"04-02":["Well done is better than well said. --Benjamin Franklin","Nailgun safety.","Have pride in everything we do. -Eric Johnson"],"04-03":["Failure isn't falling down, it's staying down. Heroes just get up more often. -- Mark Fournier","Shoulda Coulda Woulda","Have pride in everything we do. -Eric Johnson"],"04-04":["We should all be concerned about the future because we will have to spend the rest of our lives there. --Charles Ketterling","Safety is your job.","Have pride in everything we do. -Eric Johnson"],"04-05":["A pessimist sees the difficulty in every opportunity; an optimist sees the opportunity in every difficulty. --Sir Winston Churchill","How important is safety to your family?","Have pride in everything we do. -Eric Johnson"],"04-06":["\"Ask her to wait a moment--I'm almost done.\" --Carl Friedrich Gauss, while working, when informed that his wife is dying.","Hand protection.","Have pride in everything we do. -Eric Johnson",1],"04-07":["\"Ask her to wait a moment--I'm almost done.\" --Carl Friedrich Gauss, while working, when informed that his wife is dying.","Hidden Hazards.","Have pride in everything we do. -Eric Johnson",1],"04-08":["Take some time to identify your career goals and make a plan to achieve them.","Would you let your child work unsafe?","Think about safety and be proud too.-Eric Johnson"],"04-09":["The secret of education lies in respecting the pupil. --Ralph Waldo Emerson","If you're not confronting unsafe behavior, you're reinforcing it.","Think about safety and be proud too.-Eric Johnson"],"04-10":["Hating people is like burning down your house to get rid of a rat. -- Harry Emerson Fosdick","There is always time to do work safely.","Think about safety and be proud too.-Eric Johnson"],"04-11":["The education of a man is never completed until he dies. -- Robert E. Lee","Drugs and safety do not mix.","Think about safety and be proud too.-Eric Johnson"],"04-12":["Silence is foolish if we are wise, but wise if we are foolish. --Charles Caleb Colton","Don't drink and drive.","Think about safety and be proud too.-Eric Johnson"],"04-13":["It's great satisfaction knowing that for a brief point in time you made a difference. --Irene Natividad","If you are not confronting unsafe behavior, you are reinforcing it.","Think about safety and be proud too.-Eric Johnson",1],"04-14":["Don't serve time; make time serve you. --Willie Sutton","It will never happen to me.","Think about safety and be proud too.-Eric Johnson",1],"04-15":["Sixty years ago I knew everything; now I know nothing. Education is the progressive discovery of our own ignorance. --Will Durant","Be alert at all times.","Whrr, Bang, Buzz, Saw, safety first is the law. -Earl Kallbrier"],"04-16":["Everything that can be invented has been invented. --Charles H. Duell, Commissioner, U.S. Office of Patents, 1899","Only superman can fly. (wear fall protection)","Whrr, Bang, Buzz, Saw, safety first is the law. -Earl Kallbrier"],"04-17":["It takes a long time to bring excellence to maturity. --Maxim 780","Protect your eye's; you only have two.","Whrr, Bang, Buzz, Saw, safety first is the law. -Earl Kallbrier"],"04-18":["Take your significant other to dinner and spend some quality time together.","Water: it does a body good.","Whrr, Bang, Buzz, Saw, safety first is the law. -Earl Kallbrier"],"04-19":["People demand freedom of speech to make up for the freedom of thought which they avoid. --Soren Aabye Kierkegaard","Bend over or cut off lumber banding.","Whrr, Bang, Buzz, Saw, safety first is the law. -Earl Kallbrier"],"04-20":["The most challenging and exciting goals you set remain as vague as dreams until you take action. --Paul J. Meyer","Learn from near accidents.","Whrr, Bang, Buzz, Saw, safety first is the law. -Earl Kallbrier",1],"04-21":["Before God we are equally wise and equally foolish.-Albert Einstein","Nailgun safety.","Whrr, Bang, Buzz, Saw, safety first is the law. -Earl Kallbrier",1],"04-22":["Each problem that I solved became a rule which served afterwards to solve other problems. --Rene Descartes, \"Discours de la Methode\"","If you're not sure, ask.","Safety; it's a good way to live. Richard Politte"],"04-23":["I find that the harder I work, the more luck I seem to have. --Thomas Jefferson","Take safety home with you.","Safety; it's a good way to live. Richard Politte"],"04-24":["Some cause happiness wherever they go; others, whenever they go. - -Oscar Wilde","Nail gun safety.","Safety; it's a good way to live. Richard Politte"],"04-25":["We didn't lose the game; we just ran out of time. --Vince Lombardi","Don't be a fall guy.","Safety; it's a good way to live. Richard Politte"],"04-26":["A friendship founded on business is better than a business founded on friendship. --John D. Rockefeller","What is safety?","Safety; it's a good way to live. Richard Politte"],"04-27":["I have often regretted my speech, never my silence. --Xenocrates","Only superman can fly (wear fall protection).","Safety; it's a good way to live. Richard Politte",1],"04-28":["Make time for a picnic.","Powertool Safety","Safety; it's a good way to live. Richard Politte",1],"04-29":["If everything seems under control, you're just not going fast enough. -- Mario Andretti","How can I work safe?","Think twice; don't pay the price. -Tim Ewald"],"04-30":["Success usually comes to those who are too busy to be looking for it. --Henry David Thoreau","Conquer hazards with safe habits.","Think twice; don't pay the price. -Tim Ewald"],"05-01":["If you don't know where you are going, you might end up someplace else. --Yogi Berra","Hurry up can hurt.","Think twice; don't pay the price. -Tim Ewald"],"05-02":["Education is a progressive discovery of our own ignorance. --Will Durant","It will never happen to me.","Think twice; don't pay the price. -Tim Ewald"],"05-03":["Argue for your limitations, and sure enough they're yours. --Richard Bach","Job knowledge-A key to job safety.","Think twice; don't pay the price. -Tim Ewald"],"05-04":["Memorial Day weekend is coming up. What are your plans?","Report all injuries!","Think twice; don't pay the price. -Tim Ewald",1],"05-05":["Vacation used to be a luxury, however, in today's world, it has become a necessity. --Unknown","Safety doesn't stop at the exit.","Think twice; don't pay the price. -Tim Ewald",1],"05-06":["After all it is those who have a deep and real inner life who are best able to deal with the irritating details of outer life. --Evelyn Undershill","Think about everything you do and decide if it's safe.","Safety works if you work with safety. -Keith Beckett"],"05-07":["He who will not economize will have to agonize. --Confucious (551 BC-470 BC)","Making zero accidents is our goal.","Safety works if you work with safety. -Keith Beckett"],"05-08":["If the point is sharp, and the arrow is swift, it can pierce through the dust no matter how thick. --Bob Dylan (1941- )","You are important, so act like it.","Safety works if you work with safety. -Keith Beckett"],"05-09":["To lengthen thy life, lessen thy meals. --Benjamin Franklin (1706- 1790), Poor Richard's Almanack, 1737","Keep cool.","Safety works if you work with safety. -Keith Beckett"],"05-10":["We don't like their sound, and guitar music is on the way out. --Decca Recording Co., rejecting the Beatles, 1962","Remember sunscreen.","Safety works if you work with safety. -Keith Beckett"],"05-11":["We cannot destroy kindred: Our chains stretch a little sometimes, but they never break. --Marie de Rabutin-Chantral","School's out. Watch for those kids playing in the subdivision!","Safety works if you work with safety. -Keith Beckett",1],"05-12":["Mother's Day- Spend time with the Mother's in your life","Sprains and strains.","Safety works if you work with safety. -Keith Beckett",1],"05-13":["Know, first, who you are; and then adorn yourself accordingly. -- Epictetus (55AD-135AD)","Safety attitudes.","Keep it on your head (hard hat). -Jake Pottebaum"],"05-14":["Love is the big booming beat which covers up the noise of hate. -- Margaret Cho, weblog, 01-15-04","Think safety.","Keep it on your head (hard hat). -Jake Pottebaum"],"05-15":["It is best to do things systematically, since we are only human, and disorder is our worst enemy. --Hesiod (800 BC)","Teamwork.","Keep it on your head (hard hat). -Jake Pottebaum"],"05-16":["Those who dream by day are cognizant of many things which escape those who dream only by night. --Edgar Allan Poe (1809-1849), Eleanora, 1842","Setting a good example in safety.","Keep it on your head (hard hat). -Jake Pottebaum"],"05-17":["Let not thy will roar, when thy power can but whisper. --Dr Thomas Fuller (1654-1734), Gnomologia, 1732","Safe habits.","Keep it on your head (hard hat). -Jake Pottebaum"],"05-18":["It is better to learn late than never. --Maxim 864","Talk about safety all day.","Keep it on your head (hard hat). -Jake Pottebaum",1],"05-19":["Family isn't about whose blood you have. It's about who you care about. -Trey Parker and Matt Stone, South Park, Ike's Wee Wee, 1998","Think safety","Keep it on your head (hard hat). -Jake Pottebaum",1],"05-20":["Reprove thy friend privately, commend him publicly. --Solon","Start and finish safely.","Safety each day keeps the doctor away. -Wm Baker"],"05-21":["The surest way to make a monkey of a man is to quote him. --Robert Benchley","Stay on guard for safety.","Safety each day keeps the doctor away. -Wm Baker"],"05-22":["Life is a risk. --Diane Von Furstenberg","Don\u2019t take safety for granted.","Safety each day keeps the doctor away. -Wm Baker"],"05-23":["You can't do anything about the length of your life, but you can do something about its width and depth. --Evan Esar (1899-1995)","Safety is your responsibility.","Safety each day keeps the doctor away. -Wm Baker"],"05-24":["When in doubt, tell the truth. --Mark Twain (1835-1910)","It could happen to you.","Safety each day keeps the doctor away. -Wm Baker"],"05-25":["The mind's first step to self-awareness must be through the body. -- George Sheehan","Watch for Safety hazards in whatever you do!","Safety each day keeps the doctor away. -Wm Baker",1],"05-26":["Mistrust the man who finds everything good, the man who finds everything evil and still more the man who is indifferent to everything.","What is safety?","Safety each day keeps the doctor away. -Wm Baker",1],"05-27":["Dreaming permits each and every one of us to be quietly and safely insane every night of our lives. --Charles William Dement","Look out above and below.","Safety, because anything less hurts. -Wm Baker"],"05-28":["Men show their characters in nothing more clearly than in what they think laughable. --Johann Wolfgang von Goethe (1749-1832)","Accidents don't just happen.","Safety, because anything less hurts. -Wm Baker"],"05-29":["Strive for excellence, not perfection. --H. Jackson Brown Jr. O Magazine, Dec. 2003","Unsafe shortcuts.","Safety, because anything less hurts. -Wm Baker"],"05-30":["The most wasted of all days is one without laughter. --E. E. Cummings (1894-1962)","Hidden hazards.","Safety, because anything less hurts. -Wm Baker"],"05-31":["Constant effort and frequent mistakes are the stepping stones to genius. --Elbert Hubbard","Pinch points.","Safety, because anything less hurts. -Wm Baker"],"06-01":["A mind too active is no mind at all. --Theodore Toethke (1908-1963)","(PPE) Personal Protective Equipment (Use it)","Safety, because anything less hurts. -Wm Baker",1],"06-02":["Keep true to the dreams of thy youth.-Friedrich von Schiller (1759- 1805)","Be alert at all times.","Safety, because anything less hurts. -Wm Baker",1],"06-03":["MEMORIAL DAY","Keep your Guards up!","Avoid harm, keep your arm.-Wm Baker"],"06-04":["Have you scheduled your semi-annual review with your superintendent yet?","Slips and falls.","Avoid harm, keep your arm.-Wm Baker"],"06-05":["Supid is forever, ignorance can be fixed. --Don Wood","Fall protection.","Avoid harm, keep your arm.-Wm Baker"],"06-06":["An expert is a man who has made all the mistakes which can be made in a very narrow field. --Niels Bohr","Handrails are there to help.","Avoid harm, keep your arm.-Wm Baker"],"06-07":["Those that say you can't take it with you never saw a car packed for a vacation trip. --Unknown","Little things that count.","Avoid harm, keep your arm.-Wm Baker"],"06-08":["There is no security on this earth, there is only opportunity. --General Douglas MacArthur (1880-1964)","School's out. Watch for those kids playing in the subdivision!","Avoid harm, keep your arm.-Wm Baker"],"06-09":["Honest is the best image.-Tom Wilson, Ziggy (comic)","Compressed air.","Avoid harm, keep your arm.-Wm Baker",1],"06-10":["I can think of nothing less pleasurable than a life devoted to pleasure. --John D. Rockefeller (1839-1937)","Look out for falling objects.","Work Safely. Wm Baker"],"06-11":["True silence is the rest of the mind; it is to the spirit what sleep is to the body, nourishment and refreshment. --William Penn (1644-1718)","Noise on the job.","Work Safely. Wm Baker"],"06-12":["To be without some of the things you want is an indispensable part of happiness. --Bertrand Russell (1872-1970)","Good housekeeping.","Work Safely. Wm Baker"],"06-13":["We shall show mercy, but we shall not ask for it. --Sir Winston Churchill (1874-1965), speech in the House of Commons, 7/14/40","Learn from near accidents.","Work Safely. Wm Baker"],"06-14":["Laughing is the sensation of feeling good all over and showing it principally in one spot. --Josh Billings (1818-1885)","Clean it up.","Work Safely. Wm Baker"],"06-15":["We don't remember days\u2026we remember moments. --Mark Fournier","Teach your kids to use sunscreen.","Work Safely. Wm Baker"],"06-16":["The heart of a fool is in his mouth, but the mouth of a wise man is in his heart. --Benjamin Franklin","Don\u2019t take safety for granted.","Work Safely. Wm Baker",1],"06-17":["Only I can change my life. No one can do it for me. --Carol Burnett (1936- )","Check your cords and hoses.","Be safe. The alternative is painfully clear. -Wm Baker"],"06-18":["It matters not what you are thought to be, but what you are. --Maxim 785","Electrical hazards.","Be safe. The alternative is painfully clear. -Wm Baker"],"06-19":["Summer makes a silence after spring. --Vita Sackville-West","Hand tool safety.","Be safe. The alternative is painfully clear. -Wm Baker"],"06-20":["Dreams never hurt anybody if he keeps working right behind the dreams to make as much of them become real as he can. --Frank W. Woolworth","Safety with a cutting tool.","Be safe. The alternative is painfully clear. -Wm Baker"],"06-21":["Ability will never catch up with the demand for it. --Malcolm Forbes (1919-1990)","Power handsaw safety.","Be safe. The alternative is painfully clear. -Wm Baker"],"06-22":["Self-confidence is the first requisite to great undertakings. --Samuel Johnson (1709-1784)","Enroll your kids in swimming lessons.","Be safe. The alternative is painfully clear. -Wm Baker"],"06-23":["Father's Day- Spend time with the Fathers in your life","Fire extinguishers.","Be safe. The alternative is painfully clear. -Wm Baker",1],"06-24":["Whenever you are asked if you can do a job, tell 'em,'Certainly I can!' Then get busy and find out how to do it. --Theodore Roosevelt (1858-","Use the right tool for the job.","Safety is the motto for all employees. - Wm Baker"],"06-25":["If you don't risk anything you risk even more. --Erica Jong","Powder-Actuated hand tools.","Safety is the motto for all employees. - Wm Baker"],"06-26":["Get happiness out of your work or you may never know what happiness is. --Elbert Hubbard (1856-1915)","Check guards on your saws.","Safety is the motto for all employees. - Wm Baker"],"06-27":["When your work speaks for itself, don't interrupt. --Henry J. Kaiser (1882-1967)","(PPE) personal protective equipment (use it)","Safety is the motto for all employees. - Wm Baker"],"06-28":["This isn't good or bad. It's just the way of things. Nothing stays the same. --Real Live Preacher, RealLivePreacher.com Weblog, 01/03/04","Your friend the hard hat.","Safety is the motto for all employees. - Wm Baker"],"06-29":["Problems are only opportunities in work clothes. --Henry Kaiser","Kids should use helmets whenever they ride their bikes.","Safety is the motto for all employees. - Wm Baker"],"06-30":["The aim of life is self-development. To realize one's nature perfectly- that is what each of us is here for. -Oscar Wilde (1854-1900)","Hand protection.","Safety is the motto for all employees. - Wm Baker",1],"07-01":["Flattery is like cologne water, to be smelt of, not swallowed. --Josh Billings (1818-1885)","Eye protection.","Make safety and you are two of a kind. -John Smith"],"07-02":["Have you been mentoring a person for the blueprint program?","Hand protection.","Make safety and you are two of a kind. -John Smith"],"07-03":["When you are in any contest you should work as if it there were -to the very last minute- a chance to lose it. --Dwight D. Eisenhower","Ladder safety.","Make safety and you are two of a kind. -John Smith"],"07-04":["Nothing is stronger than habit.-Ovid (43 BC-17AAD) Ars Amatoria","Safe lifting.","Make safety and you are two of a kind. -John Smith"],"07-05":["A mind troubled by doubt cannot focus on the course to victory. -- Arthur Golden, Memoirs of a Geisha","If it is heavy, get help.","Make safety and you are two of a kind. -John Smith"],"07-06":["The joy of spirit is the measure of its power.-Ninon De Lenclos (1620- 1705)","Hidden Hazards.","Make safety and you are two of a kind. -John Smith",1],"07-07":["Mother's Day- Spend time with the Mother's in your life","If you are not confronting unsafe behavior, you are reinforcing it.","Make safety and you are two of a kind. -John Smith",1],"07-08":["Great ability develops and reveals itself increasingly with every new assignment. --Baltasar Gracian","Watch for Safety hazards in whatever you do!","Accident free is the way for me. -Larry Baker"],"07-09":["People seem not to see that their opinion of the world is also a confession of their character. --Ralph Waldo Emerson (1803-1882)","Step ladder safety.","Accident free is the way for me. -Larry Baker"],"07-10":["Creativity is a drug I cannot live without. --Cecil B. DeMille (1881- 1959)","Check your gas cans. Are they safe?","Accident free is the way for me. -Larry Baker"],"07-11":["Friends have all things in common. -- Plato","Compressed air.","Accident free is the way for me. -Larry Baker"],"07-12":["People don't notice whether it's winter or summer when they're happy. --Anton Chekhov","Safe driving.","Accident free is the way for me. -Larry Baker"],"07-13":["If you did everything you really should do before you go on vacation, it would be over before it started. --Beryl Pfizer","It will never happen to me.","Accident free is the way for me. -Larry Baker",1],"07-14":["The aim of life is self-development. To realize one's nature perfectly- that is what each of us is here for.-Oscar Wilde (1854-1900)","Learn from near accidents.","Accident free is the way for me. -Larry Baker",1],"07-15":["In business, you don't get what you deserve, you get what you negotiate. --Chester L. Karrass","Seatbelts (it's the law)","Safety and common sense go hand in hand. Keith Coxie"],"07-16":["Like a welcome summer rain, humor may suddenly cleanse and cool the earth, the air and you. --Langston Hughes","Weather (any hazards with today's weather).","Safety and common sense go hand in hand. Keith Coxie"],"07-17":["It takes a long time to bring excellence to maturity. --Pubilius Syrus (100 BC), Maxims","Fire extinguishers","Safety and common sense go hand in hand. Keith Coxie"],"07-18":["Make no small plans\u2026they fail to stir the hearts of man. --William Shakespeare","Flammable liquids.","Safety and common sense go hand in hand. Keith Coxie"],"07-19":["You can't wait for inspiration. You have to go after it with a club. -- Jack London (1876-1916)","Sprains and strains.","Safety and common sense go hand in hand. Keith Coxie"],"07-20":["Enjoyment is not a goal, it is a feeling that accompanies important ongoing activity. --Paul Goodman (1911-1972)","Nailgun safety.","Safety and common sense go hand in hand. Keith Coxie",1],"07-21":["Happiness is having a large, loving, caring, close-knot family in another city.-George Burns (1896-1996)","Only superman can fly (wear fall protection).","Safety and common sense go hand in hand. Keith Coxie",1],"07-22":["No man needs a vacation so much as the man who has just had one. --Elbert Hubbard","Treat a cut or scrape.","Make safety a way of life or you may leave a widowed wife. -Larry Baker"],"07-23":["If an idea's worth having once, it's worth having twice. --Tom Stoppard (1937- )","Safety doesn't stop at the exit.","Make safety a way of life or you may leave a widowed wife. -Larry Baker"],"07-24":["With regard to excellence, it is not enough to know, but we must try to have and use it. --Aristotle (384BC-322BC) Nichomachiean","Off -the-job safety.","Make safety a way of life or you may leave a widowed wife. -Larry Baker"],"07-25":["No one knows what he can do till he tries. --Maxim 786","On the job safety: practice it.","Make safety a way of life or you may leave a widowed wife. -Larry Baker"],"07-26":["The man who has confidence in himself gains the confidence of others. --Hasidic Saying","Inspect all of your tools.","Make safety a way of life or you may leave a widowed wife. -Larry Baker"],"07-27":["Never trust the advice of a man in difficulties. --Aesop (620 BC-560 BC)","Powertool Safety","Make safety a way of life or you may leave a widowed wife. -Larry Baker",1],"07-28":["Family isn't about whose blood you have. It's about who you care about.-Trey Parker and Matt Stone Souith Park, Ike's Wee Wee, 1998","Report all injuries!","Make safety a way of life or you may leave a widowed wife. -Larry Baker",1],"07-29":["Our life is what our thoughts make it. --Marcus Aurelius","Report all injuries (big or small)","Gatorade-stock up or lock up.-Larry Baker"],"07-30":["Genius is the gold in the mine; talent is the miner who works and brings it out. --Lady Blessington","Safety is a team sport.","Gatorade-stock up or lock up.-Larry Baker"],"07-31":["Ah, summer, what power you have to make us suffer and like it. -- Russell Baker","Be a safety leader.","Gatorade-stock up or lock up.-Larry Baker"],"08-01":["The world belongs to the energetic. --Ralph Waldo Emerson (1803- 1882)","Don't take short cuts with safety.","Gatorade-stock up or lock up.-Larry Baker"],"08-02":["I was thinking that we all learn by experience, but some of us have to go to summer school. --Peter De Vries","Good work boots can save your feet.","Gatorade-stock up or lock up.-Larry Baker"],"08-03":["Eliminate something superfluous from your life. Break a habit. Do something that makes you feel insecure. --Piero Ferrucci","Safety doesn't stop at the exit.","Gatorade-stock up or lock up.-Larry Baker",1],"08-04":["Gardens and flowers have a way of bringing people together, drawing them from their homes.-Clare Ansberry, The Women of Troy Hill","School's out. Watch for those kids playing in the subdivision!","Gatorade-stock up or lock up.-Larry Baker",1],"08-05":["Because I have loved life, I shall have no sorrow to die. --Amelia Burr","Hand safety.","Safety saves limbs, lives, 50's and 5's.-Wm Baker"],"08-06":["There are only two ways to live your life; one is as though nothing is a miracle. The other is as though everything is a miracle. --Albert Einstein","Talk about safety all day.","Safety saves limbs, lives, 50's and 5's.-Wm Baker"],"08-07":["Tradition is a guide and not a jailer. --W. Somerset Maugham (1874- 1965)","Shoulda Coulda Woulda","Safety saves limbs, lives, 50's and 5's.-Wm Baker"],"08-08":["Know how to ask. There is nothing more difficult for some people, nor for others, easier. --Baltasar Gracian","Safety is your job.","Safety saves limbs, lives, 50's and 5's.-Wm Baker"],"08-09":["Laughter is an instant vacation. --Milton Berle","How important is safety to your family?","Safety saves limbs, lives, 50's and 5's.-Wm Baker"],"08-10":["When you're through changing, you're through. --Bruce Barton","Sprains and strains.","Safety saves limbs, lives, 50's and 5's.-Wm Baker",1],"08-11":["A certain amount of opposition is of great help to a man. Kites rise against, not with the wind. - John Neal","Talk about safety all day.","Safety saves limbs, lives, 50's and 5's.-Wm Baker",1],"08-12":["A wise man will make more opportunities than he finds. --Sir Francis Bacon (1561-1626)","Would you let your child work unsafe?","Safety rules we must obey, so we can live another day. - Larry Baker"],"08-13":["If you tell the truth, you don't have to remember anything. --Mark Twain (1835-1910)","If you're not confronting unsafe behavior, you're reinforcing it.","Safety rules we must obey, so we can live another day. - Larry Baker"],"08-14":["Tears of joy are like the summer rain drops pierced by sunbeams. -- Hosea Ballou","There is always time to do it safe.","Safety rules we must obey, so we can live another day. - Larry Baker"],"08-15":["The wisest mind has something yet to learn. --George Santayana (1863-1952)","Don't drink and drive.","Safety rules we must obey, so we can live another day. - Larry Baker"],"08-16":["People forget how fast you did a job-but they remember how well you did it. --Howard Newton","Drugs and safety do not mix.","Safety rules we must obey, so we can live another day. - Larry Baker"],"08-17":["Change is the constant, the signal for rebirth, the egg of the phoenix. - -Christina Baldwin","Think safety","Safety rules we must obey, so we can live another day. - Larry Baker",1],"08-18":["It's not enough that we do our best; sometimes we have to do what's required.-Sir Winston Churchill (1874-1965)","Watch for Safety hazards in whatever you do!","Safety rules we must obey, so we can live another day. - Larry Baker",1],"08-19":["I'm going to stop putting things off starting tomorrow. -- Sam Levenson","Be alert at all times.","Be alert-not hurt. -Steve Eisenmayer"],"08-20":["Wisdom is the reward you get for a lifetime of listening when you'd have preferred to talk. --Doug Larson","Only superman can fly (wear fall protection).","Be alert-not hurt. -Steve Eisenmayer"],"08-21":["He is truly wise who gains wisdom from another's mishap. --Maxim 825","Protect your eye's. You only have 2.","Be alert-not hurt. -Steve Eisenmayer"],"08-22":["You have to allow a certain amount of time in which you are doing nothing in order to have things occur to you, to let your mind think. --Mortimer Adler","Water: it does a body good.","Be alert-not hurt. -Steve Eisenmayer"],"08-23":["Win hearts, and you have all men's hands and purses. --William Cecil Burleigh","Bend over or cut off lumber banding.","Be alert-not hurt. -Steve Eisenmayer"],"08-24":["Understand that the right to choose your own path is a sacred privilege. Use it. Dwell in possibility. --Oprah Winfrey (1954- ), O Magazine","What is safety?","Be alert-not hurt. -Steve Eisenmayer",1],"08-25":["Make thyself a craftsman in speech, for thereby thou shalt gain the upper hand. - Ancient Egyptian Tomb Inscription","(PPE) Personal Protective Equipment (Use it)","Be alert-not hurt. -Steve Eisenmayer",1],"08-26":["If our early lessons of acceptance were as successful as our early lessons of anger, how much happier we would all be. --Peter McWilliams, Life 101","If you are not sure, ask.","Don't gamble with safety."],"08-27":["It never pays to deal with the flyweights of the world. They take far too much pleasure in thwarting you at every turn. --Sue Grafton (1940- ),'H' is for Homicide, 1991","Take safety home with you.","Don't gamble with safety."],"08-28":["Don't be too timid and squeamish about your actions. All life is an experiment. The more experiments you make the better. --Ralph Waldo Emerson","Nail gun safety.","Don't gamble with safety."],"08-29":["A perfect summer day is when the sun is shining, the breeze is blowing, the birds are singing, and the lawn mower is broken. --James Dent","Don't be a fall guy.","Don't gamble with safety."],"08-30":["[Memory is] a man's real possession\u2026In nothing else is he rich, in nothing else is he poor. --Alexander Smith (1830-1867)","What is safety?","Don't gamble with safety."],"08-31":["The bigger the summer vacation, the harder the fall. --Unknown","Be alert at all times.","Don't gamble with safety.",1],"09-01":["I've grown to realize the joy that comes from little victories is preferable to the fun that comes from ease and the pursuit of pleasure. -Lawana Blackwell. The Courtship of the Vicar's Daughter, 1998","Compressed air.","Don't gamble with safety.",1],"09-02":["Take time to deliberate, but when the time for action has arrived, stop thinking and go in. --Napoleon Bonaparte","Think about everything you do and decide if it's safe.","Safety-if not for yourself, do it for your loved ones. -Wm Baker"],"09-03":["Death is more universal than life, everyone dies, but not everyone lives. --A Sachs","Conquer hazards with safe habits.","Safety-if not for yourself, do it for your loved ones. -Wm Baker"],"09-04":["Forsake not an old friend; for the new is not comparable to him; a new friend is as new as wine; when it is old, thou shalt drink it with pleasure. --Bible Old Testament","Hurry up can hurt.","Safety-if not for yourself, do it for your loved ones. -Wm Baker"],"09-05":["Underpromise; overdeliver. --Tom Peters, quoted in the Chicago Tribu","It will never happen to me.","Safety-if not for yourself, do it for your loved ones. -Wm Baker"],"09-06":["I am searching through all that has ever been hoped, in praise of what can never be known. --Real Live Preacher, RealLivePreacher.com Weblog, February 13, 2004","Job knowledge-A key to job safety.","Safety-if not for yourself, do it for your loved ones. -Wm Baker"],"09-07":["Life shrinks or expands in proportion to one's courage. --Anais Nin (1903-1977), The Diary of Anais Nin, volume 3, 1939-1944","Don\u2019t take safety for granted.","Safety-if not for yourself, do it for your loved ones. -Wm Baker",1],"09-08":["Have more than thou showest; speak less than thou knowest. - William Shakespeare","Fire extinguishers.","Safety-if not for yourself, do it for your loved ones. -Wm Baker",1],"09-09":["LABOR DAY","Powertool Safety","The jack of all trades always wears his safety shades.-Earl Kallbrier"],"09-10":["We don't see things as they are\u2026we see them as we are. --Anais Nin","Making zero accidents is our goal.","The jack of all trades always wears his safety shades.-Earl Kallbrier"],"09-11":["A goal without a plan is just a wish. --Antoine de Saint-Exupery (1900- 1944)","You are important, so act like it.","The jack of all trades always wears his safety shades.-Earl Kallbrier"],"09-12":["Curious things, habits. People themselves never knew they had them. --Agatha Christie (1890-1976)","Safety attitudes.","The jack of all trades always wears his safety shades.-Earl Kallbrier"],"09-13":["Genius is 1% inspiration, 99% perspiration. --Thomas Edison (1847- 1931)","Think safety.","The jack of all trades always wears his safety shades.-Earl Kallbrier"],"09-14":["Trouble is only opportunity in work clothes. --Henry J. Kaiser (1882- 1967)","Hand protection.","The jack of all trades always wears his safety shades.-Earl Kallbrier",1],"09-15":["Compassion is the basis of all morality.-Arthur Schopenhauer (1788- 1860)","Hidden Hazards.","The jack of all trades always wears his safety shades.-Earl Kallbrier",1],"09-16":["Life is what happens to you while you are making other plans. -- John Lennon","Setting a good example in safety.","Safety promotes progress. -Roger Jaegers"],"09-17":["The moment we take responsibility for our life is the instant we gain control of it. --Mark Fournier","Safe habits.","Safety promotes progress. -Roger Jaegers"],"09-18":["The truth is the kindest thing we can give folks in the end. --Harriet Beecher Stowe (1811-1896)","Start and finish safety.","Safety promotes progress. -Roger Jaegers"],"09-19":["True luck consists not in holding the best of the cards at the table, luckiest is he who knows just when to rise and go home. --John Hay (1838-1905), Distichs, latter 19th Century","Don't take safety for granted.","Safety promotes progress. -Roger Jaegers"],"09-20":["The charity that hastens to proclaim its good deeds, ceases to be charity, and is only pride and ostentation. --William Hutton","Safety is everyone's responsibility.","Safety promotes progress. -Roger Jaegers"],"09-21":["Age does not protect you from love. But love, to some extent, protects you from age. --Jeanne Moreau","If you are not confronting unsafe behavior, you are reinforcing it.","Safety promotes progress. -Roger Jaegers",1],"09-22":["slow. I cannot be dictated to by a watch.-Jane Austen (1775-1817), Mansfield Park","It will never happen to me.","Safety promotes progress. -Roger Jaegers",1],"09-23":["Have you been mentoring a person for the blueprint program?","It could happen to you.","Stay alert, no one likes to get hurt. -Jeff Merz"],"09-24":["I'd rather work with someone who's good at their job, but doesn't like me, than someone who likes me but is a ninny. --Sam Donaldson (1934- )","Take safety personally.","Stay alert, no one likes to get hurt. -Jeff Merz"],"09-25":["Beware lest in your anxiety to avoid war you obtain a master. -- Demosthenes (384 BC-322 BC)","Accidents don't just happen.","Stay alert, no one likes to get hurt. -Jeff Merz"],"09-26":["True silence is the rest of the mind; it is to the spirit what sleep is to the body, nourishment and refreshment. --William Penn (1644-1718)","Unsafe shortcuts.","Stay alert, no one likes to get hurt. -Jeff Merz"],"09-27":["Follow the grain in your own wood. --Howard Thurman","Has everyone had the safety awareness and culture class?","Stay alert, no one likes to get hurt. -Jeff Merz"],"09-28":["Prosperity makes friends, adversity tries them. --Maxim 872","Learn from near accidents.","Stay alert, no one likes to get hurt. -Jeff Merz",1],"09-29":["Be courteous to all, but intimate with few; and let those few be well tried before you give them your confidence.-George Washington","Nailgun safety.","Stay alert, no one likes to get hurt. -Jeff Merz",1],"09-30":["The only way to have a friend is to be one. --Ralph Waldo Emerson","Pinch points.","Be a king. Protect your crown with a hard hat. Keith Coxie"],"10-01":["The wisest men follow their own direction. --Euripides (484 BC-406 BC)","Look out above and below.","Be a king. Protect your crown with a hard hat. Keith Coxie"],"10-02":["Most people are other people. Their thoughts are someone else's opinions, their lives a mimicry, their passions a quotation. --Oscar Wilde","Slips and falls.","Be a king. Protect your crown with a hard hat. Keith Coxie"],"10-03":["Total absence of humor renders life impossible. --Colette (1873- 1954)","Fall protection.","Be a king. Protect your crown with a hard hat. Keith Coxie"],"10-04":["A human being must have occupation if he or she is not to become a nuisance to the world. --Dorothy L. Sayers (1893-1957)","Handrails are there to help.","Be a king. Protect your crown with a hard hat. Keith Coxie"],"10-05":["A discovery is said to be an accident meeting a prepared mind. -- Albert von Szent-Gyorgyi (1893-1986)","Only superman can fly (wear fall protection).","Be a king. Protect your crown with a hard hat. Keith Coxie",1],"10-06":["When in doubt, tell the truth.-Mark Twain (1935-1910)","Powertool Safety","Be a king. Protect your crown with a hard hat. Keith Coxie",1],"10-07":["My future starts when I wake up every morning..Every day I find something creative to do with my life. --Miles Davis (1926-1991)","Little things that count.","Plan for tomorrow-think safety today.-Wm Baker"],"10-08":["I started concentrating so hard on my vision that I lost sight. --Robin Green, Northern Exposure, Burning Down the House, 1992","Look out for falling objects.","Plan for tomorrow-think safety today.-Wm Baker"],"10-09":["If a writer wrote merely for his time, I would have to break my pen and throw it away. --Victor Hugo (1802-1885)","Noise on the job.","Plan for tomorrow-think safety today.-Wm Baker"],"10-10":["Look well into thyself, there is a source of strength which will always spring up if thou wilt always look there. --Marcus Aurelius Antoninus (121 AD-180 AD)","Good housekeeping.","Plan for tomorrow-think safety today.-Wm Baker"],"10-11":["Americans are overreachers; overreaching is the most admirable of the many American excesses. --George F. Will (1941- ), Statecraft as Soulcraft","Learn from near accidents.","Plan for tomorrow-think safety today.-Wm Baker"],"10-12":["The most important thing is to be whatever you are without shame. -- Rod Steiger","Report all injuries!","Plan for tomorrow-think safety today.-Wm Baker",1],"10-13":["Relaxation is as important as work to keep life in balance.","Safety doesn't stop at the exit.","Plan for tomorrow-think safety today.-Wm Baker",1],"10-14":["The greatest good we can do for others is not to share our riches, but to reveal theirs. --Unknown.","Clean it up.","Check the guard and blade; being safe is part of the trade.-Wm Baker"],"10-15":["It is a great ability to be able to conceal one's ability. --Francois de Larochefoucauld (1613-1680)","Check your cords and hoses.","Check the guard and blade; being safe is part of the trade.-Wm Baker"],"10-16":["Good advice is something a man gives when he is too old to set a bad example. --Francois de Larochefoucauld (1613-1680)","Electrical hazards.","Check the guard and blade; being safe is part of the trade.-Wm Baker"],"10-17":["Human beings, by changing the inner attitudes of their minds, can change the outer aspects of their lives. --William James (1842-1910)","Hand tool safety.","Check the guard and blade; being safe is part of the trade.-Wm Baker"],"10-18":["The character of a man is known from his conversations. --Menander (342 BC-292 BC)","Safety with cutting tools.","Check the guard and blade; being safe is part of the trade.-Wm Baker"],"10-19":["If I have lost confidence in myself, I have the universe against me. -- Ralph Waldo Emerson (1803-1882)","School's out. Watch for those kids playing in the subdivision!","Check the guard and blade; being safe is part of the trade.-Wm Baker",1],"10-20":["Every child is an artist. The problem is how to remain an artist once he grows up.-Pablo Picasso (1881-1973)","Sprains and strains.","Check the guard and blade; being safe is part of the trade.-Wm Baker",1],"10-21":["An ounce of loyalty is worth a pound of cleverness. --Elbert Hubbard (1856-1915)","Power handsaw safety.","Be safe when you walk that beam and join our team. -Steve Davis"],"10-22":["All men by nature desire knowledge. --Aristotle (384 BC-322 BC) Metaphysics","Use the right tool for the job.","Be safe when you walk that beam and join our team. -Steve Davis"],"10-23":["It's choice-not chance-that determines your destiny. --Jean Nidetch","Powder-Actuated Hand tools.","Be safe when you walk that beam and join our team. -Steve Davis"],"10-24":["If we cannot live so as to be happy, let us least live so as to deserve it. --Immanuel Hermann Fichte","Check guards on your saws.","Be safe when you walk that beam and join our team. -Steve Davis"],"10-25":["Leadership and learning are indispensable to each other. --John F. Kennedy (1917-1963)","(PPE) Personal Protective Equipment (Use it)","Be safe when you walk that beam and join our team. -Steve Davis"],"10-26":["We begin to see that the completion of an important project has every right","to be dignified by a natural grieving process. Something that required the best of you has ended. You will miss it. --Anne Wilson Schaef","Be safe when you walk that beam and join our team. -Steve Davis"],"10-27":["The heads of strong old age are beautiful beyond all grace of youth.- Robinson Jeffers, O Magazine, October 2003","Talk about safety all day.","Be safe when you walk that beam and join our team. -Steve Davis",1],"10-28":["Creativity is allowing yourself to make mistakes. Art is knowing which ones to keep. --Scott Adams (1957- ), The Dilbert Principle","Your friend the hard hat.","Check the walkways,secure the ramp, 'cause purshing up dasies is cold and damp. -Larry Baker"],"10-29":["Houses are built to live in, not to look on; therefore, let use be preferred before uniformity, except where both may be had. --Sir Francis Bacon (1561-1626), Essays of Building, 1623","Eye protection.","Check the walkways,secure the ramp, 'cause purshing up dasies is cold and damp. -Larry Baker"],"10-30":["In order for people to be happy, sometimes they have to take risks. It's true these risks can put them in danger of being hurt. --Meg Cabot, The Boy Next Door, 2002","Hearing protection.","Check the walkways,secure the ramp, 'cause purshing up dasies is cold and damp. -Larry Baker"],"10-31":["Every time we say, \"Let there be!\" in any form, something happens. -- Stella Terrill Mann","Hand protection.","Check the walkways,secure the ramp, 'cause purshing up dasies is cold and damp. -Larry Baker"],"11-01":["The big secret in life is that there is no big secret. Whatever your goal, you can get there if you're willing to work. --Oprah Winfrey","Safe lifting.","Check the walkways,secure the ramp, 'cause purshing up dasies is cold and damp. -Larry Baker"],"11-02":["The reason most people never reach their goals is that they don't define them, or ever seriously consider them as believable or achievable. Winners can tell you","where they are going, what they plan to do along the way, and who will be sharing the adventure with them. --Denis Waitley HALLOWEEN","Check the walkways,secure the ramp, 'cause purshing up dasies is cold and damp. -Larry Baker"],"11-03":["There can be no education without leisure, and without leisure education is worthless. --Sarah Josepha Hale","Think safety","Check the walkways,secure the ramp, 'cause purshing up dasies is cold and damp. -Larry Baker",1],"11-04":["The deepest principle of human nature is the desire to be appreciated. --William James","If it is heavy, get help.","Safety is no accident.-Larry Baker"],"11-05":["What you risk reveals what you value. --Jeanette Winterson","Ladder (including step ladder) safety.","Safety is no accident.-Larry Baker"],"11-06":["By the work one knows the workmen. --Jean de La Fontaine (1621- 1695)","Check your gas cans. Are they safe?","Safety is no accident.-Larry Baker"],"11-07":["I don't think about risks much. I just do what I want to do. If you gotta go, you gotta go. --Lillian Carter","Compressed air.","Safety is no accident.-Larry Baker"],"11-08":["The goal of life is living in agreement with nature. --Zeno (335 BC- 264 BC) from Diogenes Laertius, Lives of Eminent Philosophers","Safe driving.","Safety is no accident.-Larry Baker"],"11-09":["If you have knowledge, let others light their candles at it. --Margaret Fuller (1810-1850)","Watch for Safety hazards in whatever you do!","Safety is no accident.-Larry Baker",1],"11-10":["Forget injuries, never forget kindnesses.-Confucius (551BC-479BC)","What is safety?","Safety is no accident.-Larry Baker",1],"11-11":["When you have given nothing, ask for nothing. --Albanian Proverb","Weather (any hazards with today's weather).","Take pride. Don't let safety slide."],"11-12":["If you think you can win, you can win. Faith is necessary to victory. --William Hazlitt (1778-1830)","Fire extinguishers.","Take pride. Don't let safety slide."],"11-13":["Sooner or later we all quote our mothers. --Bern Williams","Flammable Liquids.","Take pride. Don't let safety slide."],"11-14":["VETERANS DAY There was a definite process by which one made people into friends, and it involved talking to them and listening to them for hours at a time. --Rebecca West","Sprains and strains.","Take pride. Don't let safety slide."],"11-15":["A sound mind in a sound body is a short but full description of a happy state in this world. --John Locke (1632-1704)","Treat that cut or scrape. Veteran's Day.","Take pride. Don't let safety slide."],"11-16":["Never lose sight of this important truth, that no one can be truly great until","he has gained a knowledge of himself, a knowledge which can only be acquired by occasional retirement. --Johann Georg von Zimmermann","Take pride. Don't let safety slide."],"11-17":["Ask about your neighbors, then buy the house. Jewish Proverb","(PPE) Personal Protective Equipment (Use it)","Take pride. Don't let safety slide.",1],"11-18":["Never take the advice of someone who has not had your kind of trouble. --Sidney J. Harris","Safety doesn't stop at the exit.","Thinking safety can't be beat."],"11-19":["Everyone rises to their level of incompetence. --Laurence J. Peter (1919-1988), The Peter Principle","Off-the-job safety.","Thinking safety can't be beat."],"11-20":["All you need in this life is ignorance and confidence, then success is sure. --Mark Twain (1835-1910), Letter to Mrs. Foote, Dec. 2, 1887","On the job safety (practice it)","Thinking safety can't be beat."],"11-21":["People are not disturbed by what happens, but rather by their opinion of what happens. --Epictitus","Be alert at all times.","Thinking safety can't be beat.",1],"11-22":["Change your thoughts and you change your world. --Norman Vincent Peale (1898-1993)","Report all injuries (Big or small)","Thinking safety can't be beat."],"11-23":["The person who makes a success of living is the one who sees his goal steadily and aims for it unswervingly. That is dedication. --Cecil B. DeMille (1881-1959)","Compressed air.","Thinking safety can't be beat.",1],"11-24":["The family is the country of the heart.-Giuseppe Mazzini (1805-1872)","Don\u2019t take safety for granted.","Thinking safety can't be beat.",1],"11-25":["If there was strife and contention in the home, very little else in life could compensate for it. --Lawana Blackwell, The Courtship of the Vicar's Daughter, 1998","Be a safety leader.","Safety is the way to go."],"11-26":["I have always felt that the moment when you first woke up in the morning is the most wonderful of the 24 hours. --Monica Baldwin","Don't take short cuts with safety.","Safety is the way to go."],"11-27":["The most potent muse of all is our own inner child. --Stephen Nachmanovitch","Good work boots can save your feet.","Safety is the way to go."],"11-28":["THANKSGIVING DAY","How to avoid a Fall","Safety is the way to go."],"11-29":["Variety is the soul of pleasure. --Aphra Behn","Talk about safety all day.","Safety is the way to go."],"11-30":["The wisdom of the wise, and the experience of ages, may be preserved by quotations. --Isaac Disraeli","Fire extinguishers.","Safety is the way to go.",1],"12-01":["Go often to the house of thy friend, for weeds soon choke up the unused path.-Scandinaian Proverb","Hand protection.","Safety is the way to go.",1],"12-02":["You cannot be really first-rate at your work if your work is all you are. - -Anna Quindlen, A Short Guide to a Happy Life","Shoulda Woulda Coulda","Keep your eye on the safety goal."],"12-03":["Dwelling on the negative simply contributes to its power. --Shirley MacLaine (1934- )","Safety is your job.","Keep your eye on the safety goal."],"12-04":["Good communication is as stimulating as black coffee and just as hard to sleep after. --Anne Morrow Lindbergh, Gift From the Sea","How important is safety to your family?","Keep your eye on the safety goal."],"12-05":["Be wise with speed. A fool at forty is a fool indeed. --Edward Young (1683-1765)","Would you let your child work unsafe?","Keep your eye on the safety goal."],"12-06":["Why do strong arms fatigue themselves with frivolous dumbbells? To dig a vineyard is worthier exercise for men. --Marcus Valerius Martialis (40 AD-103 AD)","If you are not confronting unsafe behavior, you are reinforcing it.","Keep your eye on the safety goal."],"12-07":["Ah, music. A magic beyond all we do here! --J.K. Rowling, Harry Potter and the Sorcerer's Stone, 1997","Hidden Hazards.","Keep your eye on the safety goal.",1],"12-08":["Lead by example in both your work life and your family life.","If you are not confronting unsafe behavior, you are reinforcing it.","Keep your eye on the safety goal.",1],"12-09":["A positive mental attitude will create more miracles than any wonder drug. --Patricia Neal","There is always time to do it safe.","Make safety the new sensation, from the trusses through the foundation. -Larry Baker"],"12-10":["Nothing endures but change. --Heraclitus (540 BC-480 BC), from Diogenes Laertius, Lives of Eminent Philosophers","Don\u2019t drink and drive.","Make safety the new sensation, from the trusses through the foundation. -Larry Baker"],"12-11":["The incompetent with nothing to do can still make a mess of it. -- Laurence J. Peter (1919-1988)","Drugs and safety do not mix.","Make safety the new sensation, from the trusses through the foundation. -Larry Baker"],"12-12":["Dreams come true. Without that possibility, nature would not incite us to have them. --John Updike (1932-2009)","Be alert at all times.","Make safety the new sensation, from the trusses through the foundation. -Larry Baker"],"12-13":["Hope is a waking dream. --Aristotle (384 BC-322 BC) from Diogenes Laertius, Lives of Eminent Philosophers","Only superman can fly (wear fall protection)","Make safety the new sensation, from the trusses through the foundation. -Larry Baker"],"12-14":["Variety is the soul of pleasure. --Aphra Behn","It will never happen to me.","Make safety the new sensation, from the trusses through the foundation. -Larry Baker",1],"12-15":["I was brought up to believe that how I saw myself was more important than how others saw me.-Anwar el-Sadat (1918-1981)","Learn from near accidents.","Make safety the new sensation, from the trusses through the foundation. -Larry Baker",1],"12-16":["If you can dream it, you can do it. --Walt Disney","Protect your eyes-you only have 2.","Wear eye protection because your future remains to be seen. -Wm Baker"],"12-17":["Mail your packages early so the post office can lose them in time for Christmas. --Johnny Carson","Bend over or cut off lumber banding.","Wear eye protection because your future remains to be seen. -Wm Baker"],"12-18":["Personality can open doors, but only character can keep them open. - -Elmer G. Letterman","If you're not sure, ask.","Wear eye protection because your future remains to be seen. -Wm Baker"],"12-19":["I was always looking outside myself for strength and confidence, but it comes from within. It is there all the time. --Anna Freud (1895-1982)","Take safety home with you.","Wear eye protection because your future remains to be seen. -Wm Baker"],"12-20":["We need men who can dream of things that never were. --John F. Kennedy (1917-1963), speech in Dublin, Ireland, 6/28/63","Nail gun safety.","Wear eye protection because your future remains to be seen. -Wm Baker"],"12-21":["To accomplish great things, we must dream as well as act. --Anatole France (1844-1924)","Nailgun safety.","Wear eye protection because your future remains to be seen. -Wm Baker",1],"12-22":["He who has not Christmas in his heart will never find it under a tree. -- Roy L. Smith","Only superman can fly (wear fall protection).","Wear eye protection because your future remains to be seen. -Wm Baker",1],"12-23":["\"Having nothing is not an excuse for doing nothing\"","Safety Attitudes","Safety is the only way!"],"12-24":["CHRISTMAS EVE","Report all injuries!","Safety is the only way!"],"12-25":["CHRISTMAS DAY - Hold your loved ones close","What is safety.","Safety is the only way!"],"12-26":["There is no duty more obligatory than the repayment of kindness.- Cicero (106BC-43BC)","How can I work safe?","Safety is the only way!"],"12-27":["Let no one ever come to you without leaving better and happier. -- Mother Teresa (1910-1997)","Conquer hazards with safe habits.","Safety is the only way!"],"12-28":["Poetry often enters through the window of irrelevance. --M.C. Richards","Powertool Safety","Safety is the only way!",1],"12-29":["Christmas is the day that holds time together. - Alexander Smith Have a very nice holiday!","Report all injuries!","Safety is the only way!",1],"12-30":["Start by doing what's necessary; then do what's possible; and suddenly you are doing the impossible. --Francis of Assisi","Safety Basics","Think about being safe every day."],"12-31":["NEW YEAR'S EVE - Men are born with two eyes, but only one tongue, in order that they should see twice as much as they say.","Think safety","Think about being safe every day."]};
+const FRACTIONS=[["1/16","0.06250"],["5/64","0.07813"],["3/32","0.09375"],["7/64","0.10938"],["1/8","0.12500"],["9/64","0.14063"],["5/32","0.15625"],["11/64","0.17188"],["3/16","0.18750"],["13/64","0.20313"],["7/32","0.21875"],["15/64","0.23438"],["1/4","0.25000"],["17/64","0.26563"],["9/32","0.28125"],["19/64","0.29688"],["5/16","0.31250"],["21/64","0.32813"],["11/32","0.34375"],["23/64","0.35938"],["3/8","0.37500"],["25/64","0.39063"],["13/32","0.40625"],["27/64","0.42188"],["7/16","0.43750"],["29/64","0.45313"],["15/32","0.46875"],["31/64","0.48438"],["1/2","0.50000"],["33/64","0.51563"],["17/32","0.53125"],["35/64","0.54688"],["9/16","0.56250"],["37/64","0.57813"],["19/32","0.59375"],["39/64","0.60938"],["5/8","0.62500"],["41/64","0.64060"],["21/32","0.65630"],["43/64","0.67190"],["11/16","0.68750"],["45/64","0.70310"],["23/32","0.71880"],["47/64","0.73440"],["3/4","0.75000"],["49/64","0.76560"],["25/32","0.78130"],["51/64","0.79690"],["13/16","0.81250"],["53/64","0.82810"],["27/32","0.84380"],["55/64","0.85940"],["7/8","0.87500"],["57/64","0.89060"],["29/32","0.90630"],["59/64","0.92190"],["15/16","0.93750"],["61/64","0.95310"],["31/32","0.96880"],["63/64","0.98440"],["1","1.00000"],["1 1/64","1.01560"],["1 1/32","1.03130"],["1 3/64","1.04690"],["1 1/16","1.06250"],["1 5/64","1.07810"],["1 3/32","1.09380"],["1 7/64","1.10940"],["1 1/8","1.12500"],["1 9/64","1.14060"],["1 5/32","1.15630"],["1 11/64","1.17190"],["1 3/16","1.18750"],["1 13/64","1.20310"],["1 7/32","1.21880"],["1 15/64","1.23440"],["1 1/4","1.25000"],["1 17/64","1.26560"],["1 9/32","1.28130"],["1 19/64","1.29690"],["1 5/16","1.31250"],["1 21/64","1.32810"],["1 11/32","1.34380"],["1 23/64","1.35940"],["1 3/8","1.37500"],["1 25/64","1.39060"],["1 13/32","1.40630"],["1 27/64","1.42190"],["1 7/16","1.43750"],["1 29/64","1.45310"],["1 15/32","1.46880"],["1 31/64","1.48440"],["1 1/2","1.50000"],["1 33/64","1.51560"],["1 17/32","1.53130"],["1 35/64","1.54690"],["1 9/16","1.56250"],["1 37/64","1.57810"],["1 19/32","1.59380"],["1 39/64","1.60940"],["1 5/8","1.62500"],["1 41/64","1.64060"],["1 21/32","1.65630"],["1 43/64","1.67190"],["1 11/16","1.68750"],["1 45/64","1.70310"],["1 23/32","1.71880"],["1 47/64","1.73440"],["1 3/4","1.75000"],["1 49/64","1.76560"],["1 25/32","1.78130"],["1 51/64","1.79690"],["1 13/16","1.81250"],["1 53/64","1.82810"],["1 27/32","1.84380"],["1 55/64","1.85940"],["1 7/8","1.87500"],["1 57/64","1.89060"],["1 29/32","1.90630"],["1 59/64","1.92190"],["1 15/16","1.93750"],["1 61/64","1.95310"],["1 31/32","1.96880"],["1 63/64","1.98440"],["2","2.00000"],["2 1/64","2.01560"],["2 1/32","2.03130"],["2 3/64","2.04690"],["2 1/16","2.06250"],["2 5/64","2.07810"],["2 3/32","2.09380"],["2 7/64","2.10940"],["2 1/8","2.12500"],["2 9/64","2.14060"],["2 5/32","2.15630"],["2 11/64","2.17190"],["2 3/16","2.18750"],["2 13/64","2.20310"],["2 7/32","2.21880"],["2 15/64","2.23440"],["2 1/4","2.25000"],["2 17/64","2.26560"],["2 9/32","2.28130"],["2 19/64","2.29690"],["2 5/16","2.31250"],["2 21/64","2.32810"],["2 11/32","2.34380"],["2 23/64","2.35940"],["2 3/8","2.37500"],["2 25/64","2.39060"],["2 13/32","2.40630"],["2 27/64","2.42190"],["2 7/16","2.43750"],["2 29/64","2.45310"],["2 15/32","2.46880"],["2 31/64","2.48440"],["2 1/2","2.50000"],["2 33/64","2.51560"],["2 17/32","2.53130"],["2 35/64","2.54690"],["2 9/16","2.56250"],["2 37/64","2.57810"],["2 19/32","2.59380"],["2 39/64","2.60940"],["2 5/8","2.62500"],["2 41/64","2.64060"],["2 21/32","2.65630"],["2 43/64","2.67190"],["2 11/16","2.68750"],["2 45/64","2.70310"],["2 23/32","2.71880"],["2 47/64","2.73440"],["2 3/4","2.75000"],["2 49/64","2.76560"],["2 25/32","2.78130"],["2 51/64","2.79690"],["2 13/16","2.81250"],["2 53/64","2.82810"],["2 27/32","2.84380"],["2 55/64","2.85940"],["2 7/8","2.87500"],["2 57/64","2.89060"],["2 29/32","2.90630"],["2 59/64","2.92190"],["2 15/16","2.93750"],["2 61/64","2.95310"],["2 31/32","2.96880"],["2 63/64","2.98440"],["3","3.00000"],["3 1/32","3.03130"],["3 1/16","3.06250"],["3 3/32","3.09380"],["3 1/8","3.12500"],["3 5/32","3.15630"],["3 3/16","3.18750"],["3 7/32","3.21880"],["3 1/4","3.25000"],["3 9/32","3.28130"],["3 5/16","3.31250"],["3 11/32","3.34380"],["3 3/8","3.37500"],["3 13/32","3.40630"],["3 7/16","3.43750"],["3 15/32","3.46880"],["3 1/2","3.50000"],["3 17/32","3.53130"],["3 9/16","3.56250"],["3 19/32","3.59380"],["3 5/8","3.62500"],["3 21/32","3.65630"],["3 11/16","3.68750"],["3 23/32","3.71880"],["3 3/4","3.75000"],["3 25/32","3.78130"],["3 13/16","3.81250"],["3 27/32","3.84380"],["3 7/8","3.87500"],["3 29/32","3.90630"],["3 15/16","3.93750"],["3 31/32","3.96880"],["4","4.00000"],["4 1/16","4.06250"],["4 1/8","4.12500"],["4 3/16","4.18750"],["4 1/4","4.25000"],["4 5/16","4.31250"],["4 3/8","4.37500"],["4 7/16","4.43750"],["4 1/2","4.50000"],["4 9/16","4.56250"],["4 5/8","4.62500"],["4 11/16","4.68750"],["4 3/4","4.75000"],["4 13/16","4.81250"],["4 7/8","4.87500"],["4 15/16","4.93750"],["5","5.00000"],["5 1/8","5.12500"],["5 1/4","5.25000"],["5 3/8","5.37500"],["5 1/2","5.50000"],["5 5/8","5.62500"],["5 3/4","5.75000"],["5 7/8","5.87500"],["6","6.00000"]];
+const VENDORS=[["ABC SUPPLY CO, INC","1538 HERCULANEUM IND DR","HERCULANEUM","MO","63048","636-937-9293","","EXT 108",""],["R. V. EVANS","P O BOX 790129","ST LOUIS","MO","63179-0129","314-567-1107","","",""],["A&B CUSTOM WELDING","& FABRICATION INC","IMPERIAL","MO","63052","636-399-7524","","",""],["ABM SUPPLIES","5 RESEARCH PARK DR","ST CHARLES","MO","63304","","","",""],["ALLIANCE PUMPING LLC","329 JOSEPHVILLE RD","WENTZVILLE","MO.","63385","636-332-8866","636-519-7065","",""],["A B DICK COMPANY","PO BOX 75685","CHICAGO","IL","60675-5685","","","",""],["A.C. JONES TRUCKING, INC.","700 GARDEN AVENUE","BEARDSTOWN","IL.","62618","217-323-2591","217-323-5495","",""],["ACCURATE IRON WORKS","4000 URBANA ROAD","MILLSTADT","IL","62260","618-538-7100","618-476-1111","",""],["ALBERICI CONSTRUCTORS","2150 KIENLEN AVE","ST. LOUIS","MO","63121-4223","","","",""],["ALLTYPE FIRE PROTECTION CO.","PO BOX 32432","ST. LOUIS","MO","63132-0832","314-426-7100","","",""],["AMERICAN TIRE SERVICES","888 I-70 INDUSTRIAL DR","WENTZVILLE","MO","63385","(636)332-0688","(636)332-4889","",""],["ANDERSON DRYWALL","3027 SUGAR MILL","ST LOUIS","MO","63129","(314)846-1987","(314)846-4862","JOHN ANDERSON",""],["ARCH CITY DRYWALL SUPPLY","PO BOX 1099","FENTON","MO","63026","(636)343-9926","(636)343-1884","",""],["STEVES AUTO BODY, INC.","120 BEHRENS AVENUE","O'FALLON","IL","62269","618-632-2575","618-632-0075","",""],["WILLIAM BALL CONSTRUCTION","126 ALEX LANE","MURPHYSBORO","IL","62966","(618)303-0607","","Bill Ball (Nextel ID 3",""],["BIG CREEK QUARRY","884 METTE ROAD","MOSCOW MILLS","MO","63362","636-366-9595","636-366-9596","",""],["BROD-DUGAN","15420 MANCHESTER RD","ELLISVILLE","MO","63011","636-227-3311","(636)227-9076","",""],["MURRY KEVIN BARBER","136 ROLLING MEADOWS","OFALLON","MO","63366","","","",""],["ANTHONY BALL CONSTRUCTION","90 ALEX LN","MURPHYSBORO","IL","62966","","","",""],["BUILDINGSTARS STL OPERATIONS","11489 PAGE SERVICE DR","ST LOUIS","MO","63146-3529","314-991-3356","314-991-3198","",""],["CALIFORNIA CONTRACTORS SUPPLY","7729 BURNET AVENUE","VAN NUYS","CA","91405","800-423-2953","818-780-3180","",""],["CARGOTEC","PO BOX 643148","PITTSBURGH","PA","15264-3148","(419)482-6000","(419)482-6001","",""],["CARPAC","2290 SOUTH ILL STREET","BELLEVILLE","IL","62220","618-277-4226","","",""],["CARRONS TRUCK REPAIR","5804 CARRON DR.","MILLSTADT","IL","62260","618-476-1575","","",""],["CHESTERFIELD CARQUEST","1219 CASTILLON PLAZA","ST. LOUIS","MO.","63141","314-878-6060","","",""],["COMPARE AUTOMOTIVE","1592 SWANTNERVILLE DR","WENTZVILLE","MO","63385","","","",""],["CONCRETE CONSTRUCTION","PO BOX 3246","NORTHBROOK","IL","60065-9502","","","",""],["CONCRETE PLACEMENT SOLUTIONS","PO BOX 66056","ST PAUL","MO","63366","636-978-4179","","",""],["CONCRETE RESOURCES","PO BOX 287","COLUMBIA","IL","62236","(618)281-6000","(618)281-6011","",""],["CONSTRUCTION SUPPLY","210 CRAFTON LANE","OFALLON","MO","63366","","","",""],["CONTRACTORS ROOFING & SUPPLY","1760 WEST TERRA LANE","O'FALLON","MO","63366","636-474-2710","","",""],["AMERICAN READY MIX CO","P.O. BOX 8599","ST LOUIS","MO","63126","(636)343-7676","(314)842-0235","",""],["COUNTY FORM & SUPPLY, INC.","17418 MANCHESTER ROAD","GLENCOE","MO","63038","636-458-1613","636-458-2105","",""],["DEPENDABLE DRYWALL& COMMERCIAL","1336 JUNGS STATION RD","ST. CHARLES","MO","63303","636-928-8111","","",""],["DES PERES WELDING INC.","610-C THUNDERBIRD CT.","CHESTERFIELD","MO","63017","314-822-2620","314-542-2111","",""],["D MILLER CONSTRUCTION CO","5925 LAMMERT LANE","CEDAR HILL","MO","63016","636-274-5491","","",""],["DOBBS TIRE & AUTO CENTERS","PO BOX 952387","ST. LOUIS","MO","63195","","","",""],["DRYWALL SUPPLY","1901 OLD HIGHWAY 94 SOUTH","ST CHARLES","MO","63303","(636)946-8588","(636)946-5284","BOB MOORE",""],["GARY GRZYB DRYWALL","33 STOLL LANE","ST PETERS","MO","63376-1650","636-447-8395","","",""],["EM SMITH EXCAVATING","1687 HWY E","BELLFLOWER","MO","63333","(573)929-3336","(573)929-3849","",""],["FASTENAL COMPANY","P.O. BOX 978","WINONA","MN","55987-0978","314-772-1620","","",""],["FISCHER LUMBER COMPANY","210 N SHAMROCK","EAST ALTON","IL","62024","(618)259-7434","","LINDA",""],["ARROWHEAD CONTRACTORS","13 GUENTHER BLVD","ST PETERS","MO","63376","636-970-1976","636-970-2250","",""],["ART CONCRETE & TOOL SUPPLY","1743 SCHERER PARKWAY","ST CHARLES","MO","63303","940-0001","","",""],["ARROW TRENCHING & EXCAVATING I","541 OLD STATE ROAD","BALLWIN","MO","63021","(636)256-8878","(636)227-0954","",""],["FORKLIFTS OF ST LOUIS,INC","PO BOX 797011","ST LOUIS","MO","63179-7000","314-426-4040","314-427-5490","",""],["GALMICHE & SONS","HEATING AND COOLING, INC","ST LOUIS","MO","63146","(314)993-1110","(314)993-1120","",""],["SALEM TIRE CENTER, INC.","1100 E MAIN STREET","SALEM","IL","62881","618-548-2746","","Gayle - STORE NUMBER",""],["GATEWAY BUILDING COMPONENTS","607 NORTH MAIN","COLUMBIA","IL","62236","618-281-4666","618-281-3049","",""],["GEBKE CRANE SERVICE","10211 STATE RT 161","BARTELSO","IL","62218","","","",""],["GOEDECKE","4101 CLAYTON AVENUE","ST. LOUIS","MO","63110","314-652-1810","314-652-9480","",""],["BAXMEYER CONSTRUCTION INC.","1034 FLORAVILLE RD","WATERLOO","IL","62298-3108","618-939-3000","618-939-4299","",""],["HACKMANN'S","2601 HWY. K","O'FALLON","MO","63366-7865","281-2897","","",""],["HALBERT CONSTRUCTION COMPANY","P.O. BOX 672","STEELVILLE","MO.","65565","573-775-2088","","",""],["HARMON AUTOGLASS","PO BPX 74843","CHICAGO","IL","60694-4843","","","",""],["HOCK MECHANICAL INC","1416 CENTREVILLE AVE","BELLEVILLE","IL","62220","618-235-6420","618-235-8354","",""],["HOLLAND CONSTRUCTION","4495 NORTH ILLINOIS STREET","SWANSEA","IL","62226","618-277-8870","","",""],["HUNCHE EXCAVATING","12442 SPORTSMAN RD","HIGHLAND","IL","62249","(618)654-4014","","",""],["HYDRAFLOW EQUIPMENT COMPANY","8125 BRENTWOOD INDUSTRIA","ST LOUIS","MO","63144","(314)644-6677","(314)644-6652","",""],["BEHNEN'S CONTAINER SERVICE INC","355 PAUL AVENUE","ST LOUIS","MO","63135-2760","314-373-8890","314-373-8895","",""],["IMAGE CRAFT LLC","3401 EASST BROADWAY RD","PHOENIX","AZ","85040-2664","","","",""],["INDUSTRIAL WIPING CLOTHS","3141 LOCUST STREET","ST LOUIS","MO","63103","(314)533-6006","(314)533-7470","",""],["INSIGHT","PO BOX 78825","PHOENIX","AZ","85062-8825","800-467-4448","","",""],["BOBCAT OF ST. LOUIS","401 WEST OUTER ROAD","VALLEY PARK","MO","63088","","","",""],["MIDWEST PREFINISHING, INC","3609 A MOJAVE CT STE A","COLUMBIA","MO","65202","(573)474-1113","(573)474-1134","TIM LIGHTNER",""],["J & J CONTRACTING","1863 TAMARA COURT","WENTZVILLE","MO.","63385","636-332-9161","","",""],["BROADWAY FORD TRUCK SALES, INC","1501 SOUTH 7TH STREET","ST LOUIS","MO","63157","","","",""],["BROADWAY TRUCK CENTERS","1501-1506 SOUTH SEVENTH S","ST. LOUIS","MO.","63104","(314)241-9140","","",""],["BRAHLER'S TRUCKERS SUPPLY, INC","8000 HALL ST.","ST. LOUIS","MO","63147","800-243-8473","314-678-0819","",""],["BRECKENRIDGE MATERIAL CO","PO BOX 19918","ST LOUIS","MO","63144","(314)962-1234","(314)962-1540","",""],["BROADVIEW SCREEN CO.","333 LEFFINGWELL","KIRKWOOD","MO","63122","314-822-8080","","RON",""],["K & A TRAILER AND EQUIPMENT","13272 HIGHWAY 19","MARTINSBURG","MO","65264","","","",""],["KENWORTH OF ST. LOUIS, INC.","185 SOCCER PARK ROAD","FENTON","MO","63926-2588","800-992-9298","","",""],["KERBLER CONCRETE","PUMP SERVICE, INC","DESOTO","MO","63020","","","",""],["KIRBY SMITH MACHINERY INC.","PO BOX 99048","OKLAHOMA CITY","OK","73199-0048","","","",""],["BUSSEN QUARRIES","5000 BUSSEN ROAD","ST LOUIS","MO","63129","314-894-8777","314-894-2309","",""],["L.W. ROULAND TRUCKING SERVICE","1215 ILLINOIS AVE","JACKSONVILLE","IL","62651-0317","","","",""],["L.A. SHAEFER CONSTRUCTION","","","","","","","",""],["AMERICAN CRANE RENTAL","P.O. BOX 2355","FLORISSANT","MO","63032-2355","(314)574-7087","(314)839-5858","",""],["THOMAS & PROETZ LUMBER CO.","3400 HALL STREET","ST. LOUIS","MO","63147","314-231-9343","314-231-0313","SKIP HOLMES",""],["LOU FUSZ CHEV -","","","","","(636)397-2000","","BRAD",""],["LOWE'S","PO BOX 847516","DALLAS","TX","75284-7516","636-728-0163","636-536-1285","MARK KOCH",""],["CARDINAL BUILDING MATERIALS IN","3634 PENNRIDGE","BRIDGETON","MO","63044","(314)298-7979","","",""],["MARTIN GLASS CO.","25 CENTER PLAZA DRIVE","BELLEVILLE","IL","62220-3400","","","",""],["MAYFIELD CONCRETE CONSTRUCTION","480 HOWDERSHELL RD","FLORISSANT","MO","63031","314-837-6862","","",""],["M J PRODUCTS","405 BILTMORE DR","FENTON","MO","63026","(636)349-0290","","",""],["METRO MATERIALS, INC.","732 CROWN IND. CT., SUITE G","CHESTERFIELD","MO","63005","636-519-1522","636-519-7065","SHERRY",""],["METRO CONCRETE","PO BOX 1176","O'FALLON","IL","62269","877-537-2373","618-537-2464","",""],["CEE KAY SUPPLY, INC.","P O BOX 17423","ST LOUIS","MO","63178","","","",""],["MID AMERICA PUMPING","13418 REDFIELD DRIVE","EUGENE","MO","65032","573-636-8315","573-659-5124","",""],["MIDWEST AERIALS & EQUIPMENT","2231 PAPIN STREET","ST. LOUIS","MO","63103","314-588-1300","314-588-1305","",""],["MIDWEST INDUSTRIAL TIRE INC","333 ST LOUIS AVE","VALLEY PARK","MO","63088","","","",""],["MIDWEST TRAILER","4545 TOWNE COURT","ST. CHARLES","MO","63304","","","",""],["MID-AMERICA SLATE & STONE","16900 BAXTER RD","CHESTERFIELD","MO","63005","","","",""],["RON WOODS EXCAVATING","952 NORTHWESTERN AVE","FAIRVIEW HEIGHT","IL","62208","(618)779-7200","(618)624-1935","",""],["MID-CITY LUMBER","2105 PARIS RD","COLUMBIA","MO","65202","573-474-9531","573-474-5566","",""],["MOULTRIE MANUFACTURING CO","1403 HWY 133 S","MOULTRIE","GA","31768","(800)841-8674","(912)890-7246","",""],["CHILDS TIRE INC","810 WEST TERRA LANE","OFALLON","MO","63366","","","",""],["CHILDS TIRE - TROY","105 KING DRIVE","TROY","MO","63379","528-6222","","",""],["NEGWER MATERIALS","DEPT 255","ST LOUIS","MO","63179-0044","(314)522-0579","","",""],["NORANDEX/REYNOLDS","2032 CORPORATE 44 DR","FENTON","MO","63026-2518","(314)878-0282","","",""],["NORRENBERNS TRUCK SVC","17848 MOCKINGBIRD ROAD","NASHVILLE","IL","62263","618-478-5354","","",""],["NORTHWEST AUTO & TIRE","17909 CHESTERFIELD AIRPOR","CHESTERFIELD","MO","63005-1210","636-532-1532","","",""],["NOVAK'S COLLISION CENTER","4640 HWY 94 N OUTER RD","ST PETERS","MO","63304","","","",""],["NUTS, BOLTS & THINGS","PO BOX 538","WENTZVILLE","MO","63385","636-332-5123","","",""],["CROWN MANUFACTURING","PO BOX 289","CHESTERFIELD","MO","63006","","","",""],["CROWN C SUPPLY COMPANY INC","5130 MANCHESTER AVE","ST LOUIS","MO","63110","314-645-4640","314-645-1279","Kelly - In Accounting",""],["WAYNE CARTER TRUCKING & EXCAVA","514 RANGE ROAD","SANDOVAL","IL","62882","618-247-3301","","",""],["D/D HOLDINGS, LLC","D/B/A COMMERCIAL JANITORI","AST LOUIS","MO","63128-2832","314-892-0939","","",""],["COMPLETE AUTO RADIATOR SERVICE","203 SOUTH LINN","WENTZVILE","MO","63385","","","",""],["JAY HENGES ENTERPRISE","PO BOX 17408","ST LOUIS","MO","63178-7408","","","",""],["P & A DRYWALL SUPPLY","PO BOX 142306","ST LOUIS","MO","63114","","","Ted Vomond",""],["ROGER'S REDI-MIX, INC","55 E MILL ST.","RUMA","IL","62278","","","",""],["PARTNER TIRE INC.","503 TWIN VIEW DRIVE","VILLA RIDGE","MO","63089","","","",""],["AMES TOOLS","3305 BRECKINRIDGE BLVD ST","DULUTH","GA","30096","","","",""],["PURCELL TIRE CO.","PO BOX 503649","ST. LOUIS","MO","63150-3649","","","",""],["QUAD COUNTY READY MIX","300 FULLERTON LANE","SWANSEA","IL","62226","618-257-9530","","",""],["QUALITY RENTAL","210 S. BELT EAST","BELLEVILLE","IL","62220","618-235-4091","","",""],["QUALITY WATERPROOFING","2169 HOGAN ROAD","PACIFIC","MO","63069","636-451-5915","","",""],["DAVE SCHMIDT TRUCK SERVICE","#1 AMANN COURT","BELLEVILLE","IL","62220","","","",""],["DEALERS SERVICE & SUPPLY","902 S KIRKWOOD RD","KIRKWOOD","MO","63122","314-966-3212","","",""],["R.M. DUBOIS CONSTRUCTION INC.","PO BOX 684","HILLSBORO","MO","63050","(636)942-2046","(636)942-2046","",""],["R M SUPPLY","222 MILLWELL DRIVE","MARYLAND HEIGHT","MO","63043","(314)298-7272","(314)298-8866","BOB MOTZ",""],["R.P. LUMBER CO., INC.","102 S. FIRST","TROY","MO","63379","(636)528-2878","(636)528-2770","",""],["RSC EQUIPMENT RENTAL","4609 CROSSROADS IND DR.","BRIDGETON","MO","63044","","","",""],["RENTAL SERVICE CORPORATION","6929 E GREENWAY PARKWAY","SCOTTSDALE","AZ","85254","","","",""],["RENTAL SERVICE CORP - IL","PO BOX 840514","DALLAS","TX","75284","636-970-2222","","MIKE SCHLESSINGER",""],["ROY WOLFMEIER TRUCK SERVICE","415 S ILLINOIS","MILLSTADT","IL","62260","(618)476-1462","","",""],["SAFE-LITE","","","","","","","",""],["ST LOUIS PTR & DEC FOUNDATION","PO BOX 1186","MARYLAND HGTS","MO","63043","(314)647-3327","(314)647-8701","",""],["STERETT CRANE & RIGGING","34 BOETH-FIELD ROAD","OWENSBORO","KY","42301","270-926-1646","270-926-1657","",""],["SELECT STEEL SERVICE, INC","3606 HWY D","DEFIANCE","MO","63341","","","",""],["SEVEND & ASSOCIATES","P.O. BOX 1294","EFFINGHAM","IL","62401","","","",""],["SCHREITER CONCRETE CO.","200 S. COOL SPRINGS RD.","O'FALLON","MO","63366","314-240-2600","","",""],["SOS TECHNOLOGIES","1567 NORTH WARSON ROAD","ST. LOUIS","MO","63132-1107","314-427-5577","314-427-5533","",""],["SUNBELT RENTALS","PO BOX 409211","ATLANTA","GA","30384-9211","770-991-3331","","",""],["SPAETH WELDING INC","321 WEST MISSOURI","NEW BADEN","IL","62265","618-588-3596","","",""],["TAYLOR EXCAVATING CO, INC.","3917 REVIS BARRACKS ROAD","ST. LOUIS","MO","63125-2309","314-544-3030","314-544-3035","",""],["TRIO MOTORS INC.","1559 SOUTH MAIN","ST. CHARLES","MO","63303","314-946-6444","","",""],["VAL TEC HYDRAULICS INC.","1100 PERSHALL ROAD","ST. LOUIS","MO","63137","314-867-1100","314-867-6261","",""],["WALL-TIES & FORMS, INC","4000 BONNER INDUSTRIAL DR","SHAWNEE","KS","66226","(913)441-0073","","",""],["WEST ROOFING & SUPPLY CO, INC.","P.O. BOX 90277","CHICAGO","IL","60696-0277","(314)426-3332","(314)426-2828","",""],["WHOLESALE PLUMBING SUPPLY CO.","10601 TRENTON AVE.","ST. LOUIS","MO","63132","314-429-6010","","",""],["WINDSHIELDS & MORE","9500 MANCHESTER RD","ST LOUIS","MO","63119-1313","314-739-4700","","",""],["ENERGY PETROLEUM COMPANY","DEPT NO 470146","ST LOUIS","MO","63179-0100","","","",""],["EUREKA AUTO PARTS","1299 WEST FIFTH STREET","EUREKA","MO","63025","587-2191","","",""],["ROOFING AND SIDING CONTRACTORS","PO BOX 1253","BALLWIN","MO","63022","314-962-5959","","",""],["FROESEL TIRE SERVICE COMPANY","9273 MANCHESTER ROAD","ST LOUIS","MO","63144","962-2422","","",""],["FRED WEBER,INC.","P.O. BOX 500816","ST.LOUIS","MO","63150","314-344-0070","314-344-0356","",""],["ROY GITTEMEIER CONTRACTORS INC","11736 MISSOURI BOTTOM RD","HAZELWOOD","MO","63042","(314)731-1272","(314)731-3247","",""],["GOLDEN TRIANGLE CONCRETE CO","755 SOUTH NEW BALLAS","ST LOUIS","MO","63141","(314)994-1616","(314)994-1618","",""],["GRAINGER","PO BOX 419267","KANSAS CITY","MO","64141-6267","636-343-0893","","FEIN # 36-1150280",""],["GRAVEL SHOOTERS","105 PACIFIC WEST DRIVE","PACIFIC","MO","63069","636-451-5915","636-451-6905","",""],["GREAT CENTRAL LUMBER CO","BOX 158","ALTON","IL","62002","(314)968-1700","(314)968-0940","Gene",""],["HILTI INC","DEPT 0890 P O BOX 120001","DALLAS","TX","75312","","","",""],["INVENTORY SALES INC","9777 REAVIS RD","ST. LOUIS","MO","63123","314-776-6200","","",""],["JW PRODUCTS","1376 WOODS LANE","JACKSONVILLE","IL","62650","800-768-0813","217-243-7688","",""],["JASPER ENGINES","PO BOX 650","JASPER","IN","47547-0650","","","",""],["JOHN'S CRANE & EQUIPMENT","11843 MISSOURI BOTTOM RO","AHAZELWOOD","MO","63042","314-731-1829","","",""],["KIENSTRA CONCRETE, INC.","755 SOUTH NEW BALLAS","ST LOUIS","MO","63141","314-994-1616","314-994-1618","",""],["KIENSTRA - ILLINOIS","201 WEST FERGUSON AVE","WOOD RIVER","IL","62095","(618)254-4366","(618)254-7429","",""],["INNOVATIVE HOME PRODUCTS","50 MIDWEST DRIVE","PACIFIC","MO","63069","636-271-4002","636-271-4098","",""],["LANDVATTER READY MIX INC","3000 BARRETT STATION ROA","DKIRKWOOD","MO","63122","314-965-2480","","",""],["LEMAY CONCRETE BLOCK COMPANY","11131 S TOWNE SQ DR STE G","ST LOUIS","MO","63123","(314)487-5888","(314)487-1131","",""],["MARK TWAIN REDI-MIX, INC.","P O BOX 430","HANNIBAL","MO","63401","(800)833-7680","(573)221-1896","",""],["MISSOURI BOLT CORP","PO BOX 795036","ST LOUIS","MO","63179-0795","314-421-4300","314-421-4349","",""],["MISSOURI DRYWALL SUPPLY INC","314 MCDONNELL BOULEVARD","HAZELWOOD","MO","63042","636-731-2282","","",""],["MVP SUPPLY CO, INC.","1800 SCHERER PARKWAY","ST CHARLES","MO","63303","636-949-9007","","",""],["MO-JO'S TOWING SERVICE","12204 OLD BIG BEND RD","KIRKWOOD","MO","63122","","","",""],["MORGAN WIGHTMAN SUPPLY CO","5668 ANGLUM COURT","HAZELWOOD","MO","63042","895-1111","","",""],["MORRISSEY CONSTRUCTION COMPANY","","","","","","","",""],["MESSING PLANING MILL CO.","5020 ARSENAL STREET","ST LOUIS","MO","63139","314-664-3544","314-664-3444","",""],["NAPA","GENUINE PARTS COMPANY-S","CHICAGO","IL","60693","","","",""],["NAPA - MT VERNON","5959 COLLECTIONS CENTER","DCHICAGO","IL","60693","(877) 558-928","(678)421-5616","",""],["NAPA-HARVESTER BRANCH","3790 OLD HWY 94 SOUTH","ST CHARLES","MO","63303","","","",""],["GRAPPERHAUS CRANE SERVICE","7714 WEST MILL CREEK RD","TROY","IL","62294-2608","618-667-7623","","",""],["NUWAY CONCRETE FORMS, INC.","4190 HOFFMEISTER AVENUE","ST LOUIS","MO","63125","314-544-1214","636-327-4944","Billing Info",""],["O'NEIL LUMBER AND MILLWORK, IN","104 ST. CLAIR AVENUE","EAST ST. LOUIS","IL","62202","1-866-AT-ONEI","","",""],["O'FALLON TRUE VALUE HARDWARE","921 HIGHWAY K","O'FALLON","MO","63366-2910","636-272-7441","","",""],["D & L TOWING","2103 OLD 94 SOUTH","ST CHARLES","MO","63303","(636)447-3700","","",""],["PACO BUILDING SUPPLY CO","1424 TALMAGE","ST. LOUIS","MO","63110","314-535-3050","314-535-3965","DARLENE FOR A/P",""],["PROFESSIONAL INSTALLERS, INC","12100 PRICHARD FARM ROAD","MARLYAND HEIGHTS","MO.","63043","","","",""],["PRECISE FORMS INC","3130 WHEELING","KANSAS CITY","MO","64129","636-926-0117","","MIKE",""],["PREMIER STAIR CO. LLC","PO BOX 240228","BALLWIN","MO","63024","","","",""],["RAINERI BUILDING MATERIALS INC","6351 KNOX INDUSTRIAL DRIV","EST LOUIS","MO","63139","314-781-1573","(314)781-0621","",""],["SCHWEND'S RED E MIX","405 W. MAIN","HIGHLAND","IL","62249","618-654-2166","","",""],["REBAR SPECIALIST","PO BOX 470367","ST LOUIS","MO","63147","(314)382-6900","(314)382-1711","",""],["RED BIRD READY MIX","755 SOUTH NEW BALLAS","ST. LOUIS","MO","63141","(314)994-1616","(314)994-1618","KELLY-AR",""],["REHKEMPER & SONS INC","17817 ST ROSE RD","ST ROSE","IL","62230","314-621-5428","(618)526-8442","",""],["SACHS STEEL AND SUPPLY CORP","7010 ST CHARLES ROCK ROA","DST LOUIS","MO","63133","314-725-8364","(314)725-8365","",""],["SHELLY'S SAFETY PLUS FIRST AID","11469 OLIVE BLVD","ST LOUIS","MO","63141","567-3822","","",""],["SAFETY MAKER, INC","PO BOX 842014","HOUSTON","TX","77284-2014","","","",""],["SEILER INSTRUMENT & MFG CO INC","170 E. KIRKHAM AVE","ST LOUIS","MO","63119","","","",""],["MICHELLES FINAL CONSTRUCTION","3910 DYER","O'FALLON","MO.","63366","636-978-8773","","",""],["SIMON CRANE SERVICE","3244 PRINCIPIA DRIVE","ST CHARLES","MO","63301","940-2818","","",""],["31-W INSULATION","MSC 30368","NASHVILLE","TN","37230-6010","877-241-4563","","",""],["84 LUMBER COMPANY","ATTN: AL OR MARK","VALLEY PARK","MO","63088","636-225-7900","(636)225-0784","MARK",""],["CURTIS TOWING","420 SOUTH ILLINOIS ST","MILLSTADT","IL","62260","618-476-7197","","",""],["ST LOUIS SAFETY INC","P.O. BOX 488","CHESTERFIELD","MO","63006","","","",""],["J. C. INC.","PO BOX 197","MOSCOW MILLS","MO","63362-0197","636-366-9859","636-366-6004","",""],["TREE COURT BUILDERS SUPPLY","3636 TREE COURT IND BLVD","ST LOUIS","MO","63122","636-225-7717","(636)225-9054","",""],["TRI-STAR TIRE SALES, INC.","824 MARSHALL ROAD","VALLEY PARK","MO","63088","636-225-9900","636-225-1668","",""],["TRUE VALUE / HANDYMAN HDWE","500 W. WASHINGTON","FLORISSANT","MO","63031","314-837-1360","314-837-1418","",""],["TRUSS COMPONENTS INC","607 N. MAIN ST.","COLUMBIA","IL","62236","1-800-678-787","618-281-3049","",""],["VALLEY MATERIAL CO","P O BOX 337","VALLEY PARK","MO","63088","(636)225-5336","(636)225-5482","",""],["WARRENTON STEEL SUPPLY,INC","1332 WEST OLD HWY 40","WARRENTON","MO","63383","(636)456-8400","","",""],["GREG'S CHAINSAW CENTER","21 FAIRGROUND ROAD","TROY","MO.","63379","","","",""],["WESTERN READY MIX INC","323 JOSEPHVILLE ROAD","WENTZVILLE","MO","63385","636-519-1522","636-519-7065","Shari",""],["THE WEDGE","933 ORVILLEWOOD ROAD","CHESTERFIELD","MO","63005","","","",""],["L & L ENTERPRISES","9 WELLESLEY PLACE","ALTON","IL","62002","(618)462-6834","(618)462-6834","",""],["KGB PUMPING","#8 SWEETBRIAR","KIRKWOOD","MO","63122","314-621-1756","","",""],["BILL'S WRECKER SERVICE INC","510 EAST PRAIRE","ST. LOUIS","MO.","63147","314-645-8888","314-241-7002","",""]];
+const CUSTOMERS=[["ALTMAN CHARTER COMPANY","ACCOUNTS PAYABLE","315 CONSORT DRIVE","ST. LOUIS","MO","","636-207-8670","636-207-8671",""],["ANDERSOHN DEVELOPMENT CO","ACCOUNTS PAYABLE","1860 LARKIN WILLIAMS ROAD","FENTON","MO","63026","(636)349-4450","",""],["AMERWEST","ACCOUNTS PAYABLE","700 CROWN INDUSTRIAL CT STE","CHESTERFIELD","MO","63005","(636)532-0022","(636)532-2907",""],["PIONEER CONSTRUCTION","ACCOUNTS PAYABLE","607 S. LINDBERGH","ST LOUIS","MO","63131","","",""],["AMHERST CORPORATION","ACCOUNTS PAYABLE","6611 CLAYTON ROAD","ST LOUIS","MO","63117","(314)862-9399","(314)862-1012",""],["ASBERRY","ACCOUNTS PAYABLE","142 FLORA","ST LOUIS","MO","63135","","",""],["AUTO PLAZA WEST","ACCOUNTS PAYABLE","16109 MANCHESTER RD","ST. LOUIS","MO","63011","314-394-4144","",""],["BOLEN CONTRACTING","C/O RIVERHEAD DEVELOPM","E11939 MANCHESTER RD #118","DES PERES","MO","63131","314-821-9993","314-558-1805",""],["BSI CONSTRUCTORS INC","ACCOUNTS PAYABLE","6767 SOUTHWEST AVE","ST. LOUIS","MO","","314-781-7820","",""],["BAM CONSTRUCTION CO.","ACCOUNTS PAYABLE","3115 SOUTH GRAND AVE. STE 22","ST. LOUIS","MO","","(314)446-0415","(314)446-0418",""],["BOYER DANNY","","RICHMOND DOWNS LOT 8","OLD MINES","MO","","","",""],["BRH BUILDERS & CONSTRUCTORS","ACCOUNTS PAYABLE","702 N. MacArthur Blvd","Springfield","IL","62702","217-523-0108","217-523-8323",""],["BREWER CONSTRUCTION","ACCOUNTS PAYABLE","7094 MIDWAY","METROPOLIS","IL","62960","618-524-9894","",""],["BRINKMANN CONSTRUCTORS","ACCOUNTS PAYABLE","16650 CHESTERFIELD GROVE RO","CHESTERFIELD","MO","63005","(636)537-9700","(636)537-9880",""],["BROWN","ACCOUNTS PAYABLE","680 CRAIG ROAD","ST LOUIS","MO","63141","(314)692-2575","(314)692-2385",""],["BSB DEVELOPMENT CO","ACCOUNTS PAYABLE","2311 S. 13TH STREET","ST LOUIS","MO","63104","(314)776-1811","(314)776-1838",""],["BUILDERS BLOC - ST CHARLES","ACCOUNTS PAYABLE","1302 TECHNOLOGY DRIVE","ST. CHARLES","MO","63304","636-498-5522","(636)498-5706",""],["BLANTON BEN F CONSTRUCTION IN","ACCOUNTS PAYABLE","28 PATMOS CT","ST PETERS","MO","63376","(636)928-4444","",""],["C RALLO CONSTRUCTION CO","ACCOUNTS PAYABLE","P.O. BOX 5138","ST LOUIS","MO","63139","(314)664-2900","(314)664-4207",""],["CACHET HOMES","ACCOUNTS PAYABLE","1835 BACH AVE","KIRKWOOD","MO","63122","(314)822-1057","(314)822-1512",""],["CURTIS BUCKMAN CONSTRUCTION","ATTN: ACCOUNTS PAYABLE","1894 CHARMWOOD CT","KIRKWOOD","MO","63122","(314)822-8797","(314)822-8797",""],["CUSTOM ALTERNATIVE","ATTN: ACCOUNTS PAYABLE","9421 DIELMAN ROCK ISLAND IND","ST LOUIS","MO","63132","(314)994-3471","(314)991-3796",""],["DECCA CONSTRUCTION","ACCOUNTS PAYABLE","9630 GRAVOIS","ST LOUIS","MO","63123","314-280-4691","636-938-9251",""],["DIX JOHN","","100 WEAVER COURT","FESTUS","MO","63021","","",""],["DVERIS MAYNES L.C.","ACCOUNTS PAYABLE","245 CHESTERFIELD IND. BLVD.","CHESTERFIELD","MO","63005","(636)519-1300","(636)519-1648",""],["ELZEIN ALEX","","ALEX ELZEIN","ST LOUIS","MO","63110","","",""],["EILERMANN JOHN","966 TARA OAKS DRIVE","","CHESTERFIELD","MO","63005","","",""],["EMMENEGGER RONALD ENT. INC","ACCOUNTS PAYABLE","575 RUDDER ROAD","FENTON","MO","63026","(636)349-2250","(636)349-1202",""],["FISCHER & FRICHTEL","SUITE 200","695 TRADE CENTER BLVD","CHESTERFIELD","MO","63005","(314)576-0500","(314)576-0502",""],["FULFORD HOMES","ACCOUNTS PAYABLE","775 SUNSET BLVD SUITE A","OFALLON","IL","62269","618-632-5779","",""],["GLANTZ & ASSOCIATES","INC","501 N. LINDBERGH","ST LOUIS","MO","63141","(314)994-9914","",""],["GLENN CONSTRUCTION CO.","INC.","P.O. BOX 182","EUREKA","MO","63025","636-938-3836","636-938-6596",""],["GREATER MISSOURI BUILDERS","ACCOUNTS PAYABLE","1551 WALL STREET","ST. CHARLES","MO","63303","636-946-1341","636-949-9992",""],["GUNDAKER COMMERCIAL GROUP","ACCOUNTS PAYABLE","2458 OLD DORSETT ROAD SUITE","ST. LOUIS","MO","63043","(314)298-5136","",""],["HBD","ACCOUNTS PAYABLE","5517 MANCHESTER AVE","ST LOUIS","MO","63110","(314)781-8000","(314)781-5214",""],["HAYDEN COMPANY","ACCOUNTS PAYABLE","#7 THE PINES COURT","ST. LOUIS","MO","63141","314-434-5820","314-434-5951",""],["HILLTOP CONTRACTING INC","ACCOUNTS PAYABLE","425 N. NEW BALLAS SUITE 250","ST LOUIS MO","MO","63141","314-432-3380","314-432-7683",""],["HOLLAND CONSTRUCTION","ACCOUNTS PAYABLE","4495 NORTH ILLINOIS STREET","SWANSEA","IL","62226","618-277-8870","618-277-6823",""],["HUFTON CONSTRUCTION","ACCOUNTS PAYABLE","17813 EDISON AVENUE","CHESTERFIELD","MO","63005","(636)449-0202","(636)449-0205",""],["HUMMERT CONSTRUCTION","ACCOUNTS PAYABLE","6136 ARBOR GREEN DRIVE","ST. LOUIS","MO","63129","(314)293-0055","(314)293-0011",""],["JH BERRA CONSTRUCTION CO INC","ACCOUNTS PAYABLE","5091 NEW BAUMGARTNER ROAD","ST. LOUIS","MO","63129","(314)487-5617","(314)487-4994",""],["IMPACT STRATEGIES","ACCOUNTS PAYABLE","141 MARKET PLACE DRIVE #105","FAIRVIEW HGHTS","IL","62208","","618-394-8400",""],["JACKSON HOMES","ACCOUNTS PAYABLE","3906 OLD HWY 94 SOUTH","ST CHARLES","MO","63304","636-928-4433","636-922-4946",""],["JEFFREY HOMES LLC","ACCOUNTS PAYABLE","PO BOX 410056","ST LOUIS","MO","63141","","",""],["JT BUILDERS","ACCOUNTS PAYABLE","2409 BEMISS ROAD","VALDOSTA","GA","31602","229-242-7759","229-247-1899",""],["KING HOMES INC","ACCOUNTS PAYABLE","PO BOX 6952","CHESTERFIELD","MO","63006","(314)520-7271","(314)821-4517",""],["KIRKWOOD LEASING","C/O RIVERHEAD DEVELOPM","E11939 MANCHESTER ROAD #118","DES PERES","MO","63131","314-821-9993","(314)558-1805",""],["KINGBRIDGE HOMES","LLC","8412 MANCHESTER ROAD","ST LOUIS","MO","63144","(314)968-7300","(314)968-7342",""],["KNAPP GEORGE","","42 DARYL LANE","LADUE","MO","63124","314-731-2818","314-567-6066",""],["K & S ASSOCIATES","ACCOUNTS PAYABLE","516 HANLEY INDUSTRIAL COURT","ST. LOUIS","MO","63144","314-647-3535","314-647-5124",""],["LANDMARK SYSTEMS","ACCOUNTS PAYABLE","12935 GRAVOIS ROAD","ST LOUIS","MO","63127","(314)843-2244","",""],["LANDMARK EQUIPMENT COMPANY","ATTN: ACCOUNTS PAYABLE","5224 COUNTRY CLUB DR","HIGH RIDGE","MO","63049","(636)677-7575","(636)677-6272",""],["LAUER CONSTRUCTION","ACCOUNTS PAYABLE","98 HARVEST DRIVE","ST. CHARLES","MO","63304","636-928-9784","",""],["LINDENWOOD UNIVERSITY","ACCOUNTS PAYABLE","209 SOUTH KINGSHIGHWAY","ST CHARLES","MO","63301","","",""],["MADDOCK","CHRIS","11 CAMBRIDGE COURT","GLENDALE","MO","63122","314-575-2660","",""],["MAYER HOMES","ACCOUNTS PAYABLE","755 S NEW BALLAS ROAD STE 21","ST. LOUIS","MO","63141","314-997-2300","314-997-3322",""],["MCGRATH & ASSOCIATES","INC","1920 S. KINGSHIGHWAY BLVD.","ST LOUIS","MO","63110","(314)772-7600","",""],["MICHELSON ORGANIZATION","ACCOUNTS PAYABLE","7701 FORSYTH","CLAYTON","MO","63105","314-862-7080","314-862-7804",""],["MILLENNIUM RESTORATION","18510 BUCKS CREEK LANE","","ST LOUIS","MO","63038","","",""],["MERDINIAN HOMES","ATTN: ACCOUNTS PAYABLE","366 PANHURST COURT","BALLWIN","MO","63021","(636)386-5559","(636)386-5558",""],["MORRISSEY CONSTRUCTION COMPAN","ACCOUNTS PAYABLE","PO BOX 189","GODFREY","IL","62035","618-466-3112","618-466-9284",""],["NULL","JE CONSTRUCTION","1631 ROCK FERN DR","HIGH RIDGE","MO","","(636)677-4202","",""],["PARIC CORPORATION","ACCOUNTS PAYABLE","1001 BOARDWALK SPRINGS","O'FALLON","MO","63366","(636)561-9500","(636)561-9501",""],["PINNACLE CONTRACTING","INC","7701 FORSYTH SUITE 1140","CLAYTON","MO","63105","314-783-8000","314-783-8001",""],["PENTREX DEVELOPMENT","ACCOUNTS PAYABLE","11745-R LACKLAND ROAD","ST. LOUIS","MO","63146","(314)993-8006","(314)993-8007",""],["PINNACLE DEVELOPMENT","ACCOUNTS PAYABLE","12444 POWERSCOURT DR. STE 2","5ST LOUIS","MO","63131","(314)821-3200","(314)821-3341","jl@pinnacleco.com"],["REICON CONTRACTING L.L.C.","ACCOUNTS PAYABLE","521 RUDDER RD","FENTON","MO","63026","(636)343-1117","636-343-7699",""],["GENE REUTHER AND ASSOCIATES","ACCOUNTS PAYABLE","1043 TEMPO DRIVE","ST LOUIS","MO","63146","314-575-4052","314-542-2457",""],["RIDGWAY HOMES","ACCOUNTS PAYABLE","PO BOX 699","FESTUS","MO","63028","636-933-3600","",""],["ROSS RG","ACCOUNTS PAYABLE","4079 BAYLESS","ST. LOUIS","MO","63125","314-638-9255","(314)638-1629",""],["ROCKY RIDGE DEVELOPMENT","ACCOUNTS PAYABLE","2925 ROCKY RIDGE ROAD","WILDWOOD","MO","63038","(314)565-5153","",""],["SAMZ","4252 SUNNY VIEW","","ST LOUIS","MO","63128","(314)894-0559","(314)894-0546",""],["SCHAEFFER HOMES","ACCOUNTS PAYABLE","10 WINDCASTLE PLACE","ST CHARLES","MO","63304","(636)929-9707","",""],["SUNTIDE HOMES","ACCOUNTS PAYABLE","2025 LEMAY FERRY ROAD","ST LOUIS","MO","63125","314-892-5106","(314)892-3370",""],["SHELDON JEFF","","18729 WILD HORSE FARM COURT","WILDWOOD","MO","63038","","",""],["SMITH","CHARLES","PO BOX 821","STEELVILLE","MO","65565","","",""],["SULLIVAN RICK","","","","","","","",""],["TARLTON CORPORATION","ATTN: ACCOUNTS PAYABLE","5500 WEST PARK AVENUE","ST LOUIS","MO","","(314)633-3300","(314)647-1940",""],["TRIDENT GROUP","ACCOUNTS PAYABLE","PO BOX 4640","CHESTERFIELD","MO","63006","","",""],["TERBROCK CUSTOM BUILDERS INCOR","ACCOUNTS PAYABLE","124 EAST ROUTE A SUITE 2","WENTZVILLE","MO","63385","636-332-1518","636-332-1248",""],["THF","2127 INNERBELT BUSINESS","CSUITE 200","ST LOUIS","MO","63114","314-429-0900","",""],["UNITED CONSTRUCTION","ACCOUNTS PAYABLE","12747 OLIVE BOULEVARD","ST LOUIS","MO","63141","(314)434-9690","",""],["TOWN & COUNTRY HOMES","INC.","5422 DELMAR BLVD","ST LOUIS","MO","63112","(314)361-6065","(314)361-7274",""],["VATTEROTT CONSTRUCTION","ACCOUNTS PAYABLE","10449 ST CHARLES ROCK ROAD","ST ANN","MO","63074","(314)427-4000","(314)427-5589",""],["VOLK CONSTRUCTION","ACCOUNTS PAYABLE","1737 MACKLIND AVE","ST LOUIS","MO","63110","(314)776-8655","(314)776-1189",""],["WALSH CONTRACTING CO","ACCOUNTS PAYABLE","12219 ROGER LANE","ST LOUIS","MO","63131","(314)267-3756","(314)965-7970",""],["WACHTER","J.A. BUILDERS. INC","11043 GRAVOIS IND. COURT DR.","ST LOUIS","MO","63128","(314)849-6460","(314)849-4178",""],["WACHTER CONSTRUCTION SERVICES","ACCOUNTS PAYABLE","108 INDUSTRIAL DRIVE","ARNOLD","MO","63010","(636)464-3555","",""],["WOLF","L CONSTRUCTION CO","1733 CLEVELAND BLVD.","GRANITE CITY","IL","62040","(618)452-8118","",""],["WILSON","S M & CO","2185 HAMPTON PO BOX 5210","ST LOUIS","MO","63139","(314)645-9595","(314)645-1700",""],["WURTZ BAUGH MIKE","","629 LOCKSLEY","WEBSTER GROV","EMO","63119","","",""],["VANTAGE HOMES- ST LOUIS ZONE","ACCOUNTS PAYABLE","117 TRIAD WEST DRIVE","O'FALLON","MO","63376","(636)240-7662","",""],["VANTAGE LAND DEVELOPMENT","ACCOUNTS PAYABLE","117 TRIAD WEST DRIVE","O'FALLON","MO","63366","636-240-7662","",""],["MCBRIDE & SON DEVELOPMENT","KELLY BURK","ACCOUNTS PAYABLE","","","","","",""],["VANTAGE HOMES- ST CHARLES","ACCOUNTS PAYABLE","117 TRIAD WEST DRIVE","O'FALLON","MO","63366","(636)240-7662","(636)978-6428",""],["MCBRIDE & SON CONT - CARPENTRY","ACCOUNTS PAYABLE","","","","","","",""],["MCBRIDE & SON HOMES","ACCOUNTS PAYABLE","#1 MCBRIDE & SON CENTER DR","CHESTERFIELD","MO","63005","","",""],["MCBRIDE & SON CONT - FLATWORK","KAREN DUNARD","18445 CENTAUR ROAD","CHESTERFIELD","MO","63005","","",""],["VANTAGE HOMES - ILLINOIS","ACCOUNTS PAYABLE","13 EXECUTIVE DRIVE","FAIRVIEW HEIGH","TIL","62208","(636)240-7789","(636)978-6428",""]];
+const WH=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,350,556,350,222,556,333,1000,556,556,333,1000,667,333,1000,350,611,350,350,222,222,333,333,350,556,1000,333,1000,500,333,944,350,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],WB=[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,350,556,350,278,556,500,1000,556,556,333,1000,667,333,1000,350,611,350,350,278,278,500,500,350,556,1000,333,1000,556,333,944,350,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
+
+
+/* ---------- storage (localStorage with in-memory fallback) ---------- */
+const KEY='bb-day-planner-v1';
+let memStore=null, canPersist=true;
+function loadStore(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ canPersist=false; }
+  return {v:1,days:{},contacts:[]};
+}
+function saveStore(){
+  try{ localStorage.setItem(KEY, JSON.stringify(store)); }
+  catch(e){ canPersist=false; memStore=store; }
+}
+let store=loadStore();
+if(!store.days) store.days={};
+if(!store.contacts) store.contacts=[];
+
+let saveTimer=null;
+function flagSaved(){
+  const el=document.getElementById('saveflag');
+  el.textContent = canPersist ? 'Saved' : 'In memory';
+  el.style.color = canPersist ? '#8fd3ac' : '#f0c674';
+  clearTimeout(flagSaved._t);
+  flagSaved._t=setTimeout(()=>{el.textContent='';},1400);
+}
+function queueSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{ saveStore(); flagSaved(); paintWeek(); updateStatus(); },350);
+}
+
+/* ---------- date helpers ---------- */
+const DOWN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+function parseISO(s){const p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function addDays(d,n){const x=new Date(d.getTime());x.setDate(x.getDate()+n);return x;}
+function mmdd(d){return pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function contentFor(d){
+  let k=mmdd(d);
+  if(!DAYS[k]) k='02-28';           // non-leap safety
+  const a=DAYS[k]||['','',''];
+  return {quote:a[0],topic:a[1],foot:a[2],tb:!!a[3]};
+}
+let cur=new Date(); cur.setHours(0,0,0,0);
+const TODAY=iso(cur);
+
+/* ---------- day record ---------- */
+function blank(){return {weather:'',appts:[],jobs:[],personal:[],goals:[],verbal:'',goalsText:'',notesEmp:'',jobNotes:''};}
+function rec(k,make){
+  if(!store.days[k]){ if(!make) return blank(); store.days[k]=blank(); }
+  const r=store.days[k];
+  for(const f of ['appts','jobs','personal','goals']) if(!Array.isArray(r[f])) r[f]=[];
+  return r;
+}
+function hasData(k){
+  const r=store.days[k]; if(!r) return false;
+  if((r.weather||'').trim()||(r.verbal||'').trim()||(r.goalsText||'').trim()||(r.notesEmp||'').trim()||(r.jobNotes||'').trim()) return true;
+  for(const f of ['appts','jobs','personal']) if((r[f]||[]).some(x=>x&&((x[0]||'').trim()||(x[1]||'').trim()))) return true;
+  if((r.goals||[]).some(x=>(x||'').trim())) return true;
+  return false;
+}
+
+/* ---------- layout spec ---------- */
+function layoutFor(d){
+  const w=d.getDay();
+  if(w===6) return 'sat';
+  if(w===0) return 'sun';
+  return 'week';
+}
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function pairRows(field,rows,r,ph1,ph2){
+  let h='<div class="rowgrid">';
+  const n=Math.max(rows,(r[field]||[]).length);
+  for(let i=0;i<n;i++){
+    const v=(r[field]&&r[field][i])||[];
+    h+=`<div class="r two">
+      <div class="cell"><input class="f" data-f="${field}" data-i="${i}" data-j="0" placeholder="${i===0?esc(ph1):''}" value="${esc(v[0])}"></div>
+      <div class="cell"><input class="f" data-f="${field}" data-i="${i}" data-j="1" placeholder="${i===0?esc(ph2):''}" value="${esc(v[1])}"></div>
+    </div>`;
+  }
+  h+=`</div><button class="addrow noprint" data-add="${field}">+ add row</button>`;
+  return h;
+}
+function jobRows(rows,r){
+  let h='<div class="rowgrid">';
+  const n=Math.max(rows,(r.jobs||[]).length);
+  for(let i=0;i<n;i++){
+    const v=(r.jobs&&r.jobs[i])||[];
+    const done=v[2]?' done':'';
+    h+=`<div class="r jobs${done}">
+      <div class="cell ck"><input type="checkbox" data-f="jobs" data-i="${i}" data-j="2"${v[2]?' checked':''}></div>
+      <div class="cell"><input class="f" data-f="jobs" data-i="${i}" data-j="0" placeholder="${i===0?'Job / task':''}" value="${esc(v[0])}"></div>
+      <div class="cell"><input class="f" data-f="jobs" data-i="${i}" data-j="1" placeholder="${i===0?'hrs':''}" value="${esc(v[1])}"></div>
+    </div>`;
+  }
+  h+=`</div><button class="addrow noprint" data-add="jobs">+ add task</button>`;
+  return h;
+}
+function lineRows(field,rows,r,ph){
+  let h='<div class="rowgrid">';
+  const n=Math.max(rows,(r[field]||[]).length);
+  for(let i=0;i<n;i++){
+    h+=`<div class="r"><div class="cell"><input class="f" data-f="${field}" data-i="${i}" placeholder="${i===0?esc(ph):''}" value="${esc((r[field]&&r[field][i])||'')}"></div></div>`;
+  }
+  h+=`</div><button class="addrow noprint" data-add="${field}">+ add row</button>`;
+  return h;
+}
+function ta(field,r,ph,min){
+  return `<textarea class="f" data-f="${field}" placeholder="${esc(ph||'')}" style="--mh:${min||84}px">${esc(r[field])}</textarea>`;
+}
+function sec(title,inner,sub){
+  return `<div class="sec"><div class="sec-h">${esc(title)}${sub?`<span class="sub">${sub}</span>`:''}</div>${inner}</div>`;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const k=iso(cur), r=rec(k,false), c=contentFor(cur), lay=layoutFor(cur);
+  document.getElementById('hdDow').textContent=DOWN[cur.getDay()]+', ';
+  document.getElementById('hdRest').textContent=MONN[cur.getMonth()]+' '+cur.getDate()+', '+cur.getFullYear();
+  document.getElementById('datePick').value=k;
+  document.getElementById('pillToday').style.display = k===TODAY?'':'none';
+  document.getElementById('pillFilled').style.display = hasData(k)?'':'none';
+
+  let left='',right='';
+  if(lay==='week'){
+    left = sec('Weather','<div class="rowgrid"><div class="r"><div class="cell"><input class="f" data-f="weather" placeholder="Forecast / conditions" value="'+esc(r.weather)+'"></div></div></div>')
+         + sec('Appointments / Training Today', pairRows('appts',5,r,'Where / who?','Time'))
+         + sec('Jobs / Tasks to do today', jobRows(7,r), '<span class="hrs-total" id="hrsTotal"></span>')
+         + sec('Personal Appts', pairRows('personal',3,r,'What','Time'))
+         + sec('Goals to work on', lineRows('goals',2,r,'Goal'))
+         + sec('Verbal agreements made', ta('verbal',r,'Who, what, when…',96))
+         + sec('Notes about employees', ta('notesEmp',r,'',96));
+    right = sec('Job Notes', ta('jobNotes',r,'',200));
+  } else if(lay==='sat'){
+    left = sec('Weather','<div class="rowgrid"><div class="r"><div class="cell"><input class="f" data-f="weather" placeholder="Forecast / conditions" value="'+esc(r.weather)+'"></div></div></div>')
+         + sec('Appointments Today', pairRows('appts',3,r,'Where / who?','Time'))
+         + sec('Jobs / Tasks to do today', jobRows(5,r), '<span class="hrs-total" id="hrsTotal"></span>')
+         + sec('Goals to work on', ta('goalsText',r,'',150));
+    right = sec('Notes', ta('jobNotes',r,'',200));
+  } else {
+    left = sec('Personal Appts', pairRows('personal',12,r,'What','Time'))
+         + sec('Goals to work on', ta('goalsText',r,'',110));
+    right = sec('Notes', ta('jobNotes',r,'',200));
+  }
+
+  document.getElementById('sheet').innerHTML =
+    `<div class="quote">${esc(c.quote)}</div>`+
+    ((c.topic && !(lay==='sun' && c.tb))?`<div class="topic"><b>Safety Toolbox topic:</b> ${esc(c.topic)}</div>`:'')+
+    `<div class="cols"><div class="col left">${left}</div><div class="col right">${right}</div></div>`+
+    `<div class="foot">${esc(c.foot)}</div>`;
+
+  paintWeek(); updateHrs(); updateStatus();
+}
+
+function updateHrs(){
+  const el=document.getElementById('hrsTotal'); if(!el) return;
+  const r=rec(iso(cur),false);
+  let t=0,any=false;
+  (r.jobs||[]).forEach(j=>{const v=parseFloat(j&&j[1]); if(!isNaN(v)){t+=v;any=true;}});
+  el.textContent = any ? ('Budgeted: '+(Math.round(t*100)/100)+' hrs') : '';
+}
+function updateStatus(){
+  const r=rec(iso(cur),false);
+  const jobs=(r.jobs||[]).filter(j=>j&&(j[0]||'').trim());
+  const done=jobs.filter(j=>j[2]).length;
+  const n=Object.keys(store.days).filter(hasData).length;
+  document.getElementById('statusLine').textContent =
+    (jobs.length? `${done}/${jobs.length} tasks done · ` : '') +
+    `${n} day${n===1?'':'s'} filled in` + (canPersist?'':' · storage blocked, use Export to keep your data');
+}
+function paintWeek(){
+  const start=addDays(cur,-((cur.getDay()+6)%7)); // Monday
+  let h='';
+  for(let i=0;i<7;i++){
+    const d=addDays(start,i), k=iso(d);
+    h+=`<div class="wd${k===iso(cur)?' sel':''}${hasData(k)?' has':''}" data-go="${k}">
+      <div class="d1">${DOWN[d.getDay()].slice(0,3)}</div>
+      <div class="d2">${d.getDate()}</div>
+      <div class="dot"></div></div>`;
+  }
+  document.getElementById('weekStrip').innerHTML=h;
+}
+
+/* ---------- in-page dialogs (iOS Safari can block native confirm/alert) ---------- */
+function ask(title,msg,buttons){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.className='overlay noprint';
+    const m=document.createElement('div'); m.className='modal';
+    const h=document.createElement('h3'); h.textContent=title; m.appendChild(h);
+    if(msg){ const p=document.createElement('p'); p.textContent=msg; m.appendChild(p); }
+    const row=document.createElement('div'); row.className='mbtns';
+    let done=false;
+    const finish=v=>{ if(done) return; done=true; ov.remove(); document.removeEventListener('keydown',key); resolve(v); };
+    buttons.forEach(b=>{
+      const el=document.createElement('button');
+      el.className='mbtn'+(b.kind?' '+b.kind:'');
+      el.textContent=b.label;
+      el.onclick=()=>finish(b.id);
+      row.appendChild(el);
+    });
+    m.appendChild(row); ov.appendChild(m);
+    ov.addEventListener('click',e=>{ if(e.target===ov) finish(null); });
+    const key=e=>{ if(e.key==='Escape') finish(null); };
+    document.addEventListener('keydown',key);
+    document.body.appendChild(ov);
+    const first=row.querySelector('.mbtn.primary,.mbtn.danger')||row.firstChild;
+    if(first&&first.focus) first.focus();
+  });
+}
+function toast(msg){
+  const t=document.createElement('div');
+  t.className='toast noprint'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2600);
+}
+
+/* ---------- input handling ---------- */
+function setVal(f,i,j,val,checkbox){
+  const r=rec(iso(cur),true);
+  if(i===null||i===undefined){ r[f]=val; }
+  else if(j===null||j===undefined){ while(r[f].length<=i) r[f].push(''); r[f][i]=val; }
+  else { while(r[f].length<=i) r[f].push([]); if(!Array.isArray(r[f][i])) r[f][i]=[]; r[f][i][j]=val; }
+  queueSave();
+}
+document.getElementById('sheet').addEventListener('input',e=>{
+  const t=e.target; const f=t.dataset.f; if(!f) return;
+  const i=t.dataset.i===undefined?null:+t.dataset.i;
+  const j=t.dataset.j===undefined?null:+t.dataset.j;
+  setVal(f,i,j,t.value);
+  if(f==='jobs') updateHrs();
+});
+document.getElementById('sheet').addEventListener('change',e=>{
+  const t=e.target; if(t.type!=='checkbox') return;
+  const f=t.dataset.f, i=+t.dataset.i, j=+t.dataset.j;
+  setVal(f,i,j,t.checked?1:0);
+  t.closest('.r').classList.toggle('done',t.checked);
+  updateStatus();
+});
+document.getElementById('sheet').addEventListener('click',e=>{
+  const b=e.target.closest('[data-add]'); if(!b) return;
+  const f=b.dataset.add, r=rec(iso(cur),true);
+  const cnt=b.previousElementSibling.querySelectorAll('.r').length;
+  while(r[f].length<=cnt) r[f].push(f==='goals'?'':[]);
+  saveStore(); render();
+  const nb=document.querySelector('[data-add="'+f+'"]');
+  if(nb){
+    const rows=nb.previousElementSibling.querySelectorAll('.r');
+    const last=rows[rows.length-1];
+    if(last){const inp=last.querySelector('input.f'); if(inp) inp.focus();}
+  }
+});
+document.getElementById('weekStrip').addEventListener('click',e=>{
+  const w=e.target.closest('[data-go]'); if(!w) return;
+  cur=parseISO(w.dataset.go); render();
+});
+
+/* ---------- nav ---------- */
+function go(n){ cur=addDays(cur,n); render(); }
+document.getElementById('prev').onclick=()=>go(-1);
+document.getElementById('next').onclick=()=>go(1);
+document.getElementById('btnToday').onclick=()=>{cur=parseISO(TODAY);render();};
+document.getElementById('datePick').onchange=e=>{ if(e.target.value){cur=parseISO(e.target.value);render();} };
+document.addEventListener('keydown',e=>{
+  if(/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) return;
+  if(e.key==='ArrowLeft')go(-1);
+  else if(e.key==='ArrowRight')go(1);
+  else if(e.key==='t'||e.key==='T'){cur=parseISO(TODAY);render();}
+});
+/* make textareas show all their text on paper */
+window.addEventListener('beforeprint',()=>{
+  document.querySelectorAll('#sheet textarea').forEach(t=>{
+    t.dataset.h=t.style.height||''; t.style.height='auto';
+    t.style.height=Math.max(t.scrollHeight+4, parseInt(t.dataset.h)||0)+'px';
+  });
+});
+window.addEventListener('afterprint',()=>{
+  document.querySelectorAll('#sheet textarea').forEach(t=>{ t.style.height=t.dataset.h||''; });
+});
+
+/* ---------- carry / clear ---------- */
+document.getElementById('btnCarry').onclick=()=>{
+  const r=rec(iso(cur),false);
+  const open=(r.jobs||[]).filter(j=>j&&(j[0]||'').trim()&&!j[2]);
+  if(!open.length){ toast('No unfinished tasks on this day.'); return; }
+  const nk=iso(addDays(cur,1)), nr=rec(nk,true);
+  open.forEach(j=>nr.jobs.push([j[0],j[1]||'',0]));
+  saveStore(); cur=addDays(cur,1); render(); flagSaved();
+  toast(open.length+' task'+(open.length===1?'':'s')+' carried forward');
+};
+document.getElementById('btnClear').onclick=async()=>{
+  const k=iso(cur);
+  const label=DOWN[cur.getDay()]+', '+MONN[cur.getMonth()]+' '+cur.getDate();
+  if(!hasData(k)){ toast('Nothing typed on this day yet.'); return; }
+  const gone=JSON.stringify(store.days[k]);          // keep a copy so Undo works
+  const a=await ask('Clear this day?','Everything you typed on '+label+' will be removed.',
+    [{id:'cancel',label:'Cancel'},{id:'ok',label:'Clear',kind:'danger'}]);
+  if(a!=='ok') return;
+  delete store.days[k];
+  saveStore(); render(); flagSaved();
+  const t=document.createElement('div');
+  t.className='toast noprint';
+  t.textContent=label+' cleared. ';
+  const u=document.createElement('button');
+  u.className='mbtn'; u.style.cssText='margin-left:10px;padding:5px 12px;min-height:0;font-size:13px';
+  u.textContent='Undo';
+  u.onclick=()=>{ store.days[k]=JSON.parse(gone); saveStore(); render(); t.remove(); toast('Restored'); };
+  t.appendChild(u);
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),6000);
+};
+
+/* ---------- owner + routing tag ---------- */
+const ownerEl=document.getElementById('ownerIn');
+if(!store.owner) store.owner='';
+ownerEl.value=store.owner||'';
+ownerEl.addEventListener('input',()=>{ store.owner=ownerEl.value.trim(); saveStore(); });
+function owner(){ return (store.owner||'').trim(); }
+function tagClean(v){
+  return String(v===undefined||v===null?'':v)
+    .replace(/[\[\]\|~\r\n]+/g,' ').replace(/\s+/g,' ').trim();
+}
+function usDash(i){ if(!i) return ''; const a=i.split('-'); return a[1]+'-'+a[2]+'-'+a[0]; }
+function usShort(i){ if(!i) return ''; const a=i.split('-'); return a[1]+'-'+a[2]+'-'+a[0].slice(2); }
+function bbTag(code,jobNo,jobName,date){
+  return '[BB|'+code+'|'+(tagClean(jobNo)||'NOJOB')+'|'+(tagClean(jobName)||'Unknown')+'|'+(date||'')+']';
+}
+function metaBlock(o){ return ''; }  /* routing tags retired - emails are plain now */
+
+/* ---------- export / import ---------- */
+function downloadBlob(blob,name){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},1000);
+}
+/* hand a file to the iOS/Android share sheet, else download it */
+async function shareFile(blob,name,title,altTypes,text){
+  if(navigator.share && navigator.canShare){
+    for(const type of [blob.type].concat(altTypes||[])){
+      try{
+        const file=new File([blob],name,{type});
+        if(!navigator.canShare({files:[file]})) continue;
+        const payload={files:[file],title:title};
+        if(text) payload.text=text;
+        await navigator.share(payload);
+        flagSaved(); return true;
+      }catch(err){
+        if(err && err.name==='AbortError') return true;   // user tapped Cancel
+      }
+    }
+  }
+  downloadBlob(blob,name); return false;
+}
+document.getElementById('btnExport').onclick=async()=>{
+  const d=cur, k=iso(d), who=owner();
+  if(!who){
+    ownerEl.focus();
+    toast('Put a name in "Whose calendar?" first — it decides which folder this files into.');
+    return;
+  }
+  const pretty=DOWN[d.getDay()]+', '+MONN[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();
+  const r=rec(k,false);
+  const jobs=(r.jobs||[]).filter(j=>j&&(j[0]||'').trim());
+  const done=jobs.filter(j=>j[2]).length;
+  const appts=(r.appts||[]).filter(a=>a&&(a[0]||'').trim()).length;
+  const clean=v=>String(v||'').replace(/[\\/:*?"<>|]/g,'-').replace(/\s+/g,' ').trim();
+  /* kept on this iPad, never sent to the office, so no routing block is needed */
+  const name=clean('Field Calendar '+usShort(k)+' - '+who)+'.pdf';
+  const title='Field Calendar — '+who+' — '+pretty;
+  const body='Field calendar sheet for '+who+', '+pretty+'.\n\n'+
+    'Tasks: '+jobs.length+' ('+done+' done)\n'+
+    'Appointments: '+appts+'\n'+
+    metaBlock({
+      tag:bbTag('DPL','-',who,k),
+      form:'DPL', form_name:'Field Calendar',
+      job_no:'-', job_name:who, date:k,
+      submitted_by:who,
+      detail:jobs.length+' tasks ('+done+' done), '+appts+' appointments',
+      attendees:0, at_risk:0,
+      needs_attention:(jobs.length-done>0?'Yes':'No'),
+      file:name
+    });
+  try{ await shareFile(dayPDF(d),name,title,null,body); }
+  catch(err){ toast('Could not build the PDF: '+err.message); }
+};
+document.getElementById('btnBackup').onclick=async()=>{
+  const blob=new Blob([JSON.stringify(store,null,1)],{type:'application/json'});
+  await shareFile(blob,'field-calendar-backup-'+TODAY+'.json','Field Calendar backup',['text/plain']);
+};
+document.getElementById('btnImport').onclick=()=>document.getElementById('fileIn').click();
+document.getElementById('fileIn').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=async()=>{
+    let inc;
+    try{
+      inc=JSON.parse(rd.result);
+      if(!inc||typeof inc!=='object'||!inc.days) throw 0;
+    }catch(err){
+      await ask('That is not a planner backup','Pick the .json file the Backup button made.',
+        [{id:'ok',label:'OK',kind:'primary'}]);
+      return;
+    }
+    const n=Object.keys(inc.days||{}).length;
+    const mode=await ask('Import '+n+' day'+(n===1?'':'s')+'?',
+      'Merge keeps what is already here and adds the backup on top. Replace throws away everything currently in this browser.',
+      [{id:'cancel',label:'Cancel'},{id:'replace',label:'Replace'},{id:'merge',label:'Merge',kind:'primary'}]);
+    if(mode!=='merge'&&mode!=='replace') return;
+    if(mode==='merge'){
+      Object.assign(store.days,inc.days);
+      if(inc.contacts) store.contacts=store.contacts.concat(inc.contacts);
+    } else {
+      store=inc; if(!store.days)store.days={}; if(!store.contacts)store.contacts=[];
+    }
+    saveStore(); render(); renderContacts(); flagSaved();
+    toast(mode==='merge'?'Merged '+n+' days':'Replaced with '+n+' days');
+  };
+  rd.readAsText(f); e.target.value='';
+};
+
+/* ---------- tabs ---------- */
+const tabDay=document.getElementById('tabDay'), tabRef=document.getElementById('tabRef');
+tabDay.onclick=()=>{tabDay.classList.add('on');tabRef.classList.remove('on');
+  document.getElementById('dayView').classList.remove('hide');document.getElementById('refView').classList.remove('show');};
+tabRef.onclick=()=>{tabRef.classList.add('on');tabDay.classList.remove('on');
+  document.getElementById('dayView').classList.add('hide');document.getElementById('refView').classList.add('show');};
+
+/* ---------- reference ---------- */
+function drawFractions(q){
+  q=(q||'').trim().toLowerCase();
+  const rows=FRACTIONS.filter(f=>!q||f[0].toLowerCase().includes(q)||f[1].includes(q));
+  document.getElementById('fGrid').innerHTML=rows.map(f=>`<div><span>${esc(f[0])}</span><span>${esc(f[1])}</span></div>`).join('')
+    || '<div style="color:#7b8494">No match</div>';
+}
+document.getElementById('fSearch').oninput=e=>drawFractions(e.target.value);
+
+function drawTable(id,head,data,q){
+  q=(q||'').trim().toLowerCase();
+  const rows=data.filter(r=>!q||r.join(' ').toLowerCase().includes(q));
+  const th='<tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr>';
+  const tb=rows.map(r=>'<tr>'+head.map((_,i)=>`<td>${esc(r[i]||'')}</td>`).join('')+'</tr>').join('');
+  document.getElementById(id).innerHTML=th+(tb||`<tr><td colspan="${head.length}" style="color:#7b8494">No match</td></tr>`);
+}
+const VH=['Vendor','Address','City','State','Zip','Phone','Fax','Contact','Email'];
+const UH=['Customer','Attn / Address 1','Address 2','City','State','Zip','Phone','Fax','Email'];
+document.getElementById('vSearch').oninput=e=>drawTable('vTable',VH,VENDORS,e.target.value);
+document.getElementById('uSearch').oninput=e=>drawTable('uTable',UH,CUSTOMERS,e.target.value);
+
+function renderContacts(){
+  const head=['Name','Work','Cell','Notes',''];
+  const th='<tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr>';
+  const tb=store.contacts.map((c,i)=>'<tr>'+c.slice(0,4).map(x=>`<td>${esc(x)}</td>`).join('')+
+    `<td><button class="tbtn" data-del="${i}" style="background:#f1f3f7;color:#333;border-color:#c9ced8;padding:2px 8px">remove</button></td></tr>`).join('');
+  document.getElementById('abTable').innerHTML=th+(tb||'<tr><td colspan="5" style="color:#7b8494">No contacts yet.</td></tr>');
+}
+document.getElementById('abAdd').onclick=()=>{
+  const g=id=>document.getElementById(id);
+  const n=g('abName').value.trim(); if(!n) return;
+  store.contacts.push([n,g('abWork').value.trim(),g('abCell').value.trim(),g('abNote').value.trim()]);
+  ['abName','abWork','abCell','abNote'].forEach(id=>g(id).value='');
+  saveStore(); renderContacts(); flagSaved();
+};
+document.getElementById('abTable').addEventListener('click',e=>{
+  const b=e.target.closest('[data-del]'); if(!b) return;
+  store.contacts.splice(+b.dataset.del,1); saveStore(); renderContacts();
+});
+
+/* calculators */
+function calcSlab(){
+  const L=+document.getElementById('cL').value||0, W=+document.getElementById('cW').value||0;
+  const per=+document.getElementById('cT').value, rock=+document.getElementById('cR').value;
+  const sf=L*W, yd=per?sf/per:0;
+  let s=`${sf.toLocaleString()} sq ft &nbsp;·&nbsp; ${(Math.round(yd*100)/100)} yd³`;
+  if(rock) s+=` &nbsp;·&nbsp; ${(Math.round(sf/rock*100)/100)} tons rock`;
+  document.getElementById('cOut').innerHTML=s;
+}
+function calcPier(){
+  const D=+document.getElementById('pD').value||0, H=+document.getElementById('pH').value||0, Q=+document.getElementById('pQ').value||0;
+  const rft=(D/2)/12;
+  const yd=Math.PI*rft*rft*H/27*Q;
+  document.getElementById('pOut').innerHTML=`${(Math.round(yd*1000)/1000)} yd³ total${Q>1?` (${(Math.round(yd/Q*1000)/1000)} ea)`:''}`;
+}
+['cL','cW','cT','cR'].forEach(id=>document.getElementById(id).oninput=calcSlab);
+['pD','pH','pQ'].forEach(id=>document.getElementById(id).oninput=calcPier);
+
+/* ===================== tiny self-contained PDF writer =====================
+   Draws the current day as a single Letter page, laid out like the
+   original planner sheet. No libraries, no network.                        */
+
+/* WinAnsi byte for a unicode char (falls back to '?') */
+const WA_SPECIAL={0x20AC:128,0x201A:130,0x0192:131,0x201E:132,0x2026:133,0x2020:134,0x2021:135,
+  0x02C6:136,0x2030:137,0x0160:138,0x2039:139,0x0152:140,0x017D:142,0x2018:145,0x2019:146,
+  0x201C:147,0x201D:148,0x2022:149,0x2013:150,0x2014:151,0x02DC:152,0x2122:153,0x0161:154,
+  0x203A:155,0x0153:156,0x017E:158,0x0178:159};
+function waByte(ch){
+  const c=ch.charCodeAt(0);
+  if(c>=32&&c<=126) return c;
+  if(WA_SPECIAL[c]!==undefined) return WA_SPECIAL[c];
+  if(c>=160&&c<=255) return c;
+  if(c===0x2212) return 45;           // minus
+  return 63;                          // '?'
+}
+function widthOf(str,size,bold){
+  const W=bold?WB:WH; let t=0;
+  for(let i=0;i<str.length;i++){ const b=waByte(str[i]); t+= (b>=32? (W[b-32]||500):0); }
+  return t*size/1000;
+}
+function pdfEscape(str){
+  let out='';
+  for(let i=0;i<str.length;i++){
+    const b=waByte(str[i]);
+    if(b===40||b===41||b===92) out+='\\'+String.fromCharCode(b);
+    else out+=String.fromCharCode(b);
+  }
+  return out;
+}
+function wrapText(str,size,bold,maxW){
+  const lines=[];
+  String(str==null?'':str).split(/\r?\n/).forEach(para=>{
+    if(!para.trim()){ lines.push(''); return; }
+    let line='';
+    para.split(/\s+/).forEach(word=>{
+      const trial=line?line+' '+word:word;
+      if(widthOf(trial,size,bold)<=maxW){ line=trial; return; }
+      if(line){ lines.push(line); line=''; }
+      let w=word;
+      while(widthOf(w,size,bold)>maxW && w.length>1){
+        let cut=w.length;
+        while(cut>1 && widthOf(w.slice(0,cut),size,bold)>maxW) cut--;
+        lines.push(w.slice(0,cut)); w=w.slice(cut);
+      }
+      line=w;
+    });
+    if(line) lines.push(line);
+  });
+  return lines;
+}
+function clipText(str,size,bold,maxW){
+  str=String(str==null?'':str);
+  if(widthOf(str,size,bold)<=maxW) return str;
+  let s=str;
+  while(s.length>1 && widthOf(s+'…',size,bold)>maxW) s=s.slice(0,-1);
+  return s+'…';
+}
+
+/* ---- drawing surface ---- */
+function Canvas(){
+  this.ops=[];
+  this.txt=(x,y,s,size,bold,italic,gray)=>{
+    if(s===''||s==null) return;
+    const f= bold?'/F2':(italic?'/F3':'/F1');
+    this.ops.push(`BT ${gray!=null?gray.toFixed(2)+' g ':'0 g '}${f} ${size} Tf 1 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)} Tm (${pdfEscape(s)}) Tj ET`);
+  };
+  this.line=(x1,y1,x2,y2,w)=>{
+    this.ops.push(`${(w||0.6).toFixed(2)} w 0 G ${x1.toFixed(2)} ${y1.toFixed(2)} m ${x2.toFixed(2)} ${y2.toFixed(2)} l S`);
+  };
+  this.rect=(x,y,w,h,lw)=>{
+    this.ops.push(`${(lw||0.6).toFixed(2)} w 0 G ${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re S`);
+  };
+  this.fill=(x,y,w,h,gray)=>{
+    this.ops.push(`${gray.toFixed(2)} g ${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re f`);
+  };
+}
+function buildPDF(canvas,W,H){
+  const content=canvas.ops.join('\n');
+  const objs=[];
+  objs[1]='<< /Type /Catalog /Pages 2 0 R >>';
+  objs[2]='<< /Type /Pages /Kids [3 0 R] /Count 1 >>';
+  objs[3]=`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 5 0 R /F2 6 0 R /F3 7 0 R >> >> /Contents 4 0 R >>`;
+  objs[4]=`<< /Length ${content.length} >>\nstream\n${content}\nendstream`;
+  objs[5]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
+  objs[6]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
+  objs[7]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>';
+  let out='%PDF-1.4\n', offs=[];
+  for(let i=1;i<objs.length;i++){ offs[i]=out.length; out+=`${i} 0 obj\n${objs[i]}\nendobj\n`; }
+  const xref=out.length;
+  out+=`xref\n0 ${objs.length}\n0000000000 65535 f \n`;
+  for(let i=1;i<objs.length;i++) out+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+  out+=`trailer\n<< /Size ${objs.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  const bytes=new Uint8Array(out.length);
+  for(let i=0;i<out.length;i++) bytes[i]=out.charCodeAt(i)&0xff;
+  return new Blob([bytes],{type:'application/pdf'});
+}
+
+/* ---- lay the day out ---- */
+function dayPDF(date){
+  const PW=612, PH=792, M=36, CW=PW-2*M;
+  const LW=Math.round(CW*0.5), RX=M+LW, RW=CW-LW;
+  const c=new Canvas();
+  const k=iso(date), r=rec(k,false), info=contentFor(date), lay=layoutFor(date);
+  const showTopic = info.topic && !(lay==='sun' && info.tb);
+
+  /* ---- build the left column as a list of blocks so we can size it first ---- */
+  const B=[];
+  const push=(type,o)=>B.push(Object.assign({type},o));
+  const rowsOf=(f,min)=>Math.max(min,(r[f]||[]).length);
+  if(lay==='week'||lay==='sat'){
+    push('head',{t:'WEATHER'});
+    push('rows',{f:'weather',n:1,single:true});
+    push('head',{t:lay==='week'?'APPOINTMENTS / TRAINING TODAY':'APPOINTMENTS TODAY'});
+    push('rows',{f:'appts',n:rowsOf('appts',lay==='week'?5:3),pair:true});
+    push('head',{t:'JOBS / TASKS TO DO TODAY',right:hoursLabel(r)});
+    push('rows',{f:'jobs',n:rowsOf('jobs',lay==='week'?7:5),jobs:true});
+    if(lay==='week'){
+      push('head',{t:'PERSONAL APPTS'});
+      push('rows',{f:'personal',n:rowsOf('personal',3),pair:true});
+      push('head',{t:'GOALS TO WORK ON'});
+      push('rows',{f:'goals',n:rowsOf('goals',2),line:true});
+      push('head',{t:'VERBAL AGREEMENTS MADE'});
+      push('text',{v:r.verbal,min:3});
+      push('head',{t:'NOTES ABOUT EMPLOYEES'});
+      push('text',{v:r.notesEmp,min:3});
+    } else {
+      push('head',{t:'GOALS TO WORK ON'});
+      push('text',{v:r.goalsText,min:5});
+    }
+  } else {
+    push('head',{t:'PERSONAL APPTS'});
+    push('rows',{f:'personal',n:rowsOf('personal',12),pair:true});
+    push('head',{t:'GOALS TO WORK ON'});
+    push('text',{v:r.goalsText,min:3});
+  }
+
+  /* header heights */
+  const FS=8.5, HS=7;
+  const quoteLines=wrapText(info.quote,9.5,false,CW-16);
+  const topicLines=showTopic?wrapText('Safety Toolbox topic: '+info.topic,9,false,CW-16):[];
+  const titleH=20, quoteH=quoteLines.length*11+8, topicH=showTopic?topicLines.length*11+6:0, footH=16;
+
+  /* size the left column so it fills the page the way the original sheet did */
+  const avail=PH-2*M-titleH-quoteH-topicH-footH;
+  const headH=13, textLH=10.5;
+  let rowH=15, extra=0;
+  const nRows=B.reduce((s,b)=>s+(b.type==='rows'?b.n:0),0);
+  const nText=B.filter(b=>b.type==='text').length;
+  const measure=(rh,ex)=>B.reduce((s,b)=>{
+    if(b.type==='head') return s+headH;
+    if(b.type==='rows') return s+b.n*rh;
+    return s+Math.max(b.min,wrapText(b.v,FS,false,LW-12).length)*textLH+5+ex;
+  },0);
+  while(measure(rowH,0)>avail && rowH>10.5) rowH-=0.5;
+  while(nRows && measure(rowH+0.5,0)<=avail && rowH<22) rowH+=0.5;
+  const slack=avail-measure(rowH,0);
+  if(slack>0){
+    if(nText) extra=slack/nText;
+    else if(nRows) rowH=Math.min(26,rowH+slack/nRows);
+  }
+
+  /* ---- draw ---- */
+  let y=PH-M;                                   // running top edge
+  const box=(x,w,h)=>{ c.rect(x,y-h,w,h); };
+  /* title + date */
+  c.txt(M+6,y-14,DOWN[date.getDay()]+', '+MONN[date.getMonth()]+' '+date.getDate()+', '+date.getFullYear(),12,true);
+  const stamp='Builder’s Bloc Day Planner';
+  c.txt(M+CW-6-widthOf(stamp,8,false),y-13,stamp,8,false,false,0.45);
+  y-=titleH;
+  /* quote band */
+  c.fill(M,y-quoteH,CW,quoteH,0.85);
+  c.rect(M,y-quoteH,CW,quoteH);
+  quoteLines.forEach((l,i)=>c.txt(M+8,y-12-i*11,l,9.5,false,true));
+  y-=quoteH;
+  /* safety topic */
+  if(showTopic){
+    c.rect(M,y-topicH,CW,topicH);
+    const lbl='Safety Toolbox topic:';
+    topicLines.forEach((l,i)=>{
+      if(i===0){
+        c.txt(M+8,y-11,lbl,9,true);
+        c.txt(M+8+widthOf(lbl,9,true)+3,y-11,l.slice(lbl.length).trim(),9,false);
+      } else c.txt(M+8,y-11-i*11,l,9,false);
+    });
+    y-=topicH;
+  }
+  const bodyTop=y;
+
+  /* left column blocks */
+  let ly=y;
+  B.forEach(b=>{
+    if(b.type==='head'){
+      c.rect(M,ly-headH,LW,headH);
+      c.txt(M+6,ly-9,b.t,HS,true,false,0.25);
+      if(b.right) c.txt(M+LW-6-widthOf(b.right,HS,true),ly-9,b.right,HS,true,false,0.35);
+      ly-=headH; return;
+    }
+    if(b.type==='rows'){
+      const timeW=52, ckW=14, hrW=34;
+      for(let i=0;i<b.n;i++){
+        const top=ly-i*rowH;
+        c.rect(M,top-rowH,LW,rowH);
+        if(b.single){
+          c.txt(M+6,top-rowH+4.5,clipText(r.weather,FS,false,LW-12),FS,false);
+        } else if(b.pair){
+          const v=(r[b.f]&&r[b.f][i])||[];
+          c.line(M+LW-timeW,top,M+LW-timeW,top-rowH);
+          c.txt(M+6,top-rowH+4.5,clipText(v[0],FS,false,LW-timeW-12),FS,false);
+          c.txt(M+LW-timeW+5,top-rowH+4.5,clipText(v[1],FS,false,timeW-10),FS,false);
+        } else if(b.jobs){
+          const v=(r.jobs&&r.jobs[i])||[];
+          c.line(M+ckW,top,M+ckW,top-rowH);
+          c.line(M+LW-hrW,top,M+LW-hrW,top-rowH);
+          c.rect(M+4,top-rowH+ (rowH-7)/2,7,7,0.5);
+          if(v[2]){                                   /* check mark */
+            c.line(M+5.4,top-rowH+(rowH-7)/2+3.4, M+7,top-rowH+(rowH-7)/2+1.4,1);
+            c.line(M+7,top-rowH+(rowH-7)/2+1.4, M+9.8,top-rowH+(rowH-7)/2+5.6,1);
+          }
+          c.txt(M+ckW+5,top-rowH+4.5,clipText(v[0],FS,false,LW-ckW-hrW-12),FS,false,false,v[2]?0.45:0);
+          c.txt(M+LW-hrW+5,top-rowH+4.5,clipText(v[1],FS,false,hrW-10),FS,false,false,v[2]?0.45:0);
+        } else {
+          c.txt(M+6,top-rowH+4.5,clipText((r[b.f]&&r[b.f][i])||'',FS,false,LW-12),FS,false);
+        }
+      }
+      ly-=b.n*rowH; return;
+    }
+    /* free text block */
+    const lines=wrapText(b.v,FS,false,LW-12);
+    const h=Math.max(b.min,lines.length)*textLH+5+extra;
+    c.rect(M,ly-h,LW,h);
+    lines.forEach((l,i)=>c.txt(M+6,ly-11-i*textLH,l,FS,false));
+    ly-=h;
+  });
+
+  /* right column — notes, full height of the left column */
+  const colH=bodyTop-ly;
+  c.rect(RX,ly,RW,colH);
+  c.rect(RX,bodyTop-headH,RW,headH);
+  c.txt(RX+6,bodyTop-9,lay==='week'?'JOB NOTES':'NOTES',HS,true,false,0.25);
+  const noteLines=wrapText(r.jobNotes,FS,false,RW-14);
+  const maxLines=Math.floor((colH-headH-8)/textLH);
+  noteLines.slice(0,maxLines).forEach((l,i)=>c.txt(RX+7,bodyTop-headH-11-i*textLH,l,FS,false));
+  if(noteLines.length>maxLines)
+    c.txt(RX+7,ly+5,'… '+(noteLines.length-maxLines)+' more line(s) — see the app',7,false,true,0.5);
+
+  /* footer */
+  c.rect(M,ly-footH,CW,footH);
+  const f=info.foot||'';
+  c.txt(M+CW/2-widthOf(f,8.5,false)/2, ly-11, f, 8.5,false,false,0.3);
+
+  return buildPDF(c,PW,PH);
+}
+function hoursLabel(r){
+  let t=0,any=false;
+  (r.jobs||[]).forEach(j=>{const v=parseFloat(j&&j[1]); if(!isNaN(v)){t+=v;any=true;}});
+  return any?('Budgeted: '+(Math.round(t*100)/100)+' hrs'):'';
+}
+
+/* ---------- boot ---------- */
+drawFractions(); drawTable('vTable',VH,VENDORS); drawTable('uTable',UH,CUSTOMERS);
+renderContacts(); calcSlab(); calcPier(); render();
+if(!canPersist) flagSaved();
+</script>
+</body>
+</html>
