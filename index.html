@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Builder's Bloc Field Portal</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ==========================
+         Header
+    =========================== -->
+
+<header class="header">
+
+    <img src="images/logo.png" alt="Builder's Bloc" class="logo">
+
+    <div class="header-right">
+
+        <div id="greeting" class="greeting">
+            🌅 Good Morning
+        </div>
+
+        <div class="portal-title">
+            Field Portal
+        </div>
+
+        <div class="status" id="status">
+            🟢 Online
+        </div>
+
+        <div class="version" id="version">
+            Version 1.0.0
+        </div>
+
+        <div id="updateMessage" class="update-message"></div>
+
+    </div>
+
+</header>
+
+
+    <!-- ==========================
+         My Day
+    =========================== -->
+
+    <h2 class="section-title">📅 My Day</h2>
+
+    <div class="card day-planner">
+
+        <h2>Day Planner</h2>
+
+        <p>
+
+            Plan your workday, organize tasks,
+            keep notes, and stay on schedule.
+
+        </p>
+
+        <a class="button" href="pages/Day_Planner.html">
+
+            Open Day Planner
+
+        </a>
+
+    </div>
+
+
+    <!-- ==========================
+         Field Forms
+    =========================== -->
+
+    <h2 class="section-title">🦺 Field Forms</h2>
+
+
+    <!-- Carpentry -->
+
+    <details>
+
+        <summary>🪚 Carpentry</summary>
+
+        <ul>
+
+            <li><a href="pages/Safety_Plan_Log.html">📋 Safety Plan Log</a></li>
+
+            <li><a href="pages/Fall_Protection_Plan.html">🛡️ Fall Protection Plan</a></li>
+
+            <li><a href="pages/Safety_Meeting.html">👷 Safety Meeting</a></li>
+
+            <li><a href="pages/Huddle_Talk.html">💬 Huddle Talk</a></li>
+
+            <li><a href="pages/Day_Planner.html">📅 Day Planner</a></li>
+
+        </ul>
+
+    </details>
+
+
+    <!-- Foundations -->
+
+    <details>
+
+        <summary>🏗 Foundations</summary>
+
+        <ul>
+
+            <li><a href="pages/Field_Inspection.html">🔍 Field Inspection</a></li>
+
+            <li><a href="pages/Foundation_Hazard_Observation_Sheet.html">⚠️ Hazard Observation Sheet</a></li>
+
+            <li><a href="pages/Day_Planner.html">📅 Day Planner</a></li>
+
+        </ul>
+
+    </details>
+
+
+    <!-- Flatwork -->
+
+    <details>
+
+        <summary>🧱 Flatwork</summary>
+
+        <ul>
+
+            <li><a href="pages/Huddle_Talk.html">💬 Huddle Talk</a></li>
+
+            <li><a href="pages/Field_Inspection.html">🔍 Field Inspection</a></li>
+
+            <li><a href="pages/Day_Planner.html">📅 Day Planner</a></li>
+
+        </ul>
+
+    </details>
+
+
+    <!-- Plumbing -->
+
+    <details>
+
+        <summary>🚰 Plumbing</summary>
+
+        <ul>
+
+            <li><a href="pages/Plumbing_Inspection.html">🚰 Plumbing Inspection</a></li>
+
+            <li><a href="pages/Day_Planner.html">📅 Day Planner</a></li>
+
+        </ul>
+
+    </details>
+
+
+    <!-- Drywall -->
+
+    <details>
+
+    <summary>🧰 Drywall</summary>
+
+    <ul>
+
+        <li><a href="pages/Day_Planner.html">📅 Day Planner</a></li>
+
+    </ul>
+
+    </details>
+
+
+    <!-- ==========================
+     Payroll
+    =========================== -->
+
+    <h2 class="section-title">💰 Payroll</h2>
+
+    <details>
+
+        <summary>🪚 Carpentry Time Sheets</summary>
+
+        <ul>
+
+            <li>
+                <a href="pages/Carpentry_Big_Job.html">
+                    📋 Big Job Time Sheet
+                </a>
+            </li>
+
+            <li>
+                <a href="pages/Carpentry_Small_Job.html">
+                    📋 Small Job Time Sheet
+                </a>
+            </li>
+
+        </ul>
+
+    </details>
+
+
+    <footer>
+
+        Builder's Bloc Contracting
+
+    </footer>
+
+    </div>
+
+
+<script src="app.js"></script>
+
+<script>
+
+if ('serviceWorker' in navigator) {
+
+    navigator.serviceWorker.register('sw.js');
+
+}
+
+</script>
+
+</body>
+
+</html>
