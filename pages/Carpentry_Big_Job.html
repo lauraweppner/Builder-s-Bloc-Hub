@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BB Time Sheet">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Builders Bloc Carpentry Time Sheet — Big Job</title>
+<style>
+  :root{
+    --bg:#eef1f5; --card:#ffffff; --ink:#1a2432; --muted:#5b6b7f;
+    --line:#d3dae3; --brand:#173a5e; --brand2:#2f6db3; --accent:#2f6db3;
+    --tot:#eef3f9; --tot-strong:#dbe7f5; --grand:#173a5e; --grand-ink:#ffffff;
+    --ok:#1f8f5f; --warn:#8a6100; --warnbg:#fff4d6; --danger:#b23b3b; --dangerbg:#fdeaea;
+    --shadow:0 1px 3px rgba(16,32,54,.12); --radius:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); font-size:16px; line-height:1.4;
+    padding-bottom:env(safe-area-inset-bottom); -webkit-text-size-adjust:100%;
+  }
+  .appbar{position:sticky; top:0; z-index:50; background:var(--brand); color:#fff;
+    padding:calc(env(safe-area-inset-top) + 10px) 14px 10px; box-shadow:var(--shadow);}
+  .appbar .row{display:flex; align-items:center; gap:8px;}
+  .appbar h1{font-size:16px; font-weight:700; margin:0; flex:1; letter-spacing:.2px;}
+  .appbar .sub{font-size:12px; color:#c8d6e6; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .btn{appearance:none; border:0; border-radius:999px; padding:9px 14px; font-size:14px;
+    font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,.16); color:#fff; white-space:nowrap;}
+  .btn:active{transform:scale(.97);}
+  .btn.primary{background:#fff; color:var(--brand);}
+  .btn.small{padding:7px 11px;font-size:13px;}
+  .btn[disabled]{opacity:.45;}
+  .tabs{position:sticky; top:var(--tabtop,58px); z-index:40; background:var(--card);
+    display:flex; gap:4px; padding:8px 10px; overflow-x:auto; border-bottom:1px solid var(--line); scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{border:1px solid var(--line); background:#fff; color:var(--muted);
+    padding:8px 14px; border-radius:999px; font-size:14px; font-weight:600; white-space:nowrap; cursor:pointer;}
+  .tab.active{background:var(--brand2); border-color:var(--brand2); color:#fff;}
+  .tab .badge{display:inline-block; margin-left:6px; background:var(--danger); color:#fff;
+    border-radius:999px; font-size:11px; padding:0 6px; line-height:16px;}
+  main{padding:14px; max-width:1100px; margin:0 auto;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); margin:0 0 14px; overflow:hidden;}
+  .card>.card-h{padding:12px 14px; border-bottom:1px solid var(--line); font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; background:#fafbfd;}
+  .card>.card-h .sp{flex:1;}
+  .card>.card-b{padding:12px 14px;}
+  .hint{font-size:12.5px; color:var(--muted);}
+  .fields{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px;}
+  .field label{display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.4px;}
+  .field input, .field .picker{width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:10px; font-size:16px; background:#fff; color:var(--ink); text-align:left;}
+  .field input:focus{outline:none; border-color:var(--brand2); box-shadow:0 0 0 3px rgba(47,109,179,.15);}
+  .picker{display:flex; align-items:center; gap:8px; cursor:pointer; min-height:46px; font-family:inherit;}
+  .picker .val{flex:1; font-weight:600;}
+  .picker .val.empty{font-weight:400; color:#9aa8b8;}
+  .picker .chev{color:var(--brand2); font-weight:700;}
+  .picker.bad{border-color:var(--danger); background:var(--dangerbg);}
+  .readout{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px 14px; margin-top:10px; font-size:13px;}
+  .readout div span{color:var(--muted); display:block; font-size:11px; text-transform:uppercase; letter-spacing:.4px;}
+  .emp-name{display:flex; align-items:center; gap:10px; padding:10px 12px; background:#fafbfd; border-bottom:1px solid var(--line);}
+  .emp-name .tag{font-size:11px; font-weight:700; color:#fff; background:var(--brand2); border-radius:6px; padding:3px 7px; white-space:nowrap;}
+  .emp-name .nm{flex:1; font-weight:700; font-size:15px;}
+  .emp-name .rm{background:none; border:0; color:var(--danger); font-size:13px; font-weight:600; cursor:pointer; padding:6px;}
+  .scroll{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  table.grid{border-collapse:separate; border-spacing:0; width:100%; min-width:max-content;}
+  table.grid th, table.grid td{border-right:1px solid var(--line); border-bottom:1px solid var(--line); text-align:center;}
+  table.grid thead th{position:sticky; top:0; background:#f0f4f9; font-size:11px; font-weight:700; color:var(--ink); padding:6px 4px; z-index:2; line-height:1.15;}
+  table.grid thead th .code{font-size:12px; display:block;}
+  table.grid thead th .desc{font-size:9px; color:var(--muted); font-weight:600; display:block; max-width:64px; margin:1px auto 0;}
+  .daycol{position:sticky; left:0; z-index:3; background:#f0f4f9; min-width:64px; font-size:12px; font-weight:700;}
+  .daycol .dt{display:block; font-size:9px; font-weight:600; color:var(--muted);}
+  /* Must out-specify "table.grid thead th" (z-index:2) or the other header
+     cells paint over the sticky Day header when the grid is scrolled right.
+     The original forms have this bug -- the Day heading disappears. */
+  table.grid thead th.daycol{z-index:4;}
+  table.grid tbody td{padding:0; background:#fff;}
+  table.grid tbody td.daycol{padding:4px 8px;}
+  table.grid input.cell{width:56px; max-width:56px; border:0; padding:10px 2px; font-size:16px; text-align:center; background:transparent; color:var(--ink); -moz-appearance:textfield;}
+  table.grid input.cell::-webkit-outer-spin-button, table.grid input.cell::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  table.grid input.cell:focus{outline:none; background:#fff7dd;}
+  td.rt, td.ct{background:var(--tot); font-weight:700; font-size:14px; color:var(--brand); min-width:56px;}
+  td.rt.over{background:var(--warnbg); color:var(--warn);}
+  td.rt.bad{background:var(--dangerbg); color:var(--danger);}
+  .totcol{position:sticky; right:0; background:var(--tot); box-shadow:-1px 0 0 var(--line);}
+  thead .totcol{background:#e3ecf6;}
+  tr.totrow td{background:var(--tot-strong); font-weight:700; font-size:14px;}
+  tr.totrow td.daycol{background:var(--tot-strong); color:var(--brand);}
+  td.grand{background:var(--grand); color:var(--grand-ink); font-weight:800;}
+  .pagegrand{display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:var(--grand); color:#fff; border-radius:12px; margin-top:2px;}
+  .pagegrand .lab{font-size:13px; font-weight:600; letter-spacing:.3px; opacity:.9;}
+  .pagegrand .val{font-size:22px; font-weight:800;}
+  .addbtn{display:block; width:100%; padding:14px; border:2px dashed var(--brand2); background:#f7fafd; color:var(--brand2);
+    border-radius:var(--radius); font-size:15px; font-weight:700; cursor:pointer; margin-bottom:14px; font-family:inherit;}
+  table.summary{border-collapse:separate; border-spacing:0; width:100%; min-width:max-content;}
+  table.summary th, table.summary td{border-right:1px solid var(--line); border-bottom:1px solid var(--line); padding:9px 8px; text-align:center; font-size:13px; white-space:nowrap;}
+  table.summary thead th{background:#f0f4f9; font-weight:700;}
+  table.summary td.rowlab, table.summary th.rowlab{position:sticky; left:0; background:#f0f4f9; font-weight:700; text-align:left; min-width:150px; z-index:1;}
+  table.summary tbody td{background:#fff; font-weight:600;}
+  table.summary tr.allrow td{background:var(--tot-strong); font-weight:800; color:var(--brand);}
+  table.summary tr.allrow td.rowlab{background:var(--tot-strong);}
+  table.summary td.tot, table.summary th.tot{background:var(--tot); font-weight:800;}
+  table.summary tr.allrow td.tot{background:var(--grand); color:#fff;}
+  .legend{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:4px 14px; font-size:12.5px; color:var(--muted);}
+  .legend b{color:var(--ink);}
+  .msg{padding:10px 12px; border-radius:10px; font-size:13.5px; margin-bottom:8px; border:1px solid transparent; display:flex; gap:8px;}
+  .msg .ic{font-weight:800;}
+  .msg.err{background:var(--dangerbg); border-color:#f0c2c2; color:#7d2626;}
+  .msg.warn{background:var(--warnbg); border-color:#f0dfae; color:#6b4c00;}
+  .msg.ok{background:#e8f6ee; border-color:#bfe4d0; color:#145c3a;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .footnote{font-size:12px;color:var(--muted); text-align:center; padding:6px 0 24px;}
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); background:#1a2432; color:#fff;
+    padding:10px 16px; border-radius:999px; font-size:14px; opacity:0; pointer-events:none; transition:.25s; z-index:300; max-width:88%; text-align:center;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  /* modal */
+  .modal{position:fixed; inset:0; background:rgba(12,20,32,.55); z-index:200; display:none; align-items:flex-end;}
+  .modal.show{display:flex;}
+  .sheet{background:var(--bg); width:100%; max-height:92vh; border-radius:18px 18px 0 0; display:flex; flex-direction:column; overflow:hidden;}
+  @media (min-width:700px){ .modal{align-items:center; justify-content:center;} .sheet{max-width:640px; border-radius:18px; max-height:80vh;} }
+  .sheet-h{padding:14px; background:var(--brand); color:#fff; display:flex; align-items:center; gap:10px;}
+  .sheet-h .t{flex:1; font-weight:700;}
+  .sheet-s{padding:10px 14px; background:var(--card); border-bottom:1px solid var(--line);}
+  .sheet-s input{width:100%; padding:12px; border:1px solid var(--line); border-radius:10px; font-size:16px;}
+  .sheet-s input:focus{outline:none; border-color:var(--brand2); box-shadow:0 0 0 3px rgba(47,109,179,.15);}
+  .sheet-b{overflow-y:auto; -webkit-overflow-scrolling:touch; padding:8px 0 calc(env(safe-area-inset-bottom) + 8px);}
+  .opt{padding:12px 14px; border-bottom:1px solid var(--line); background:#fff; cursor:pointer;}
+  .opt:active{background:#eef3f9;}
+  .opt .p{font-weight:700; font-size:15px;}
+  .opt .s{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .opt.dim{opacity:.45;}
+  .emptyp{padding:22px 14px; text-align:center; color:var(--muted); font-size:14px;}
+  .sheetrow{display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line); background:#fff;}
+  .sheetrow .g{flex:1; cursor:pointer; min-width:0;}
+  .sheetrow .p{font-weight:700; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .sheetrow .s{font-size:12.5px; color:var(--muted);}
+  .sheetrow .del{background:none;border:0;color:var(--danger);font-weight:700;font-size:13px;cursor:pointer;padding:8px;}
+  .sheetrow.cur{background:#eef3f9;}
+  @media (max-width:520px){ main{padding:10px;} }
+  @media print{
+    :root{--bg:#fff;}
+    body{background:#fff; font-size:11px;}
+    .appbar,.tabs,.no-print,.addbtn,.modal,.toast{display:none !important;}
+    .panel{display:block !important; break-inside:avoid;}
+    .panel + .panel{break-before:page;}
+    main{padding:0; max-width:none;}
+    .card{box-shadow:none; break-inside:avoid; margin-bottom:10px;}
+    .scroll{overflow:visible !important;}
+    table.grid input.cell{width:auto; min-width:34px;}
+    .print-title{display:block !important;}
+  }
+  .print-title{display:none; text-align:center; font-weight:800; font-size:16px; margin:0 0 8px;}
+</style>
+</head>
+<body>
+<div class="appbar">
+  <div class="print-title" id="printTitle">Builders Bloc Carpentry Time Sheet — Big Job</div>
+  <div class="row">
+    <div style="flex:1; min-width:0">
+      <h1>Big Job Time Sheet</h1>
+      <div class="sub" id="subline">New sheet</div>
+    </div>
+    <button class="btn small" id="sheetsBtn">Sheets</button>
+    <button class="btn primary" id="submitBtn">Submit</button>
+  </div>
+  <div class="row" style="margin-top:8px; gap:8px;">
+    <button class="btn small" id="newBtn">New</button>
+    <button class="btn small" id="pdfBtn">Print</button>
+    <div style="flex:1"></div>
+    <span class="btn small" id="saveState" style="background:transparent;color:#c8d6e6;pointer-events:none;"></span>
+  </div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="modal"><div class="sheet">
+  <div class="sheet-h"><div class="t" id="mTitle">Choose</div><button class="btn small" id="mClose">Close</button></div>
+  <div class="sheet-s" id="mSearchWrap"><input id="mSearch" type="search" placeholder="Search..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"></div>
+  <div class="sheet-b" id="mBody"></div>
+</div></div>
+
+<script>
+const CONFIG = {"form":"big","title":"Builders Bloc Carpentry Time Sheet — Big Job","short":"Big Job Time Sheet","days":["MON","TUE","WED","THUR","FRI","SAT"],"codes":[["312","Second Floor Subfloor"],["313","Third Floor Subfloor"],["314","Fourth Floor Subfloor"],["315","Fifth Floor Subfloor"],["321","First Floor Framing"],["322","Second Floor Framing"],["323","Third Floor Framing"],["324","Fourth Floor Framing"],["325","Fifth Floor Framing"],["326","Rough-In"],["330","Roof Framing"],["340","Exterior Trim"],["350","Interior"],["360","Extra Tickets-Carp"]],"jobs":[["03-1SET-ITON","","","",0,1],["03-1SET-ZZZZ","","","",0,0],["03-ALDE-0008","ALDER CREEK","8","",0,1],["03-ALDE-0009","ALDER CREEK","9","",0,1],["03-ALDE-0013","ALDER CREEK","13","",1,1],["03-ALDE-0014","","","2 ALDER CREEK DRIVE",1,1],["03-ALDE-0085","ALDER CREEK","85","612 ASHBURN DRIVE",1,1],["03-ALDE-0086","ALDER CREEK","86","",1,1],["03-ALDE-0087","","","",1,1],["03-ALDE-0088","","","",0,1],["03-ALDE-0092","ALDER CREEK","92","",1,1],["03-ALDE-0109","","","704 SEASIDE DRIVE",1,1],["03-ALDE-0140","ALDER CREEK","140","",1,0],["03-ALDE-0142","ALDER CREEK","142","",1,1],["03-ALDE-0143","ALDER CREEK","143","",1,1],["03-ALDE-VAU2","","","",0,0],["03-ALFD-0011","","","11 ST ALFRED ROAD",1,0],["03-ALSW-2371","","","12371 ALSWELL LANE",1,0],["03-AMBE-0023","","","",1,1],["03-AMBE-0049","AMBERLEIGH","49","224 CAMBLUM COURT",1,1],["03-AMBE-0051","","","212 CAMBLUM COURT",1,1],["03-AMBE-0139","AMBERLIEGH","139","",1,1],["03-AMHE-8316","","","8316 AMHERST AVENUE",0,0],["03-ANTI-CHUR","","","211 BOONE STREET",0,0],["03-APOS-6162","APOSTOLIC CHURC","","6162 TELEGRAPH",1,1],["03-AUTH-0192","AUTUMN HOLLOW","192","",1,1],["03-AUTH-0198","AUTUMN HOLLOW","198","",1,1],["03-AUTU-3925","","","3925 AUTUMN FARMS",1,0],["03-BACH-0417","","","417 BACH AVENUE",1,0],["03-BALL-0600","","","10600 BALLANTRAE",0,0],["03-BALM-2419","","","12419 BALLAS MEADOWS",1,1],["03-BEAC-0519","BEAR CREEK","519","3538 BIG BEAR COURT",1,0],["03-BEAT-0626","","","626 BEATRICE AVE",1,0],["03-BEAT-0632","","","632 BEATRICE AVENUE",1,0],["03-BEAT-0634","","","634 BEATRICE AVENUE",1,0],["03-BENW-0016","","","16 BENWOOD LANE",1,0],["03-BERK-0032","","","32 BERKSHIRE DRIVE",1,0],["03-BLUE-0555","","","555 BLUE GOOSE ROAD",0,0],["03-BLUE-0802","","","802 BLUE SPRINGS",0,0],["03-BLVD-0175","","","",1,1],["03-BRCH-0096","","","",0,0],["03-BROA-0003","","","",1,1],["03-BROA-0005","BROADVIEW VALLE","5","",1,1],["03-BROA-OFFI","BROADVIEW","","",1,1],["03-BROC-0001","BROOKFIELD","1","960 BROOKFIELD CHASE COURT",1,1],["03-BROC-0009","","","992 BROOKFIELD CHASE COURT",1,1],["03-BROC-0010","","","989 BROOKFIELD CHASE COURT",1,1],["03-BROC-0016","","","3782 GRAND NATIONAL DR",1,1],["03-BROS-0016","","","",1,1],["03-BROS-0020","","","",1,1],["03-BROS-0021","","","",1,1],["03-BROS-0024","BROOKSIDE","24","455 MOSSY BROOK DRIVE",1,1],["03-BROS-0071","BROOKSIDE","71","",1,1],["03-BROS-0096","BROOKSIDE","96","23 MAPLE BROOK DRIVE",1,1],["03-BROW-0686","","","686 BROWNELL AVENUE",1,0],["03-BROW-0810","","","810 BROWNELL",1,0],["03-BURR-0329","","","329 BURRING BROOK DRIVE",0,1],["03-BUTL-0004","BUTLER HILL","4","4927 BUTLER HILL ROAD",0,1],["03-BUTL-0005","","","",0,1],["03-BUTL-0008","","","4943 BUTLER HILL ROAD",0,1],["03-CALP-0445","CALADONIA","445","",1,1],["03-CALP-0470","","","",1,0],["03-CALP-0485","","","",1,1],["03-CALP-0501","CALEDONIA","","",1,1],["03-CALP-0510","","","",1,1],["03-CALP-0516","","","",1,1],["03-CALP-0528","","","",1,1],["03-CARM-0001","CARMEL WOODS","1","FRAME",1,0],["03-CARM-0002","CARMEL WOODS","2","FRAME",1,0],["03-CARM-IT01","CARMEL WOODS","1","TRIM",0,1],["03-CARM-IT02","CARMEL WOODS","2","TRIM",0,1],["03-CARR-1853","CARRINGTON WAY","24","1853 CARRINGTON WAY",1,1],["03-CARR-1855","CARRINGTON WAY","24","1855 CARRINGTON WAY 24",1,1],["03-CARR-1859","CARRINGTON WAY","25","1859 CARRINGTON WAY",1,1],["03-CENT-2626","WESLEY PARK","1","2626 CENTER",1,1],["03-CHIL-0001","","","1 CHILTON LANE",1,0],["03-CLAR-0857","","","857 CLARK AVE",1,0],["03-CLOD-0215","","","215 COLDAGH LANE",1,1],["03-COLO-8584","","","8584 COLONIAL LANE",0,0],["03-COTR-0021","COTTLEVILLE","21","6041 ST CHARLES STREET",1,1],["03-COTR-0028","COTTLEVILLE","28","",1,1],["03-COTR-0030","COTTLEVILLE","30","",1,1],["03-COTR-0307","COTTLEVILLE","307","",0,1],["03-COTR-0317","","","",1,1],["03-COTR-0318","","","",1,1],["03-COUR-3933","","","",0,0],["03-CROS-0007","","","7 CROSS TRAILS LANE",0,0],["03-DELL-0334","","","10334 DELLWOOD COURT",1,1],["03-DENN-0858","","","858 DENNIS DRIVE",0,0],["03-DETO-3966","GREEN HOUSE","","FRAME",1,0],["03-DETO-39IT","GREEN HOUSE","","TRIM",0,1],["03-DICK-0920","","","920 DICKSON",1,1],["03-DRAS-0002","","","3 DRAGONSTONE COURT",1,1],["03-EAST-2601","","","2601 EAST AVENUE",1,0],["03-EAST-2603","","","2603 EAST AVENUE",1,0],["03-EBBE-0193","","","",1,0],["03-EESS-0725","","","725 EAST ESSEX",1,0],["03-EGRA-0001","","","1 EAST GRAY FRIAR DRIVE",1,1],["03-EGRA-0675","","","375 E GRAY FRIAR DRIVE",1,0],["03-EJAC-0126","","","",1,0],["03-ELAK-0653","","","653 E LAKE DR",1,0],["03-EPAR-0000","","","PARK AVENUE",1,1],["03-EPAR-FR01","EAST PARK","1","FRAME",1,0],["03-EPAR-FR02","EAST PARK","2","FRAME",1,0],["03-EPAR-FR03","EAST PARK","3","FRAME",1,0],["03-EPAR-FR04","EAST PARK","4","FRAME",1,0],["03-EPAR-FR05","EAST PARK","5","FRAME",1,0],["03-EPAR-FR06","EAST PARK","6","FRAME",1,0],["03-EPAR-FR07","EAST PARK","7","FRAME",1,0],["03-EPAR-FR08","EAST PARK","8","FRAME",1,0],["03-EPAR-FR09","EAST PARK","9","FRAME",1,0],["03-EPAR-FR10","EAST PARK","10","FRAME",1,0],["03-EPAR-FR11","EAST PARK","11","FRAME",1,0],["03-EPAR-FR12","EAST PARK","12","FRAME",1,0],["03-EPAR-FR13","EAST PARK","13","FRAME",1,0],["03-EPAR-FR14","EAST PARK","14","FRAME",1,0],["03-EPAR-FR15","EAST PARK","15","FRAME",1,0],["03-EPAR-FR16","EAST PARK","16","FRAME",1,0],["03-EPAR-FR17","EAST PARK","17","FRAME",1,0],["03-EPAR-FR18","EAST PARK","18","FRAME",1,0],["03-EPAR-FR19","EAST PARK","19","FRAME",1,0],["03-EPAR-FR20","EAST PARK","20","FRAME",1,0],["03-EPAR-FR21","EAST PARK","21","FRAME",1,0],["03-EPAR-FRCO","EAST PARK","","FRAME",1,0],["03-EPAR-IT01","EAST PARK","1","TRIM",0,1],["03-EPAR-IT02","EAST PARK","2","TRIM",0,1],["03-EPAR-IT03","EAST PARK","3","TRIM",0,1],["03-EPAR-IT04","EAST PARK","4","TRIM",0,1],["03-EPAR-IT05","EAST PARK","5","TRIM",0,1],["03-EPAR-IT06","EAST PARK","6","TRIM",0,1],["03-EPAR-IT07","EAST PARK","7","TRIM",0,1],["03-EPAR-IT08","EAST PARK","8","TRIM",0,1],["03-EPAR-IT09","EAST PARK","9","TRIM",0,1],["03-EPAR-IT10","EAST PARK","10","TRIM",0,1],["03-EPAR-IT11","EAST PARK","11","TRIM",0,1],["03-EPAR-IT12","EAST PARK","12","TRIM",0,1],["03-EPAR-IT13","EAST PARK","13","TRIM",0,1],["03-EPAR-IT14","EAST PARK","14","TRIM",0,1],["03-EPAR-IT15","EAST PARK","15","TRIM",0,1],["03-EPAR-IT16","EAST PARK","16","TRIM",0,1],["03-EPAR-IT17","EAST PARK","17","TRIM",0,1],["03-EPAR-IT18","EAST PARK","18","TRIM",0,1],["03-EPAR-IT19","EAST PARK","19","TRIM",0,1],["03-EPAR-IT20","EAST PARK","20","TRIM",0,1],["03-EPAR-IT21","EAST PARK","21","TRIM",0,1],["03-EPAR-ITCO","EAST PARK","","TRIM",0,1],["03-EPAR-VAUL","","","",1,1],["03-ERBR-2685","2685 ERB ROAD","2685","2685 ERB ROAD",0,1],["03-ESWO-0236","","","",0,0],["03-EWOD-0219","","","219 E WOODBINE",1,1],["03-FAWN-1470","","","",1,0],["03-FORB-0832","","","832 FORBY",1,0],["03-FORD-0937","GREAT OAKS","1","937 FORDER ROAD",1,1],["03-FORV-0055","","","",1,0],["03-FOUN-0011","","","",1,0],["03-FOUN-0021","","","",1,0],["03-FOUN-0052","FOUNTAINS","52","",1,0],["03-FOUN-PARK","","","7 FREYMOUTH ROAD",0,1],["03-FOUR-0450","","","450 FOURWYND DRIVE",1,0],["03-FOUR-1112","","","1112 4TH STREET",0,1],["03-FOXH-0008","","","8 FOX HOLLOW",1,0],["03-GATE-CHUR","","","250 SALT LICK ROAD",0,0],["03-GERE-0004","","","242 GEREMMA DRIVE",1,1],["03-GLEN-0000","","","481 NORTH MERIDIAN ROAD",0,0],["03-GLEN-APT1","","","",0,0],["03-GLEN-APT2","GLEN CARBON APT","2","",0,0],["03-GLEN-APT3","","","",0,0],["03-GLEN-APT4","","","",0,0],["03-GLEN-BLD4","GLEN CARBON","4","",0,0],["03-GLEN-COMM","","","",0,0],["03-GLEN-GAR1","","","",0,0],["03-GLEN-GAR2","","","",0,0],["03-GLEN-GAR3","","","",0,0],["03-GLEN-GAR4","","","",0,0],["03-GLEN-VAUL","","","",0,0],["03-GRAH-8353","","","",1,1],["03-GRAN-1652","","","1652 GRAND ARMY ROAD",0,0],["03-HAMP-ITMA","HAMPTON INN","","TRIM",0,1],["03-HAMP-MARI","HAMPTON INN","","FRAME",1,0],["03-HAMP-VAUL","","","HAMPTON INN",0,0],["03-HARM-1424","","","1424 HARMONY COURT",0,1],["03-HARM-1431","","","1431 HARMONY COURT",0,1],["03-HARV-CHUR","","","177 FRONTIER PARK DR",0,1],["03-HARV-TROY","","","",0,1],["03-HAVE-0911","","","",0,0],["03-HEPP-2022","","","",1,1],["03-HIDD-0055","","","55 HIDDEN VISTA DRIVE",0,0],["03-HIGH-0106","","","",1,0],["03-HIGH-2508","","","2508 HIGH SCHOOL",1,0],["03-HIHI-0008","HIDDEN HILLS","8","",1,0],["03-HIHI-0009","HIDDEN HILLS","9","",1,0],["03-HILL-0116","","","116 HILLSIDE HEIGHTS LANE",1,0],["03-HNTR-0191","ALDER CREEK","191","",0,1],["03-HNTR-0192","HUNTLEIGH RIDGE","192","206 RED CLIFF COURT",0,1],["03-HNTR-0193","HUNTLEIGH RIDGE","192","",0,1],["03-HNTR-0194","HUNTLEIGH RIDGE","194","",0,1],["03-HNTR-0196","HUNTLEIGH RIDGE","196","214 RED CLIFF COURT",0,1],["03-HNTR-0198","HUNTLEIGH RIDGE","198","218 RED CLIFF COURT",0,1],["03-HNTR-0203","HUNTLEIGH RIDGE","203","",0,1],["03-HNTR-0204","","","",0,1],["03-HNTR-0212","HUNTLEIGH RIDGE","212","",0,1],["03-HNTR-0215","ALDER CREEK","215","",0,1],["03-HNTR-0235","ALDER CREEK","8","",0,1],["03-HNTR-0252","","","",0,1],["03-HNTR-0258","HUNTLEIGH RIDGE","258","605 BRINTON COURT",0,1],["03-HNTR-0260","","","",0,1],["03-HOME-0004","","","4 HOMESTEAD ACRES",1,0],["03-HORA-1290","","","1290 HORAN DRIVE",1,1],["03-HORA-129G","","","1290 HORAN",1,0],["03-HOUS-DESI","","","1969 W TERRA LANE",0,0],["03-HOUS-OFFI","","","",0,0],["03-HUNR-0190","","","",1,1],["03-HUNR-0238","","","",1,1],["03-HUNR-0287","","","",1,1],["03-HUNR-0289","","","",1,1],["03-HURS-0739","","","739 HURSTGREEN ROAD",1,0],["03-HWDD-9230","","","9230 HWY DD",1,0],["03-HWYF-0693","","","693 HIGHWAY F",1,0],["03-HWYO-1093","","","25517 AUTHUR LANE",0,0],["03-HWYP-1040","","","1040 HIGHWAY P",1,1],["03-INVE-0214","INVERNESS","214","",1,1],["03-INVE-0215","INVERNESS","215","503 ELM PARK COURT",1,1],["03-INVE-0264","INVERNESS","264","",1,1],["03-INVS-0339","","","",1,1],["03-INVS-0342","","","322 KINGSBARNS COURT",1,1],["03-JERU-7738","","","7738 JERUSALEM ROAD",1,0],["03-KING-0004","","","4 KINGSBURY",0,0],["03-KING-7134","","","7134 KINGSBURY",0,0],["03-LAWN-9111","","","9111 LAWN",0,1],["03-LEEA-0537","","","537 LEE AVENUE",0,0],["03-LEPE-8749","","","8749 LE PERE SCHOOL ROAD",1,1],["03-LIBP-0263","","","",1,0],["03-LIND-0014","","","14 LINDA LANE",1,1],["03-LIPL-0109","","","",0,1],["03-LIPL-0112","","","620 EISENHOWER BLVD",1,1],["03-LITZ-9785","","","9785 LITZINGER ROAD",1,0],["03-LITZ-9797","","","9797 LITZINGER",1,0],["03-LONE-0137","","","137 LONSOME DOVE WAY",1,0],["03-LYNS-0005","LYNSTONE","5","",1,1],["03-LYNS-0006","LYNSTONE","6","402 SPEARS",1,1],["03-MAGD-8737","","","8737 MAGDALEN",1,1],["03-MAGD-8741","","","8741 MAGDALEN",1,1],["03-MAJE-0413","","","",1,0],["03-MAJE-0414","","","",1,0],["03-MAJE-0551","MAJESTIC LAKES","551","",1,0],["03-MAJE-0552","","","",1,0],["03-MAJE-0553","MAJESTIC LAKES","553","",1,1],["03-MAJE-0554","MAJESTIC LAKES","554","",1,0],["03-MAJE-0555","MAJESTIC LAKES","555","",1,0],["03-MAJE-0556","MAJESTIC LAKES","556","",1,0],["03-MAJE-0557","MAJESTIC LAKES","557","",1,0],["03-MAJE-0558","MAJESTIC LAKES","558","1841 HOMEWOOD DRIVE",1,0],["03-MAJE-0559","MAJESTIC LAKES","559","",1,0],["03-MAJE-0560","MAJESTIC LAKES","560","",1,1],["03-MAJE-0561","MAJESTIC LAKES","561","",1,0],["03-MAJE-0562","MAJESTIC LAKES","562","",1,0],["03-MAJE-0563","MAJESTIC LAKES","563","1821 HOMEWOOD DRIVE",1,0],["03-MAJE-0564","MAJESTIC LAKES","564","1817 HOMEWOOD DRIVE",1,0],["03-MAJE-0568","","","1801 HOMEWOOD DRIVE",1,0],["03-MAJE-0573","MAJESTIC LAKES","573","",1,0],["03-MAJE-0575","MAJESTIC LAKES","575","",1,0],["03-MAJE-0576","MAJESTIC LAKES","576","",1,0],["03-MAJE-0579","MAJESTIC LAKES","579","",1,0],["03-MAJE-0580","MAJESTIC LAKES","580","",1,0],["03-MAJE-0581","MAJESTIC LAKES","581","",1,0],["03-MAJE-0609","MAJESTIC LAKES","609","",1,0],["03-MAJE-0613","MAJESTIC LAKES","613","",1,0],["03-MAJE-0614","MAJESTIC LAKES","614","588 BIRCHWOOD DRIVE",1,0],["03-MAJE-0617","MAJESTIC LAKES","617","",1,0],["03-MAJE-0618","MAJESTIC LAKES","618","",1,0],["03-MAJE-0620","","","",1,0],["03-MAJE-0621","","","",1,0],["03-MAJE-0624","","","",1,0],["03-MAJE-0625","","","",1,0],["03-MAJE-0631","","","",1,1],["03-MAJE-0634","MAJESTIC LAKES","634","",1,0],["03-MAJE-0636","","","",1,0],["03-MAJE-0637","","","",1,0],["03-MAJE-0640","","","",1,0],["03-MAJE-0653","","","",1,0],["03-MAJE-0654","","","",1,0],["03-MAJE-0660","","","",1,0],["03-MAJE-0662","","","",1,0],["03-MAJE-0663","","","",1,1],["03-MAJE-0668","","","",1,1],["03-MAJE-0670","MAJESTIC LAKES","670","",1,0],["03-MAJE-0671","MAJESTIC LAKES","671","",1,0],["03-MAJE-0687","","","",1,0],["03-MAJE-0688","","","",1,0],["03-MAJE-0689","","","",1,0],["03-MAJE-0692","","","",1,0],["03-MAJE-0695","","","812 CEDARWOOD DRIVE",1,0],["03-MAJE-0697","","","",1,0],["03-MAJE-0699","","","",1,0],["03-MAJE-0705","MAJESTIC LAKES","705","561 BIRCHWOOD DRIVE",1,0],["03-MAJE-0706","MAJESTIC LAKES","706","557 BIRCHWOOD DRIVE",1,0],["03-MAJE-0707","","","",1,0],["03-MAJE-0708","MAJESTIC LAKES","708","549 BIRCHWOOD DRIVE",1,0],["03-MAJE-VAUL","","","",0,0],["03-MAPL-3155","","","13155 MAPLE DRIVE",0,0],["03-MARH-0005","MARIAN HEIGHTS","5","",0,1],["03-MCPH-6320","","","6320 MCPHERSON",0,0],["03-MEIN-1453","","","1453 MIENERSHAGEN ROAD",1,0],["03-MERI-0010","MERIDIAN","10","",1,0],["03-MERI-0011","MERIDIAN","11","",1,0],["03-MERI-0016","MERIDIAN","16","",1,0],["03-MERI-0020","MERIDIAN","20","",1,0],["03-MERI-0021","MERIDIAN","21","",1,0],["03-MERR-9215","","","9215 MERRITT AVENUE",1,0],["03-MERR-9219","","","9219 MERRITT AVENUE",1,0],["03-MERR-9223","","","",1,0],["03-MERR-9225","","","",1,0],["03-MILA-0001","","","",0,0],["03-MINN-BLD1","","","3000 MINNESOTA",1,0],["03-MINN-BLD2","","","3000 MINNESOTA",1,0],["03-MINN-CARR","","","3000 MINNESOTA",1,0],["03-MISS-3005","","","3005 MISSOURI AVENUE",1,1],["03-MISS-3007","","","3007 MISSOURI AVENUE",1,1],["03-MISS-3009","","","3009 MISSOURI AVENUE",1,1],["03-MONR-0414","","","414 MONROE PLACE",1,0],["03-MONT-0000","","","",0,0],["03-MONT-FR01","MONTAGE","","FRAME",1,0],["03-MONT-FR02","MONTAGE","2","FRAME",1,0],["03-MONT-FR03","MONTAGE","3","FRAME",1,0],["03-MONT-FR04","MONTAGE","4","FRAME",1,0],["03-MONT-FR05","MONTAGE","5","FRAME",1,0],["03-MONT-FR06","MONTAGE","6","FRAME",1,0],["03-MONT-FR07","MONTAGE","7","FRAME",1,0],["03-MONT-FR08","MONTAGE","8","FRAME",1,0],["03-MONT-FR09","MONTAGE","9","FRAME",1,0],["03-MONT-FR10","MONTAGE","10","FRAME",1,0],["03-MONT-FR11","MONTAGE","11","FRAME",1,0],["03-MONT-FR12","MONTAGE","12","FRAME",1,0],["03-MONT-FR13","MONTAGE","13","FRAME",1,0],["03-MONT-FR14","MONTAGE","14","FRAME",1,0],["03-MONT-FR15","MONTAGE","15","FRAME",1,0],["03-MONT-FR16","MONTAGE","16","FRAME",1,0],["03-MONT-FR17","MONTAGE","17","FRAME",1,0],["03-MONT-FR18","MONTAGE","18","FRAME",1,0],["03-MONT-FR19","MONTAGE","19","FRAME",1,0],["03-MONT-FR20","MONTAGE","20","FRAME",1,0],["03-MONT-FR21","MONTAGE","21","FRAME",1,0],["03-MONT-FR22","MONTAGE","22","FRAME",1,0],["03-MONT-FR23","MONTAGE","23","FRAME",1,0],["03-MONT-FR24","MONTAGE","24","FRAME",1,0],["03-MONT-FR25","MONTAGE","25","FRAME",1,0],["03-MONT-FR26","MONTAGE","26","FRAME",1,0],["03-MONT-FR27","MONTAGE","27","FRAME",1,0],["03-MONT-FR28","MONTAGE","28","FRAME",1,0],["03-MONT-FR29","MONTAGE","29","FRAME",1,0],["03-MONT-FR30","MONTAGE","30","FRAME",1,0],["03-MONT-FR31","MONTAGE","31","FRAME",1,0],["03-MONT-FR32","MONTAGE","32","FRAME",1,0],["03-MONT-FRCL","MONTAGE","","FRAME",1,0],["03-MONT-FRMA","MONTAGE","","FRAME",1,0],["03-MONT-FRMO","MONTAGE","","FRAME",1,0],["03-MONT-FRTR","MONTAGE","","FRAME",0,0],["03-MONT-IT01","MONTAGE","1","TRIM",0,1],["03-MONT-IT02","MONTAGE","2","TRIM",0,1],["03-MONT-IT03","MONTAGE","3","TRIM",0,1],["03-MONT-IT04","MONTAGE","4","TRIM",0,1],["03-MONT-IT05","MONTAGE","5","TRIM",0,1],["03-MONT-IT06","MONTAGE","6","TRIM",0,1],["03-MONT-IT07","MONTAGE","7","TRIM",0,1],["03-MONT-IT08","MONTAGE","8","TRIM",0,1],["03-MONT-IT09","MONTAGE","9","TRIM",0,1],["03-MONT-IT10","MONTAGE","10","TRIM",0,1],["03-MONT-IT11","MONTAGE","11","TRIM",0,1],["03-MONT-IT12","MONTAGE","12","TRIM",0,1],["03-MONT-IT13","MONTAGE","13","TRIM",0,1],["03-MONT-IT14","MONTAGE","14","TRIM",0,1],["03-MONT-IT15","MONTAGE","15","TRIM",0,1],["03-MONT-IT16","MONTAGE","16","TRIM",0,1],["03-MONT-IT17","MONTAGE","17","TRIM",0,1],["03-MONT-IT18","MONTAGE","18","TRIM",0,1],["03-MONT-IT19","MONTAGE","19","TRIM",0,1],["03-MONT-IT20","MONTAGE","20","TRIM",0,1],["03-MONT-IT21","MONTAGE","21","TRIM",0,1],["03-MONT-IT22","MONTAGE","22","TRIM",0,1],["03-MONT-IT23","MONTAGE","23","TRIM",0,1],["03-MONT-IT24","MONTAGE","24","TRIM",0,1],["03-MONT-IT25","MONTAGE","25","TRIM",0,1],["03-MONT-IT26","MONTAGE","26","TRIM",0,1],["03-MONT-IT27","MONTAGE","27","TRIM",0,1],["03-MONT-IT28","MONTAGE","28","TRIM",0,1],["03-MONT-IT29","MONTAGE","29","TRIM",0,1],["03-MONT-IT30","MONTAGE","30","TRIM",0,1],["03-MONT-IT31","MONTAGE","31","TRIM",0,1],["03-MONT-IT32","MONTAGE","32","TRIM",0,1],["03-MONT-ITCL","MONTAGE","","TRIM",0,1],["03-MONT-ITMA","MONTAGE","","TRIM",0,1],["03-MONT-VAUL","","","",0,0],["03-NBOM-1041","","","1041 NORTH BOMPART AVENUE",0,1],["03-NELD-0308","","","308 NELDA",1,1],["03-NETO-FR05","","","",0,0],["03-NETO-FR06","","","",0,0],["03-NETO-FR07","","","",0,0],["03-NETO-FR08","","","",0,0],["03-NETO-FR09","","","",0,0],["03-NETO-FR10","","","",1,0],["03-NETO-FR11","","","",1,0],["03-NETO-FR12","","","",1,0],["03-NETO-FR13","","","",1,0],["03-NETO-FR14","","","",1,0],["03-NETO-FR15","","","",1,0],["03-NETO-FR16","","","",1,0],["03-NETO-FR17","","","",1,0],["03-NETO-FR18","","","",1,0],["03-NETO-FR19","","","",1,0],["03-NETO-FR20","","","",1,0],["03-NETO-IT01","","","",0,1],["03-NETO-IT02","","","",0,1],["03-NETO-IT03","","","",0,1],["03-NETO-IT04","","","",0,1],["03-NETO-IT05","","","",0,1],["03-NETO-IT06","","","",0,1],["03-NETO-IT07","","","",0,1],["03-NETO-IT08","","","",0,1],["03-NETO-IT09","","","",0,1],["03-NETO-IT10","","","",0,1],["03-NETO-IT11","","","",0,1],["03-NETO-IT12","","","",0,1],["03-NETO-IT13","","","",0,1],["03-NETO-IT14","","","",0,1],["03-NETO-IT15","","","",0,1],["03-NETO-IT16","","","",0,1],["03-NETO-IT17","","","",0,1],["03-NETO-IT18","","","",0,1],["03-NETO-IT19","","","",0,1],["03-NETO-IT20","","","",0,1],["03-NETO-TRGT","","","",0,0],["03-NETO-VAUL","","","",0,0],["03-NEWB-0001","","","1 NEW BALLAS PLACE",0,0],["03-NEWH-APAR","","","326 N VERMILION STREET",0,0],["03-NIRK-0614","NIRK AVENUE","614","614 NIRK AVENUE",0,1],["03-NOTT-0050","NOTTINGHAM","50","",1,0],["03-NOTT-0052","","","",1,0],["03-NOTT-0055","","","",1,0],["03-NOTT-0057","NOTTINGHAM","57","",1,0],["03-NSAP-0109","","","109 NORTH SAPPINGTON ROAD",0,0],["03-NTOW-0008","","","",1,1],["03-NTOW-9003","","","237 ARPENT ALLEY",1,1],["03-NTOW-9005","","","229 ARMENT ALLEY",1,1],["03-NTOW-9006","","","",1,1],["03-NTOW-9007","NEW TOWN","9007","",1,1],["03-NTOW-9010","NEW TOWN","9010","",1,1],["03-NTOW-9012","NEW TOWN","9012","",1,1],["03-NTOW-9013","NEW TOWN","9013","",1,0],["03-NTOW-9018","NEW TOWN","9018","165 ARPENT ALLEY",1,1],["03-NTOW-9020","","","",1,1],["03-NTOW-9023","NEW TOWN","9023","",1,1],["03-NTOW-9024","NEW TOWN","9024","",1,1],["03-NTOW-9076","","","",1,1],["03-NTOW-9079","NEW TOWN","79","",1,1],["03-NTOW-9080","","","",1,1],["03-NTOW-9085","","","",1,1],["03-NTOW-VAUL","","","",1,1],["03-OAKK-0014","","","14 OAK KNOLL",0,0],["03-OAKT-0224","","","224 OAK TREE",0,1],["03-OAKT-0510","","","",1,0],["03-OGLE-1504","","","1504 OGLESBY",1,0],["03-OGLE-1507","","","1507 OGLESBY",1,0],["03-OGLE-1524","","","1524 OGLESBY",1,0],["03-OLDB-9501","","","9501 OLD BONHOMEE",0,0],["03-OLDS-8555","","","8555 OLD SAPPINGTON",0,0],["03-OLIV-0005","OLIVETTE TOWNHO","5","",1,1],["03-ORCH-0081","","","1310 ORCHARD LAKES CIRCLE",0,1],["03-ORCH-0103","","","1566 ORCHARD LAKES CIRCLE",0,1],["03-ORCH-0116","","","",1,1],["03-PARB-0001","","","1213 ABINGTON STATION DR",0,1],["03-PARB-0057","","","",0,1],["03-PARV-0416","","","416 PARKVIEW LANE",0,0],["03-PARV-0461","","","461 PARK VIEW LANE",0,0],["03-PARW-PICK","","","",0,0],["03-PATC-0113","","","",1,0],["03-PEAR-0621","","","621 PEARL AVENUE",1,0],["03-PERS-5655","","","5655 PERSHING",0,0],["03-PEVE-IT01","PEVELY POINTE","1","TRIM",0,1],["03-PEVE-IT02","PEVELY POINTE","2","TRIM",0,1],["03-PEVE-IT03","PEVELY POINTE","3","TRIM",0,1],["03-PEVE-IT04","PEVELY POINTE","4","TRIM",0,1],["03-PEVE-IT05","PEVELY POINTE","5","TRIM",0,1],["03-PEVE-IT06","PEVELY POINTE","6","TRIM",0,1],["03-PEVE-IT07","PEVELY POINTE","7","TRIM",0,1],["03-PEVE-IT08","PEVELY POINTE","8","TRIM",0,1],["03-PEVE-ITCL","PEVELY POINTE","","TRIM",0,1],["03-POIN-0923","","","923 POINSETTA LANE",0,1],["03-PONC-0036","","","",0,1],["03-PRE4-0003","PRESERVATION SQ","3","FRAME",1,0],["03-PRE4-0005","PRESERVATION SQ","5","FRAME",1,0],["03-PRE4-0009","PRESERVATION SQ","9","FRAME",1,0],["03-PRE4-0010","PRESERVATION SQ","10","FRAME",0,0],["03-RAVE-0434","","","",0,0],["03-READ-0156","","","156 READING AVENUE",1,0],["03-RIVE-0465","","","",1,1],["03-RIVE-0486","","","",1,1],["03-RODG-6920","","","16920 RODGERS AVENUE",0,0],["03-RULE-2264","","","2264 RULE AVENUE",1,0],["03-RULE-2266","","","2266 RULE AVENUE",1,0],["03-RULE-2270","","","2270 RULE AVENUE",1,0],["03-SALE-2632","","","2632 SALEM ROAD",1,1],["03-SANT-0003","SANTINO","3","11913 SANTINO COURT",1,0],["03-SANT-0005","","","11907 SANTINO COURT",1,1],["03-SANT-0007","SANTINO","7","11912 SANTINO COURT",1,0],["03-SARA-0140","","","140 WEST SARAH",1,1],["03-SAVA-0235","","","",1,0],["03-SAVA-0236","","","",1,0],["03-SAVA-0249","","","",1,0],["03-SAVA-0253","SAVANNAH","","",1,0],["03-SAVA-0286","","","",1,0],["03-SAVC-0124","","","3160 BIRMINGHAM DRIVE",0,1],["03-SAVC-0155","","","",1,1],["03-SAXO-0009","","","",1,1],["03-SAXO-0024","SAXONY RIDGE","24","",1,1],["03-SBAL-0416","","","416 S BALLAS ROAD",0,0],["03-SCHE-1715","","","1715 SCHEEL",0,1],["03-SCHW-0732","","","",1,0],["03-SCOB-0793","","","10793 MIDWEST INDUSTRIAL",0,0],["03-SERE-0017","","","",1,1],["03-SGOR-0505","","","505 SOUTH GORE AVENUE",1,0],["03-SHAN-2745","","","2745 SHANE LANE",1,0],["03-SMCK-1111","","","1111 S MCKNIGHT",0,0],["03-SOME-0108","","","109 WINDOVER POINT",1,0],["03-SOME-2426","","","",0,1],["03-SOME-2430","","","",0,1],["03-SPAR-0030","SPARTAN ESTATES","30","",0,1],["03-SPRI-OFAL","SPRINGHILL","","FRAME",1,0],["03-SPRI-TGTF","","","",1,0],["03-SROC-1274","","","1274 S ROCK HILL ROAD",1,0],["03-SSTR-2321","","","22321 S STRACKS CHURCH RD",1,1],["03-STCR-0048","","","1016 FOX MANOR COURT",0,1],["03-STOB-2728","STONEBRIDGE","","",1,0],["03-STOC-0001","","","13013 STONE CASTLE CT",0,0],["03-STOC-0002","STONE CASTLE","2","13017 STONE CASTLE COURT",0,0],["03-STOC-0003","STONE CASTLE","3","13025 STONE CASTLE CT",0,0],["03-STOC-0007","STONE CASTLE","7","STONE CASTLE COURT",1,0],["03-STOC-0008","STONE CASTLE","8","13018 STONE CASTLE CT",0,0],["03-STOC-008S","STONE CASTLE","","",0,1],["03-STON-0106","","","",1,0],["03-STON-1041","","","11041 STONEBRIDGE LANE",1,0],["03-STOW-0315","","","315 STONWALL DRIVE",1,0],["03-SUPR-CNTY","","","",0,0],["03-SUPR-PAID","","","",0,0],["03-SUTF-0017","SUTTON FARMS","17","708 MACOMB COURT",1,1],["03-SUTF-0038","SUTTON FARMS","38","",1,1],["03-THOR-0407","","","407 THORNTREE LAKE COURT",0,0],["03-TOPP-0020","","","",0,0],["03-TRUH-OTEL","TRU HOTEL","","FRAME",1,0],["03-TRUH-OTIT","TRU HOTEL","","TRIM",0,1],["03-TUSC-0066","TUSCAN VALLEY","66","4801 SIERRA VIEW PLACE",1,1],["03-TUSC-0071","TUSCAN VALLEY","71","4810 SIERRA VIEW PLACE",1,1],["03-TWIC-0005","TWIN CREEKS","5","707 TWIN CREEKS LANE",1,1],["03-UNIO-APAR","UNION APARTMENT","","WEST SPRINGFIELD DRIVE",1,1],["03-VINE-3332","","","3332 VINE CLAD HILL DRIVE",1,0],["03-VIVI-FR01","VIVIANS VILLAGE","1","FRAME",1,0],["03-VIVI-FR02","VIVIANS VILLAGE","2","FRAME",1,0],["03-VIVI-FR03","VIVIANS VILLAGE","3","FRAME",1,0],["03-VIVI-FR04","VIVIANS VILLAGE","4","FRAME",1,0],["03-VIVI-FR05","VIVIANS VILLAGE","5","FRAME",1,0],["03-VIVI-FR06","VIVIANS VILLAGE","6","FRAME",1,0],["03-VIVI-FR07","VIVIANS VILLAGE","7","FRAME",1,0],["03-VIVI-FR08","VIVIANS VILLAGE","8","FRAME",1,0],["03-VIVI-FR09","VIVIANS VILLAGE","9","FRAME",1,0],["03-VIVI-FR10","VIVIANS VILLAGE","10","FRAME",1,0],["03-VIVI-FR11","VIVIANS VILLAGE","11","FRAME",1,0],["03-VIVI-FR12","VIVIANS VILLAGE","12","FRAME",1,0],["03-VIVI-FR13","VIVIANS VILLAGE","13","FRAME",1,0],["03-VIVI-FR14","VIVIANS VILLAGE","14","FRAME",1,0],["03-VIVI-FR15","VIVIANS VILLAGE","15","FRAME",1,0],["03-VIVI-FR16","VIVIANS VILLAGE","16","FRAME",1,0],["03-VIVI-FR17","VIVIANS VILLAGE","17","FRAME",1,0],["03-VIVI-FR18","VIVIANS VILLAGE","18","FRAME",1,0],["03-VIVI-FR19","VIVIANS VILLAGE","19","FRAME",1,0],["03-VIVI-FR20","VIVIANS VILLAGE","20","FRAME",1,0],["03-VIVI-IT01","VIVIANS VILLAGE","1","TRIM",0,1],["03-VIVI-IT02","VIVIANS VILLAGE","2","TRIM",0,1],["03-VIVI-IT03","VIVIANS VILLAGE","3","TRIM",0,1],["03-VIVI-IT04","VIVIANS VILLAGE","4","TRIM",0,1],["03-VIVI-IT05","VIVIANS VILLAGE","5","TRIM",0,1],["03-VIVI-IT06","VIVIANS VILLAGE","6","TRIM",0,1],["03-VIVI-IT07","VIVIANS VILLAGE","7","TRIM",0,1],["03-VIVI-IT08","VIVIANS VILLAGE","8","TRIM",0,1],["03-VIVI-IT09","VIVIANS VILLAGE","9","TRIM",0,1],["03-VIVI-IT10","VIVIANS VILLAGE","10","TRIM",0,1],["03-VIVI-IT11","VIVIANS VILLAGE","11","TRIM",0,1],["03-VIVI-IT12","VIVIANS VILLAGE","12","TRIM",0,1],["03-VIVI-IT13","VIVIANS VILLAGE","13","TRIM",0,1],["03-VIVI-IT14","VIVIANS VILLAGE","14","TRIM",0,1],["03-VIVI-IT15","VIVIANS VILLAGE","15","TRIM",0,1],["03-VIVI-IT16","VIVIANS VILLAGE","16","TRIM",0,1],["03-VIVI-IT17","VIVIANS VILLAGE","17","TRIM",0,1],["03-VIVI-IT18","VIVIANS VILLAGE","18","TRIM",0,1],["03-VIVI-IT19","VIVIANS VILLAGE","19","TRIM",0,1],["03-VIVI-IT20","VIVIANS VILLAGE","20","TRIM",0,1],["03-VIVI-TRAS","VIVIANS VILLAGE","","FRAME",1,0],["03-VIVI-VAUL","","","",0,0],["03-WARS-1700","","","1700 WARSON ESTATES",0,0],["03-WEDE-3348","WEST EDEN","9","3348 WEST EDEN",0,0],["03-WEDE-3360","","","3360 W EDEN DRIVE",0,0],["03-WHEA-0004","","","1406KWEIT LANE",1,1],["03-WHEA-0022","WHEATFIELD FARM","22","",0,1],["03-WILL-0008","","","8 WILLIAMSBURG",1,0],["03-WILW-0080","","","80 WILDWOOD LANE",1,1],["03-WILW-0090","","","90 WILDWOOD",1,0],["03-WINR-1922","","","1992 WINDING ROSE",1,0],["03-WMOO-3015","","","13015 W MOORE MEADOWS CT",1,1],["03-WOOD-8456","","","18456 WOODLAND MEADOWS DRIVE",0,0],["03-WOOL-0015","","","15 WOODLINE DRIVE",1,1],["03-YALE-1518","","","1518 YALE AVENUE",1,1],["03-ZZZZ-9001","","","",0,0],["03-ZZZZ-9002","","","",0,0],["03-ZZZZ-9003","","","",0,0],["03-ZZZZ-FISC","","","",0,0],["03-ZZZZ-HOUS","","","",0,0],["03-ZZZZ-LOMB","","","",0,0],["03-ZZZZ-MIDA","","","",0,0],["03-ZZZZ-NICH","","","",0,0],["03-ZZZZ-OFFI","","","",0,0],["03-ZZZZ-RENA","","","",0,0]],"employees":[["BUHSAAR","AARON C BUHSE"],["TRAOABD","ABDOUL M TRAORE"],["ROMEABI","ABISAI ROMERO-VALLEJO"],["WARDADA","ADAM J WARD"],["JOACADA","ADAM M JOACHIMSTHALER"],["HATCAID","AIDAN S HATCHER"],["DMUCALE","ALEXANDER J DMUCHOVSKY"],["MATYALE","ALEXANDER J MATYE"],["MAXWALL","ALLEN J MAXWELL"],["BASSALP","ALPHEAUSE L BASSETT JR"],["DAVIAMO","AMOS V DAVIS"],["CASTAND","ANDREW A CASTEEL"],["STEVAND","ANDREW R STEVENS"],["RAUANN","ANN M RAU"],["WENGARI","ARIK S WENGERT"],["HAMLAUB","AUBREY G HAMLETT"],["BRANBAI","BAILEY R BRANDT"],["JENNBED","BEDFORD M JENNINGS JR"],["MERSBRA","BRAEDEN K MERS"],["DOWEBRA","BRANDON C DOWELL"],["RIDEBRE","BRENDEN M RIDER"],["BOYEBRI","BRIANNA L BOYET"],["NIEDBRO","BRODIE M NIEDERSCHMIDT"],["KNAUBRO","BRODY N KNAUST"],["RAPPCAL","CALEB C RAPP"],["CLARCAL","CALVIN N CLARK"],["SWARCAM","CAMRON M SWARINGEN"],["MADDCAS","CASEY M MADDOX"],["VANDCHA","CHARLES X VANDERBOL"],["GREECHA","CHASE I GREENLEE"],["CROSCHR","CHRISHAWN J CROSBY"],["KONECHR","CHRISTIAN B KONERTZ"],["BAKECHR","CHRISTOHER J BAKER"],["DICKCHR","CHRISTOPHER D DICKEN"],["TRETCHR","CHRISTOPHER E TRETTER"],["CHAPCHR","CHRISTOPHER SCOTT CHAPMAN"],["PETECLA","CLAYTON T PETERSON"],["SCHLCOD","CODY P HOBIN"],["HOLMCOR","COREY M HOLMES"],["JOHNCOR","CORTEZ L JOHNSON"],["TALLCOR","CORY L TALLY"],["SKOUCRA","CRAIG M SKOUBY"],["NORTDAN","DANIEL A NORTHCUTT"],["SCHLDAN","DANIEL D SCHLESINGER"],["DICKDAN","DANIEL M DICKEN"],["GANNDAV","DAVID A GANN"],["RODGDAV","DAVID A RODGERS III"],["MILNDAW","DAWSON M MILNER"],["GERSDAY","DAYTON T GERSTACKER"],["LAWSDEN","DENNIS C LAWSON"],["STORDER","DERRICK M STORTZUM"],["DAVIDES","DESHON A DAVIS"],["WILLDEV","DEVEN L WILLIAMS"],["LINDDEV","DEVIN E LINDEMAN"],["KINSDEV","DEVIN T KINSEY"],["SOUTDEX","DEXTER W SOUTHERLAND"],["HUESDOU","DOUGLAS A HUESEMANN"],["PIKEDOU","DOUGLASS C PIKE"],["BRADDUS","DUSTIN A BRADSHAW"],["BREWDYL","DYLAN S BREWER"],["GIBBEDW","EDWARD B GIBBS"],["RUBLELM","ELMER LEE RUBLE"],["SNOWERI","ERIC T SNOWDEN"],["HIGHERI","ERIC W HIGHLEY"],["NICHERI","ERIHON L NICHOLSON"],["BILLETH","ETHAN C BILLINGSLEY"],["SWINGAB","GABRIEL L SWINDLER"],["LINKGAR","GARY L LINK"],["DICKGEN","GENE D DICKMEYER"],["SCHUGEO","GEOFFREY M SCHUCHART"],["CRESGRA","GRAYSON W CRESSWELL"],["MYERGRE","GREGORY L MYER"],["WORTHEN","HENRY J WORTMANN"],["ROACISA","ISABELLE C ROACH"],["MEISJAC","JACK H MEISER"],["CURRJAC","JACOB B CURRY"],["SNEEJAD","JADEN A SNEED"],["PURVJAL","JALEN J PURVEY"],["EYERJAS","JASON C EYERKUSS"],["ALLEJAS","JASON D ALLEN"],["KLUVJAS","JASON E KLUVER"],["COXJAS","JASON L COX"],["RAMSJAX","JAXON D RAMSOUR"],["MUELJEF","JEFFERY A MUELLER JR"],["DAVIJEF","JEFFERY L DAVIS"],["MYERJEF","JEFFREY A MYER"],["SWAFJEF","JEFFREY C SWAFFORD"],["GONZJER","JEREMIAH J GONZALEZ"],["SORBJOH","JOHN I SORBIE"],["BENNJOH","JOHN M BENNETT III"],["BOEHJON","JONATHAN M BOEHLKE"],["KEDLJOR","JORDAN T KEDL-THOMAS"],["HEITJOS","JOSEPH L HEITMAN"],["SCHAJOS","JOSEPH M SCHAEFER"],["COLEJOS","JOSEPH W COLEMAN"],["SANDJOS","JOSH L SANDERS"],["WILSJOS","JOSHUA M WILSON"],["RIDDJUL","JULIAN A RIDDLE"],["WARRJUS","JUSTIN E WARREN"],["JOHNJUS","JUSTIN T JOHNSON"],["BLUNKAL","KALEB A BLUNK"],["MANEKEE","KEEGAN J MANESS"],["JAMEKEN","KENDRICK M JAMES"],["GOODKEN","KENNETH W GOODMAN JR"],["KINGKEN","KENNETH W KING"],["SULLKEN","KENT W SULLENGER"],["GILMKEV","KEVIN L GILMAN"],["CRANKEV","KEVIN P CRANE"],["DEANKRA","KRAIG B DEAN"],["SIMMKRI","KRISLYN L SIMMONS"],["SCHNKYL","KYLE A SCHNETTGOECKE"],["ROACLAW","LAWRENCE J ROACH"],["LINGLAY","LAYNE S LINGLEY"],["PHILLOG","LOGAN E PHILLIPS"],["MARCLOG","LOGAN MARCH"],["OLSZLUK","LUKAS W OLSZEWSKI"],["HERRMAR","MARK W HERRING"],["MCCAMA1","MARVIN L MCCASKILL"],["DANIMAT","MATTHEW H DANIELS"],["HARTMAT","MATTHEW J HARTMANN"],["JACOMAT","MATTHEW J JACOBSEN"],["OCHSMAT","MATTHEW J OCHSENBINE"],["CATEMAT","MATTHEW L CATE"],["CUTTMIC","MICAH P CUTT"],["WHEEMIC","MICHAEL A WHEELER"],["HAWFMIC","MICHAEL J HAWF"],["JACOMIC","MICHAEL J JACOBSEN"],["KRAMMIC","MICHAEL M KRAMPER"],["SIENMIC","MICHAEL M SIENER"],["AKERMIC","MICHAEL S AKERS"],["BESSMIC","MICHAEL W BESS"],["HERNMIG","MIGUEL A HERNANDEZ MARTINEZ"],["HARRNAT","NATHAN A HARRIS"],["BRINNAT","NATHAN J BRINK"],["SKERNEV","NEVEN SKERL"],["LITVNIC","NICHOLAS J LITVINOV"],["WILLNOA","NOAH R WILLIAMS"],["MARQNOA","NOAH W MARQUITZ"],["FICKPAI","PAIGE M FICKE"],["PATTREI","REILLY J PATTON"],["LANGREI","REILLY O LANGSTON"],["HANNRIC","RICKEY L HANNA JR"],["FORSROB","ROBERT E FORSHEE"],["PURIROY","ROYANE M PURI"],["KNIGRYA","RYAN J KNIGHT"],["TAFFSAM","SAMUEL L TAFF"],["BIERSAM","SAMUEL M BIERMANN"],["JARVSCO","SCOTT A JARVIS"],["BERTSCO","SCOTT D BERTHOLF"],["DUSASEP","SEPT DUSABIMANA"],["MENDSER","SERGIO C MENDOZA"],["OSTMSHA","SHANE A OSTMANN"],["DADETAR","TARON A DADE"],["SPANTHO","THOMAS E SPANN JR"],["SUTTTIM","TIMOTHY G SUTTON"],["WILLTIM","TIMOTHY J WILLIAMS II"],["BOYETOB","TOBY M BOYER"],["GRUBTON","TONY R GRUBE"],["JACOTOR","TORRY L JACOBS"],["GIPSTRI","TRINTIN M GIPSON"],["WILLTY","TY M WILLIAMS"],["VOGETYL","TYLER J VOGELSANG"],["FIELTYR","TYRESE A FIELDS"],["MCBRWES","WESLEY S MCBRIDE"],["FLORWIL","WILLIAM E FLOREA"],["KEOUWIL","WILLIAM E KEOUGH"],["LOVIWIL","WILLIAM E LOVING III"],["STOCWIL","WILLIAM F STOCKELL IV"],["PETTZAC","ZACHARY T PETTY"]],"show_builder":false,"built":"08/06/2026","ext":"json"};
+
+/* ============================ helpers ============================ */
+const $ = (s,r=document)=>r.querySelector(s);
+const el = (t,c,txt)=>{const e=document.createElement(t); if(c)e.className=c; if(txt!=null)e.textContent=txt; return e;};
+const num = v => { v=parseFloat((v||'').toString().replace(/,/g,'')); return isNaN(v)?0:v; };
+const fmt = n => { if(!n) return ''; return (Math.round(n*100)/100).toString(); };
+const fmt0 = n => { const r=Math.round(n*100)/100; return r? r.toString() : '0'; };
+const DAYS = CONFIG.days, CODES = CONFIG.codes;
+
+/* CONFIG.jobs rows: [job, subdivision, lot, address, framing, trim]
+   CONFIG.employees rows: [code, name] */
+const JOBS = CONFIG.jobs.map(j=>({num:j[0], sub:j[1], lot:j[2], addr:j[3], fr:j[4], tr:j[5]}));
+const EMPS = CONFIG.employees.map(e=>({code:e[0], name:e[1]}));
+const EMP_BY_CODE = {}; EMPS.forEach(e=>EMP_BY_CODE[e.code]=e);
+const JOB_BY_NUM = {}; JOBS.forEach(j=>JOB_BY_NUM[j.num]=j);
+
+function jobLabel(j){
+  const bits=[];
+  if(j.sub) bits.push(j.sub);
+  if(j.lot) bits.push('Lot '+j.lot);
+  if(j.addr) bits.push(j.addr);
+  if(!bits.length) bits.push('(no description on file)');
+  return bits.join('  ·  ');
+}
+function jobPhase(j){
+  if(j.fr && j.tr) return 'Framing + Trim';
+  if(j.fr) return 'Framing';
+  if(j.tr) return 'Trim';
+  return '';
+}
+function isoDate(d){
+  const p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+}
+function parseISO(s){
+  if(!s) return null;
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if(!m) return null;
+  return new Date(+m[1], +m[2]-1, +m[3]);
+}
+/* Monday of the week that contains d (matches Python weekday(): Mon=0..Sun=6) */
+function mondayOf(d){
+  const wd=(d.getDay()+6)%7;
+  const m=new Date(d.getFullYear(), d.getMonth(), d.getDate()-wd);
+  return m;
+}
+function dayDates(weekEnding){
+  const d=parseISO(weekEnding);
+  if(!d) return DAYS.map(()=>null);
+  const mon=mondayOf(d);
+  return DAYS.map((_,i)=>new Date(mon.getFullYear(), mon.getMonth(), mon.getDate()+i));
+}
+function shortDate(d){ return d? (d.getMonth()+1)+'/'+d.getDate() : ''; }
+function usDate(d){ const p=n=>String(n).padStart(2,'0'); return d? p(d.getMonth()+1)+'/'+p(d.getDate())+'/'+d.getFullYear() : ''; }
+function nextSaturday(){
+  const t=new Date();
+  const add=(6-t.getDay()+7)%7;   /* Sat=6 */
+  return isoDate(new Date(t.getFullYear(), t.getMonth(), t.getDate()+add));
+}
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+/* ============================ storage ============================ */
+const LS_PREFIX = 'bbts2_'+CONFIG.form+'_';
+const LS_INDEX  = LS_PREFIX+'index';
+const LS_CURRENT= LS_PREFIX+'current';
+
+function loadIndex(){ try{ return JSON.parse(localStorage.getItem(LS_INDEX)||'[]'); }catch(e){ return []; } }
+function saveIndex(ix){ try{ localStorage.setItem(LS_INDEX, JSON.stringify(ix)); }catch(e){} }
+function loadSheet(id){ try{ return JSON.parse(localStorage.getItem(LS_PREFIX+id)||'null'); }catch(e){ return null; } }
+function deleteSheet(id){
+  try{ localStorage.removeItem(LS_PREFIX+id); }catch(e){}
+  saveIndex(loadIndex().filter(x=>x.id!==id));
+}
+
+let S = null;    /* current sheet state */
+
+function blankSheet(){
+  return { id:uid(), form:CONFIG.form, week_ending:nextSaturday(), job:'', foreman:'',
+           builder:'', crew:[], hours:{}, submitted:null, created:new Date().toISOString() };
+}
+function sheetTitle(s){
+  const j = s.job && JOB_BY_NUM[s.job];
+  const jn = j ? (j.sub ? j.sub + (j.lot?' Lot '+j.lot:'') : (j.addr || j.num)) : 'No job selected';
+  return jn;
+}
+function persist(){
+  if(!S) return;
+  try{ localStorage.setItem(LS_PREFIX+S.id, JSON.stringify(S)); localStorage.setItem(LS_CURRENT, S.id); }catch(e){}
+  const ix = loadIndex().filter(x=>x.id!==S.id);
+  ix.unshift({ id:S.id, title:sheetTitle(S), week:S.week_ending, job:S.job,
+               hours:totalHours(), submitted:S.submitted, saved:new Date().toISOString() });
+  saveIndex(ix);
+  const st=$('#saveState'); st.textContent='Saved';
+  clearTimeout(persist._t); persist._t=setTimeout(()=>st.textContent='',1200);
+  updateSubline();
+}
+function updateSubline(){
+  const j = S.job && JOB_BY_NUM[S.job];
+  const bits=[];
+  bits.push(j ? j.num : 'no job');
+  const d=parseISO(S.week_ending); if(d) bits.push('W/E '+usDate(d));
+  bits.push(fmt0(totalHours())+' hrs');
+  $('#subline').textContent = bits.join('  ·  ');
+}
+
+/* ============================ modal picker ============================ */
+let _pickState=null;
+function openPicker(opts){
+  _pickState = opts;
+  $('#mTitle').textContent = opts.title;
+  $('#mSearchWrap').style.display = opts.search===false ? 'none' : '';
+  $('#mSearch').value=''; $('#mSearch').placeholder = opts.placeholder||'Search...';
+  renderPicker('');
+  $('#modal').classList.add('show');
+  if(opts.search!==false) setTimeout(()=>{ try{$('#mSearch').focus();}catch(e){} }, 60);
+}
+function closePicker(){ $('#modal').classList.remove('show'); _pickState=null; }
+function renderPicker(q){
+  const b=$('#mBody'); b.innerHTML='';
+  if(!_pickState) return;
+  const items=_pickState.items(q);
+  if(!items.length){ b.appendChild(el('div','emptyp', _pickState.empty||'Nothing matches that search.')); return; }
+  items.slice(0,300).forEach(it=>{
+    if(it.custom){ b.appendChild(it.custom); return; }
+    const o=el('div','opt'+(it.dim?' dim':''));
+    o.appendChild(el('div','p',it.primary));
+    if(it.secondary) o.appendChild(el('div','s',it.secondary));
+    o.onclick=()=>{ if(it.dim) return; closePicker(); _pickState=null; it.pick(); };
+    b.appendChild(o);
+  });
+  if(items.length>300) b.appendChild(el('div','emptyp','Showing the first 300 matches — keep typing to narrow it down.'));
+}
+$('#mSearch').addEventListener('input', e=>renderPicker(e.target.value));
+$('#mClose').onclick=closePicker;
+$('#modal').addEventListener('click', e=>{ if(e.target===$('#modal')) closePicker(); });
+
+function pickJob(){
+  openPicker({
+    title:'Choose the job', placeholder:'Subdivision, lot, address or job number',
+    items:(q)=>{
+      const t=(q||'').trim().toUpperCase();
+      const terms=t.split(/\s+/).filter(Boolean);
+      let list=JOBS;
+      if(terms.length){
+        list=JOBS.filter(j=>{
+          const hay=(j.num+' '+j.sub+' '+j.lot+' '+j.addr).toUpperCase();
+          return terms.every(x=>hay.indexOf(x)>=0);
+        });
+      }
+      return list.map(j=>({
+        primary: j.num,
+        secondary: jobLabel(j) + (jobPhase(j)? '   —   '+jobPhase(j) : ''),
+        pick:()=>{ S.job=j.num; render(); persist(); }
+      }));
+    },
+    empty:'No job matches that. Check JobNumber.xlsx — the job may not be set up yet.'
+  });
+}
+function pickEmployee(title, onPick, exclude){
+  const ex=new Set(exclude||[]);
+  openPicker({
+    title:title, placeholder:'Employee name or ID',
+    items:(q)=>{
+      const t=(q||'').trim().toUpperCase();
+      const terms=t.split(/\s+/).filter(Boolean);
+      let list=EMPS;
+      if(terms.length){
+        list=EMPS.filter(e=>{
+          const hay=(e.name+' '+e.code).toUpperCase();
+          return terms.every(x=>hay.indexOf(x)>=0);
+        });
+      }
+      return list.map(e=>({
+        primary:e.name, secondary:e.code + (ex.has(e.code)?'   —   already on this sheet':''),
+        dim:ex.has(e.code), pick:()=>onPick(e)
+      }));
+    },
+    empty:'No employee matches that. Check EmployeeID.xlsx.'
+  });
+}
+function openSheets(){
+  const ix=loadIndex();
+  openPicker({
+    title:'Saved time sheets', search:false,
+    items:()=>{
+      const out=[];
+      const nb=el('div','opt');
+      nb.appendChild(el('div','p','+ Start a new time sheet'));
+      nb.appendChild(el('div','s','A blank sheet for another job or week'));
+      nb.onclick=()=>{ closePicker(); newSheet(); };
+      out.push({custom:nb});
+      if(!ix.length){
+        const e=el('div','emptyp','No saved sheets yet.');
+        out.push({custom:e});
+      }
+      ix.forEach(rec=>{
+        const row=el('div','sheetrow'+(S && rec.id===S.id?' cur':''));
+        const g=el('div','g');
+        g.appendChild(el('div','p', rec.title||'(no job)'));
+        const d=parseISO(rec.week);
+        g.appendChild(el('div','s', (d?('W/E '+usDate(d)):'no week') + '  ·  ' + fmt0(rec.hours||0) + ' hrs'
+          + (rec.submitted? '  ·  submitted':'')));
+        g.onclick=()=>{ closePicker(); openSheet(rec.id); };
+        const del=el('button','del','Delete');
+        del.onclick=(ev)=>{ ev.stopPropagation();
+          if(!confirm('Delete this time sheet? This cannot be undone.')) return;
+          deleteSheet(rec.id);
+          if(S && S.id===rec.id){ newSheet(); }
+          closePicker(); openSheets();
+        };
+        row.append(g,del);
+        out.push({custom:row});
+      });
+      return out;
+    }
+  });
+}
+function openSheet(id){
+  const s=loadSheet(id);
+  if(!s){ toast('That sheet could not be opened.'); return; }
+  S=normalize(s); render(); persist(); activate(0);
+}
+function newSheet(){
+  const prev=S;
+  S=blankSheet();
+  if(prev && prev.crew && prev.crew.length){
+    if(confirm('Start the new sheet with the same crew as "'+sheetTitle(prev)+'"?\n\nHours will be blank.')){
+      S.crew=prev.crew.slice();
+      S.foreman=prev.foreman;
+    }
+  }
+  render(); persist(); activate(0);
+}
+function normalize(s){
+  const b=blankSheet();
+  s=Object.assign(b, s||{});
+  s.crew=(s.crew||[]).filter(c=>EMP_BY_CODE[c]);
+  s.hours=s.hours||{};
+  if(s.foreman && !EMP_BY_CODE[s.foreman]) s.foreman='';
+  if(s.job && !JOB_BY_NUM[s.job]) s.job='';
+  return s;
+}
+
+/* ============================ totals ============================ */
+const hkey=(emp,di,code)=>emp+'|'+di+'|'+code;
+function cellVal(emp,di,code){ return num(S.hours[hkey(emp,di,code)]); }
+function empDayTotal(emp,di){ let t=0; CODES.forEach(c=>t+=cellVal(emp,di,c[0])); return t; }
+function empCodeTotal(emp,code){ let t=0; DAYS.forEach((_,di)=>t+=cellVal(emp,di,code)); return t; }
+function empTotal(emp){ let t=0; DAYS.forEach((_,di)=>t+=empDayTotal(emp,di)); return t; }
+function totalHours(){ let t=0; (S.crew||[]).forEach(c=>t+=empTotal(c)); return t; }
+function codeTotal(code){ let t=0; (S.crew||[]).forEach(c=>t+=empCodeTotal(c,code)); return t; }
+
+/* ============================ validation ============================ */
+function validate(){
+  const errors=[], warnings=[];
+  if(!S.week_ending || !parseISO(S.week_ending)) errors.push('Pick a Week Ending date.');
+  else {
+    const d=parseISO(S.week_ending);
+    if(d.getDay()!==6) warnings.push('Week Ending '+usDate(d)+' is a '+
+      ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]+
+      ', not a Saturday. Double-check it is right.');
+    const today=new Date(); today.setHours(0,0,0,0);
+    const diff=(d-today)/86400000;
+    if(diff>13) warnings.push('Week Ending '+usDate(d)+' is more than two weeks out.');
+    if(diff<-30) warnings.push('Week Ending '+usDate(d)+' is more than a month ago.');
+  }
+  if(!S.job) errors.push('Choose the job this sheet is for.');
+  if(!S.foreman) errors.push('Choose the foreman.');
+  if(!S.crew.length) errors.push('Add at least one employee to the crew.');
+  const zero=S.crew.filter(c=>empTotal(c)===0);
+  if(zero.length===S.crew.length && S.crew.length) errors.push('No hours have been entered anywhere on this sheet.');
+  else zero.forEach(c=>warnings.push((EMP_BY_CODE[c]||{}).name+' has no hours — they will be left off the submission.'));
+  S.crew.forEach(c=>{
+    const nm=(EMP_BY_CODE[c]||{}).name||c;
+    DAYS.forEach((day,di)=>{
+      const t=empDayTotal(c,di);
+      if(t>16) errors.push(nm+' has '+fmt0(t)+' hours on '+day+'. That is over 16 — please correct it.');
+      else if(t>10) warnings.push(nm+' has '+fmt0(t)+' hours on '+day+' — anything over 10 in a day becomes overtime.');
+    });
+    const wt=empTotal(c);
+    if(wt>40) warnings.push(nm+' has '+fmt0(wt)+' hours this week — hours over 40 become overtime.');
+    if(wt>80) errors.push(nm+' has '+fmt0(wt)+' hours this week. That looks wrong — please check it.');
+  });
+  if(S.crew.some(c=>DAYS.some((d,di)=>di===5 && empDayTotal(c,di)>0)))
+    warnings.push('This sheet has Saturday hours — they will show on the Hours to Review tab.');
+  return {errors, warnings};
+}
+
+/* ============================ UI build ============================ */
+const app=$('#app'), tabsEl=$('#tabs');
+let panels=[], tabBtns=[], activeIdx=0;
+const TAB_LABELS=['Job Info','Crew & Hours','Review & Submit'];
+
+function render(){
+  const scrollY=window.scrollY;
+  app.innerHTML=''; tabsEl.innerHTML=''; panels=[]; tabBtns=[];
+  TAB_LABELS.forEach((lab,i)=>{
+    const t=el('button','tab',lab);
+    t.onclick=()=>activate(i);
+    tabsEl.appendChild(t); tabBtns.push(t);
+  });
+  panels.push(jobPanel(), crewPanel(), reviewPanel());
+  panels.forEach(p=>app.appendChild(p));
+  activate(activeIdx, true);
+  updateSubline();
+  window.scrollTo({top:scrollY, behavior:'instant'});
+  refreshBadges();
+}
+function activate(idx, keepScroll){
+  activeIdx=idx;
+  panels.forEach((pl,i)=>pl.classList.toggle('active', i===idx));
+  tabBtns.forEach((t,i)=>t.classList.toggle('active', i===idx));
+  if(!keepScroll) window.scrollTo({top:0, behavior:'instant'});
+  if(idx===2){ panels[2].replaceWith(reviewPanel()); panels[2]=app.children[2]; panels[2].classList.add('active'); }
+  refreshBadges();
+}
+function refreshBadges(){
+  const v=validate();
+  tabBtns.forEach((t,i)=>{ const b=t.querySelector('.badge'); if(b) b.remove(); });
+  if(v.errors.length && tabBtns[2]){
+    const b=el('span','badge', String(v.errors.length)); tabBtns[2].appendChild(b);
+  }
+}
+
+function jobPanel(){
+  const panel=el('div','panel');
+  const c=el('div','card');
+  c.appendChild(el('div','card-h','Job Information'));
+  const b=el('div','card-b');
+  const f=el('div','fields');
+
+  /* week ending */
+  const w1=el('div','field');
+  w1.appendChild(el('label',null,'Week Ending'));
+  const wi=el('input'); wi.type='date'; wi.value=S.week_ending||'';
+  wi.oninput=()=>{ S.week_ending=wi.value; persist(); render(); };
+  w1.appendChild(wi); f.appendChild(w1);
+
+  /* job picker */
+  const w2=el('div','field');
+  w2.appendChild(el('label',null,'Job'));
+  const jb=el('button','picker'+(S.job?'':' bad'));
+  const j=S.job&&JOB_BY_NUM[S.job];
+  const jv=el('span','val'+(j?'':' empty'), j? j.num : 'Tap to choose a job');
+  jb.append(jv, el('span','chev','›'));
+  jb.onclick=pickJob;
+  w2.appendChild(jb); f.appendChild(w2);
+
+  /* foreman */
+  const w3=el('div','field');
+  w3.appendChild(el('label',null,'Foreman'));
+  const fb=el('button','picker'+(S.foreman?'':' bad'));
+  const fe=S.foreman&&EMP_BY_CODE[S.foreman];
+  const fv=el('span','val'+(fe?'':' empty'), fe? fe.name : 'Tap to choose the foreman');
+  fb.append(fv, el('span','chev','›'));
+  fb.onclick=()=>pickEmployee('Choose the foreman', e=>{
+    S.foreman=e.code;
+    if(!S.crew.includes(e.code)) S.crew.unshift(e.code);
+    render(); persist();
+  });
+  w3.appendChild(fb); f.appendChild(w3);
+
+  if(CONFIG.show_builder){
+    const w4=el('div','field');
+    w4.appendChild(el('label',null,'Name of Builder'));
+    const bi=el('input'); bi.type='text'; bi.value=S.builder||''; bi.autocomplete='off';
+    bi.oninput=()=>{ S.builder=bi.value; persist(); };
+    w4.appendChild(bi); f.appendChild(w4);
+  }
+  b.appendChild(f);
+
+  if(j){
+    const ro=el('div','readout');
+    const add=(lab,val)=>{ const d=el('div'); d.appendChild(el('span',null,lab)); d.appendChild(document.createTextNode(val||'—')); ro.appendChild(d); };
+    add('Job Number', j.num);
+    add('Subdivision', j.sub);
+    add('Lot #', j.lot);
+    add('Address', j.addr);
+    add('Scope on file', jobPhase(j));
+    b.appendChild(ro);
+    const note=el('div','hint'); note.style.marginTop='10px';
+    note.textContent='These come straight from JobNumber.xlsx, so accounting gets the exact job number — nothing to look up later.';
+    b.appendChild(note);
+  } else {
+    const note=el('div','hint'); note.style.marginTop='10px';
+    note.textContent='Search by subdivision, lot, address or job number. '+JOBS.length+' jobs available (list built '+CONFIG.built+').';
+    b.appendChild(note);
+  }
+  c.appendChild(b); panel.appendChild(c);
+
+  const lc=el('div','card');
+  lc.appendChild(el('div','card-h','Column Key'));
+  const lb=el('div','card-b'); const g=el('div','legend');
+  CODES.forEach(cd=>{ const s=el('div'); s.appendChild(el('b',null,cd[0])); s.appendChild(document.createTextNode(' — '+cd[1])); g.appendChild(s); });
+  lb.appendChild(g); lc.appendChild(lb); panel.appendChild(lc);
+  return panel;
+}
+
+function empGrid(empCode){
+  const e=EMP_BY_CODE[empCode]||{code:empCode,name:empCode};
+  const card=el('div','card');
+  const nw=el('div','emp-name');
+  nw.appendChild(el('span','tag', empCode===S.foreman?'FOREMAN':'CREW'));
+  nw.appendChild(el('span','nm', e.name));
+  const rm=el('button','rm','Remove');
+  rm.onclick=()=>{
+    if(empTotal(empCode)>0 && !confirm('Remove '+e.name+' and their hours from this sheet?')) return;
+    S.crew=S.crew.filter(c=>c!==empCode);
+    DAYS.forEach((_,di)=>CODES.forEach(c=>{ delete S.hours[hkey(empCode,di,c[0])]; }));
+    if(S.foreman===empCode) S.foreman='';
+    render(); persist();
+  };
+  nw.appendChild(rm);
+  card.appendChild(nw);
+
+  const dates=dayDates(S.week_ending);
+  const scroll=el('div','scroll');
+  const tbl=el('table','grid');
+  const thead=el('thead'), hr=el('tr');
+  hr.appendChild(el('th','daycol','Day'));
+  CODES.forEach(cd=>{
+    const th=el('th');
+    th.appendChild(el('span','code',cd[0]));
+    th.appendChild(el('span','desc',cd[1]));
+    th.title=cd[0]+' — '+cd[1];
+    hr.appendChild(th);
+  });
+  const tt=el('th','totcol'); tt.appendChild(el('span','code','Total')); tt.appendChild(el('span','desc','Daily')); hr.appendChild(tt);
+  thead.appendChild(hr); tbl.appendChild(thead);
+
+  const tb=el('tbody');
+  DAYS.forEach((day,di)=>{
+    const tr=el('tr');
+    const dc=el('td','daycol'); dc.appendChild(document.createTextNode(day));
+    if(dates[di]) dc.appendChild(el('span','dt', shortDate(dates[di])));
+    tr.appendChild(dc);
+    CODES.forEach(cd=>{
+      const td=el('td');
+      const inp=el('input','cell');
+      inp.type='number'; inp.inputMode='decimal'; inp.step='any'; inp.min='0';
+      inp.value = S.hours[hkey(empCode,di,cd[0])] || '';
+      inp.oninput=()=>{
+        const k=hkey(empCode,di,cd[0]);
+        if(inp.value==='') delete S.hours[k]; else S.hours[k]=inp.value;
+        recalcCard(card, empCode); persist(); refreshBadges();
+      };
+      td.appendChild(inp); tr.appendChild(td);
+    });
+    const rt=el('td','rt totcol'); rt.dataset.rt=di; tr.appendChild(rt);
+    tb.appendChild(tr);
+  });
+  const trt=el('tr','totrow');
+  trt.appendChild(el('td','daycol','TOTAL'));
+  CODES.forEach(cd=>{ const td=el('td','ct'); td.dataset.ct=cd[0]; trt.appendChild(td); });
+  const g=el('td','grand totcol'); g.dataset.eg='1'; trt.appendChild(g);
+  tb.appendChild(trt);
+  tbl.appendChild(tb); scroll.appendChild(tbl); card.appendChild(scroll);
+  recalcCard(card, empCode);
+  return card;
+}
+function recalcCard(card, empCode){
+  DAYS.forEach((_,di)=>{
+    const c=card.querySelector('[data-rt="'+di+'"]');
+    if(!c) return;
+    const t=empDayTotal(empCode,di);
+    c.textContent=fmt(t);
+    c.className='rt totcol'+(t>16?' bad':(t>10?' over':''));
+  });
+  CODES.forEach(cd=>{
+    const c=card.querySelector('[data-ct="'+cd[0]+'"]');
+    if(c) c.textContent=fmt(empCodeTotal(empCode,cd[0]));
+  });
+  const g=card.querySelector('[data-eg]');
+  if(g) g.textContent=fmt(empTotal(empCode));
+  const banner=document.getElementById('crewGrand');
+  if(banner) banner.textContent=fmt0(totalHours());
+  updateSubline();
+}
+
+function crewPanel(){
+  const panel=el('div','panel');
+  const head=el('div'); head.style.margin='2px 2px 12px';
+  const t=el('div'); t.style.fontWeight='800'; t.style.fontSize='18px'; t.textContent='Crew & Hours';
+  const s=el('div','hint');
+  s.textContent = S.job ? ('Job '+S.job+'  ·  '+sheetTitle(S)) : 'Choose a job on the Job Info tab first.';
+  head.append(t,s); panel.appendChild(head);
+
+  if(!S.crew.length){
+    const c=el('div','card'); const b=el('div','card-b');
+    b.appendChild(el('div','hint','No one on this sheet yet. Add the crew that worked this job this week — add as many people as you need.'));
+    c.appendChild(b); panel.appendChild(c);
+  }
+  S.crew.forEach(code=>panel.appendChild(empGrid(code)));
+
+  const add=el('button','addbtn','+  Add Employee');
+  add.onclick=()=>pickEmployee('Add an employee', e=>{
+    if(!S.crew.includes(e.code)) S.crew.push(e.code);
+    render(); persist(); activate(1);
+  }, S.crew);
+  panel.appendChild(add);
+
+  const banner=el('div','pagegrand');
+  banner.appendChild(el('span','lab','SHEET TOTAL (all employees)'));
+  const val=el('span','val'); val.id='crewGrand'; val.textContent=fmt0(totalHours());
+  banner.appendChild(val);
+  panel.appendChild(banner);
+  return panel;
+}
+
+function reviewPanel(){
+  const panel=el('div','panel');
+  const head=el('div'); head.style.margin='2px 2px 12px';
+  const t=el('div'); t.style.fontWeight='800'; t.style.fontSize='18px'; t.textContent='Review & Submit';
+  const s=el('div','hint'); s.textContent='Check the totals, then send it in.';
+  head.append(t,s); panel.appendChild(head);
+
+  const v=validate();
+  const mc=el('div','card'); const mb=el('div','card-b');
+  if(!v.errors.length && !v.warnings.length){
+    const m=el('div','msg ok'); m.appendChild(el('span','ic','✓'));
+    m.appendChild(el('div',null,'Everything checks out. Tap Submit to send this sheet to accounting.'));
+    mb.appendChild(m);
+  }
+  v.errors.forEach(x=>{ const m=el('div','msg err'); m.appendChild(el('span','ic','!')); m.appendChild(el('div',null,x)); mb.appendChild(m); });
+  v.warnings.forEach(x=>{ const m=el('div','msg warn'); m.appendChild(el('span','ic','⚠')); m.appendChild(el('div',null,x)); mb.appendChild(m); });
+  mc.appendChild(mb); panel.appendChild(mc);
+
+  /* by employee */
+  const c1=el('div','card'); c1.appendChild(el('div','card-h','Totals by Employee'));
+  const sc1=el('div','scroll'); const t1=el('table','summary');
+  const th1=el('thead'); const hr1=el('tr');
+  hr1.appendChild(el('th','rowlab','Employee'));
+  const dates=dayDates(S.week_ending);
+  DAYS.forEach((d,i)=>{ const th=el('th'); th.appendChild(document.createTextNode(d)); if(dates[i]){ th.appendChild(el('div','hint',shortDate(dates[i]))); } hr1.appendChild(th); });
+  hr1.appendChild(el('th','tot','TOTAL'));
+  th1.appendChild(hr1); t1.appendChild(th1);
+  const tb1=el('tbody');
+  S.crew.forEach(code=>{
+    const tr=el('tr');
+    tr.appendChild(el('td','rowlab',(EMP_BY_CODE[code]||{}).name||code));
+    DAYS.forEach((d,di)=>tr.appendChild(el('td',null,fmt0(empDayTotal(code,di)))));
+    tr.appendChild(el('td','tot',fmt0(empTotal(code))));
+    tb1.appendChild(tr);
+  });
+  const trA=el('tr','allrow');
+  trA.appendChild(el('td','rowlab','ALL'));
+  DAYS.forEach((d,di)=>{ let t=0; S.crew.forEach(c=>t+=empDayTotal(c,di)); trA.appendChild(el('td',null,fmt0(t))); });
+  trA.appendChild(el('td','tot',fmt0(totalHours())));
+  tb1.appendChild(trA);
+  t1.appendChild(tb1); sc1.appendChild(t1); c1.appendChild(sc1); panel.appendChild(c1);
+
+  /* by cost code */
+  const c2=el('div','card'); c2.appendChild(el('div','card-h','Totals by Cost Code'));
+  const sc2=el('div','scroll'); const t2=el('table','summary');
+  const th2=el('thead'); const hr2=el('tr');
+  hr2.appendChild(el('th','rowlab','Cost Code'));
+  hr2.appendChild(el('th','tot','HOURS'));
+  th2.appendChild(hr2); t2.appendChild(th2);
+  const tb2=el('tbody');
+  CODES.forEach(cd=>{
+    const v2=codeTotal(cd[0]);
+    if(!v2) return;
+    const tr=el('tr');
+    tr.appendChild(el('td','rowlab',cd[0]+' — '+cd[1]));
+    tr.appendChild(el('td','tot',fmt0(v2)));
+    tb2.appendChild(tr);
+  });
+  const trB=el('tr','allrow');
+  trB.appendChild(el('td','rowlab','ALL CODES'));
+  trB.appendChild(el('td','tot',fmt0(totalHours())));
+  tb2.appendChild(trB);
+  t2.appendChild(tb2); sc2.appendChild(t2); c2.appendChild(sc2); panel.appendChild(c2);
+
+  const fn=el('div','footnote');
+  fn.textContent='Saved on this device automatically. Submitting emails a data file to accounting.';
+  panel.appendChild(fn);
+  return panel;
+}
+
+/* ============================ export / submit ============================ */
+function buildPayload(){
+  const j=JOB_BY_NUM[S.job]||{};
+  const dates=dayDates(S.week_ending);
+  const entries=[];
+  S.crew.forEach(code=>{
+    DAYS.forEach((day,di)=>{
+      CODES.forEach(cd=>{
+        const h=cellVal(code,di,cd[0]);
+        if(!h) return;
+        entries.push({ emp_code:code, emp_name:(EMP_BY_CODE[code]||{}).name||'',
+                       date: dates[di]? isoDate(dates[di]) : '', day:day,
+                       cost_code:cd[0], desc:cd[1], hours:Math.round(h*100)/100 });
+      });
+    });
+  });
+  return {
+    format:'builders-bloc-timesheet', version:2, form:CONFIG.form,
+    form_title:CONFIG.title, reference_built:CONFIG.built,
+    sheet_id:S.id,
+    week_ending:S.week_ending,
+    job:{ number:j.num||'', subdivision:j.sub||'', lot:j.lot||'', address:j.addr||'',
+          framing:j.fr||0, trim:j.tr||0 },
+    builder:S.builder||'',
+    foreman:{ code:S.foreman||'', name:(EMP_BY_CODE[S.foreman]||{}).name||'' },
+    crew:S.crew.map(c=>({code:c, name:(EMP_BY_CODE[c]||{}).name||''})),
+    entries:entries,
+    total_hours:Math.round(totalHours()*100)/100,
+    submitted_at:new Date().toISOString()
+  };
+}
+function fileBase(){
+  const j=JOB_BY_NUM[S.job];
+  const jn=j? j.num : 'NOJOB';
+  const we=S.week_ending? S.week_ending.replace(/-/g,'') : 'NOWEEK';
+  return ('Timesheet_'+jn+'_WE'+we).replace(/[^A-Za-z0-9_\-]/g,'_');
+}
+async function submitSheet(){
+  const v=validate();
+  if(v.errors.length){ activate(2); toast('Fix the '+v.errors.length+' item(s) in red first.'); return; }
+  if(v.warnings.length){
+    if(!confirm('There '+(v.warnings.length===1?'is 1 warning':'are '+v.warnings.length+' warnings')+' on this sheet.\n\nSubmit anyway?')) { activate(2); return; }
+  }
+  const payload=buildPayload();
+  const text=JSON.stringify(payload,null,1);
+  const name=fileBase()+'.'+CONFIG.ext;
+  const type='application/json';
+  let sent=false;
+  try{
+    if(navigator.canShare){
+      const file=new File([text], name, {type:type});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({title:'Time Sheet '+(payload.job.number||''), files:[file]});
+        sent=true;
+      }
+    }
+  }catch(err){ if(err && err.name==='AbortError') return; }
+  if(!sent){
+    try{
+      const blob=new Blob([text],{type:type});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob); a.download=name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+      sent=true;
+      toast('Saved '+name+' — attach it to your email to accounting.');
+    }catch(e){}
+  }
+  if(sent){
+    S.submitted=new Date().toISOString();
+    persist();
+    if(!navigator.canShare) return;
+    toast('Submitted — '+fmt0(payload.total_hours)+' hours sent.');
+  } else {
+    toast('Could not create the file on this device.');
+  }
+}
+
+/* ============================ wiring ============================ */
+$('#submitBtn').onclick=submitSheet;
+$('#sheetsBtn').onclick=openSheets;
+$('#newBtn').onclick=newSheet;
+$('#pdfBtn').onclick=()=>{
+  const j=JOB_BY_NUM[S.job];
+  const d=parseISO(S.week_ending);
+  $('#printTitle').textContent=CONFIG.title+(j?('  —  '+j.num):'')+(d?('  —  W/E '+usDate(d)):'');
+  window.print();
+};
+function fixTabTop(){ const ab=document.querySelector('.appbar'); if(ab) document.documentElement.style.setProperty('--tabtop', ab.offsetHeight+'px'); }
+window.addEventListener('resize',fixTabTop); window.addEventListener('load',fixTabTop);
+
+/* boot */
+(function boot(){
+  let id=null;
+  try{ id=localStorage.getItem(LS_CURRENT); }catch(e){}
+  const s=id? loadSheet(id):null;
+  S = s? normalize(s) : blankSheet();
+  render(); fixTabTop();
+})();
+</script>
+</body>
+</html>
