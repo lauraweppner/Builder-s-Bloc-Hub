@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crew Foreman Statement — Builder's Bloc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12181F; --ink-soft:#3C4652; --paper:#EEF0F3; --card:#FFFFFF; --line:#D7DBE1;
+    --amber:#F5A623; --amber-ink:#5C3A00; --red:#C63C3C; --green:#2E7D5B; --focus:#1D5FD6;
+    --radius:10px; --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'Inter',-apple-system,system-ui,sans-serif; --display:'Archivo Expanded',var(--sans);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--paper); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased; padding-bottom:110px;}
+  a{color:var(--focus);}
+  :focus-visible{outline:3px solid var(--focus); outline-offset:2px;}
+  .masthead{background:var(--ink); color:#fff; padding:18px 18px 22px; position:relative; overflow:hidden;}
+  .masthead .tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--amber); display:flex; align-items:center; gap:8px;}
+  .masthead .tag::before{content:""; width:8px;height:8px;border-radius:50%; background:var(--amber); box-shadow:0 0 0 3px rgba(245,166,35,.25);}
+  .masthead h1{font-family:var(--display); font-weight:800; font-size:22px; line-height:1.15; margin:8px 0 4px; letter-spacing:-.01em;}
+  .masthead p{margin:0; font-size:13px; color:#B9C0CA; max-width:46ch;}
+  .perf{position:absolute; left:0; right:0; bottom:0; height:8px; background-image:radial-gradient(circle, rgba(255,255,255,.35) 1.4px, transparent 1.6px); background-size:10px 10px; background-position:5px 4px;}
+  main{max-width:640px; margin:0 auto; padding:18px 16px 0;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 16px; margin-bottom:14px;}
+  .card h2{font-family:var(--display); font-size:17px; margin:0 0 4px; letter-spacing:-.01em;}
+  .card .sub{font-size:12.5px; color:var(--ink-soft); margin:0 0 14px; line-height:1.5;}
+  .step-eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#8A6A00; background:#FFF3DC; display:inline-block; padding:3px 8px; border-radius:5px; margin-bottom:8px;}
+  fieldset{border:0; padding:0; margin:0 0 16px;}
+  legend{font-weight:600; font-size:13.5px; margin-bottom:8px;}
+  .field{margin-bottom:14px;}
+  .field label.flabel{display:block; font-size:13px; font-weight:600; margin-bottom:5px;}
+  .req::after{content:" *"; color:var(--red);}
+  input[type=text],input[type=tel],input[type=email],input[type=date],textarea{
+    width:100%; font-family:var(--sans); font-size:16px; padding:11px 12px; border:1.5px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);
+  }
+  textarea{min-height:96px; resize:vertical; line-height:1.5;}
+  input.touched:invalid, textarea.touched:invalid{border-color:var(--red);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+  @media (max-width:420px){ .row3{grid-template-columns:1fr 1fr;} }
+  .choices{display:flex; flex-wrap:wrap; gap:8px;}
+  .choice{position:relative;}
+  .choice input{position:absolute; opacity:0; width:1px; height:1px;}
+  .choice label{display:inline-flex; align-items:center; gap:6px; padding:10px 16px; border:1.5px solid var(--line); border-radius:99px; font-size:13.5px; font-weight:500; cursor:pointer; background:#fff; user-select:none;}
+  .choice input:checked + label{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .choice input:focus-visible + label{outline:3px solid var(--focus); outline-offset:2px;}
+  .followup{margin-top:8px;}
+  .sticky-send{
+    position:fixed; left:0; right:0; bottom:0; background:var(--card); border-top:1.5px solid var(--line);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom)); z-index:30;
+  }
+  .sticky-inner{max-width:640px; margin:0 auto;}
+  .send-row{display:flex; gap:10px; align-items:flex-end;}
+  .send-row .field{flex:1; margin-bottom:0;}
+  .send-row .field label.flabel{font-size:11.5px; margin-bottom:3px;}
+  button{font-family:var(--sans); font-weight:700; font-size:14.5px; border-radius:8px; border:1.5px solid var(--ink); padding:13px 18px; cursor:pointer;}
+  .btn-send{background:var(--amber); border-color:var(--amber); color:var(--amber-ink); white-space:nowrap;}
+  .status-msg{font-size:12px; margin-top:8px; padding:8px 10px; border-radius:7px; display:none;}
+  .status-msg.show{display:block;}
+  .status-ok{background:#E7F5EE; color:var(--green); border:1px solid #BFE4D2;}
+  .status-warn{background:#FBEAEA; color:var(--red); border:1px solid #F0C6C6;}
+  .draft-note{font-family:var(--mono); font-size:11px; color:var(--ink-soft); text-align:center; margin:4px 0 18px;}
+  .draft-note button{all:unset; text-decoration:underline; cursor:pointer; font-family:var(--mono);}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="tag">Builder's Bloc — Field Report</div>
+  <h1>Crew Foreman Statement</h1>
+  <p>Complete on your phone or iPad at the scene. Your entries save automatically on this device until you send.</p>
+  <div class="perf"></div>
+</div>
+
+<main>
+  <form id="mainForm" novalidate>
+    <div class="card">
+      <span class="step-eyebrow">Statement details</span>
+      <h2>The basics</h2>
+      <div class="field">
+        <label class="flabel req">Your name (foreman issuing this statement)</label>
+        <input type="text" name="foremanName" data-label="Name of Crew Foreman Issuing Statement" required>
+      </div>
+      <div class="field">
+        <label class="flabel req">Name of injured employee</label>
+        <input type="text" name="injuredEmployee" data-label="Name of Injured Employee" required>
+      </div>
+      <div class="row3">
+        <div class="field"><label class="flabel">Location</label><input type="text" name="location" data-label="Location"></div>
+        <div class="field"><label class="flabel">Date</label><input type="date" name="incidentDate" data-label="Date"></div>
+        <div class="field"><label class="flabel">Time</label><input type="text" name="incidentTime" data-label="Time" placeholder="e.g. 2:15 PM"></div>
+      </div>
+      <div class="field">
+        <label class="flabel">Injuries noted</label>
+        <input type="text" name="injuriesNoted" data-label="Injuries Noted">
+      </div>
+      <fieldset>
+        <legend>Type of incident</legend>
+        <div class="choices">
+          <div class="choice"><input type="radio" name="incidentType" value="Report-Only" id="it1" data-label="Type of Incident"><label for="it1">Report-Only</label></div>
+          <div class="choice"><input type="radio" name="incidentType" value="First Aid" id="it2"><label for="it2">First Aid</label></div>
+          <div class="choice"><input type="radio" name="incidentType" value="Medical Treatment" id="it3"><label for="it3">Medical Treatment</label></div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="card">
+      <span class="step-eyebrow">What you observed</span>
+      <h2>Narrative</h2>
+      <div class="field">
+        <label class="flabel req">Explain what you observed during the accident</label>
+        <textarea name="narrative" data-label="What You Observed" rows="7" required></textarea>
+        <p style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;">Add any drawings or extra detail on paper and attach if needed — this field can also hold as much extra text as you want.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="step-eyebrow">Safety &amp; conditions</span>
+      <h2>PPE, training &amp; contributing factors</h2>
+
+      <fieldset>
+        <legend>Was the employee using proper Personal Protective Equipment?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="ppeUsed" value="Yes" id="ppe1" data-label="Using Proper PPE"><label for="ppe1">Yes</label></div><div class="choice"><input type="radio" name="ppeUsed" value="No" id="ppe2"><label for="ppe2">No</label></div></div>
+      </fieldset>
+      <div class="field"><label class="flabel">Identify the PPE used</label><input type="text" name="ppeIdentify" data-label="PPE Used"></div>
+
+      <fieldset>
+        <legend>Was the employee following safety policies?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="followingSafety" value="Yes" id="fs1" data-label="Following Safety Policies"><label for="fs1">Yes</label></div><div class="choice"><input type="radio" name="followingSafety" value="No" id="fs2"><label for="fs2">No</label></div></div>
+      </fieldset>
+      <div class="field followup"><label class="flabel">If not, explain</label><textarea name="safetyExplain" data-label="Safety Policy — Explanation" rows="3"></textarea></div>
+
+      <div class="field"><label class="flabel">Had the employee received training in the task assigned?</label><input type="text" name="trainingReceived" data-label="Training Received"></div>
+
+      <fieldset>
+        <legend>Any knowledge of a contributing medical factor?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="medicalFactor" value="Yes" id="mf1" data-label="Contributing Medical Factor"><label for="mf1">Yes</label></div><div class="choice"><input type="radio" name="medicalFactor" value="No" id="mf2"><label for="mf2">No</label></div></div>
+      </fieldset>
+      <div class="field followup"><label class="flabel">If so, explain</label><textarea name="medicalFactorExplain" data-label="Medical Factor — Explanation" rows="3"></textarea></div>
+
+      <fieldset>
+        <legend>Was weather a factor in this injury?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="weatherFactor" value="Yes" id="wf1" data-label="Weather a Factor"><label for="wf1">Yes</label></div><div class="choice"><input type="radio" name="weatherFactor" value="No" id="wf2"><label for="wf2">No</label></div></div>
+      </fieldset>
+      <div class="field followup"><label class="flabel">If so, describe weather conditions</label><textarea name="weatherExplain" data-label="Weather Conditions" rows="3"></textarea></div>
+    </div>
+
+    <div class="card">
+      <span class="step-eyebrow">Equipment</span>
+      <h2>Equipment involved</h2>
+      <fieldset>
+        <legend>Was any equipment being used by the employee at the time of injury?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="equipmentUsed" value="Yes" id="eq1" data-label="Equipment Being Used"><label for="eq1">Yes</label></div><div class="choice"><input type="radio" name="equipmentUsed" value="No" id="eq2"><label for="eq2">No</label></div></div>
+      </fieldset>
+      <div class="field followup"><label class="flabel">If so, describe</label><input type="text" name="equipmentDescribe" data-label="Equipment — Description"></div>
+
+      <fieldset>
+        <legend>Was the equipment checked before use that day?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="equipmentChecked" value="Yes" id="ec1" data-label="Equipment Checked Before Use"><label for="ec1">Yes</label></div><div class="choice"><input type="radio" name="equipmentChecked" value="No" id="ec2"><label for="ec2">No</label></div></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Was the injury a result of equipment usage or equipment failure?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="equipmentFailure" value="Yes" id="ef1" data-label="Injury Due to Equipment Usage/Failure"><label for="ef1">Yes</label></div><div class="choice"><input type="radio" name="equipmentFailure" value="No" id="ef2"><label for="ef2">No</label></div></div>
+      </fieldset>
+      <div class="field followup"><label class="flabel">If so, explain</label><textarea name="equipmentFailureExplain" data-label="Equipment Failure — Explanation" rows="3"></textarea></div>
+    </div>
+
+    <div class="card">
+      <span class="step-eyebrow">Sign-off</span>
+      <h2>Foreman signature</h2>
+      <div class="field">
+        <label class="flabel req">Typed signature (serves as your signature)</label>
+        <input type="text" name="foremanSignature" data-label="Foreman Signature" placeholder="Type your full name" required>
+      </div>
+      <div class="row2">
+        <div class="field"><label class="flabel">Date</label><input type="date" name="signDate" data-label="Date"></div>
+        <div class="field"><label class="flabel">Contact phone number</label><input type="tel" name="foremanPhone" data-label="Foreman Contact Phone Number"></div>
+      </div>
+    </div>
+
+    <div id="reviewAnchor"></div>
+  </form>
+</main>
+
+<div class="sticky-send">
+  <div class="sticky-inner">
+    <div class="send-row">
+      <div class="field">
+        <label class="flabel">Send to</label>
+        <input type="email" id="officeEmail" value="lweppner@buildersbloc.com">
+      </div>
+      <button type="button" class="btn-send" id="sendBtn">Send Statement</button>
+    </div>
+    <div class="status-msg" id="statusMsg"></div>
+    <p class="draft-note" style="margin:8px 0 0;">Filling this out after someone else? <button type="button" id="resetBtn" style="all:unset; text-decoration:underline; cursor:pointer; font-family:var(--mono); font-size:11px;">Clear form &amp; start a new statement</button></p>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'bb_foreman_statement_v1';
+  const form = document.getElementById('mainForm');
+
+  function saveDraft(){
+    try{
+      const data={};
+      new FormData(form).forEach((v,k)=>{ data[k]=v; });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }catch(e){}
+  }
+  function loadDraft(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach(k=>{
+        const els = form.querySelectorAll('[name="'+k+'"]');
+        els.forEach(el=>{
+          if(el.type==='radio'){ if(el.value===data[k]) el.checked=true; }
+          else{ el.value=data[k]; }
+        });
+      });
+    }catch(e){}
+  }
+  form.addEventListener('input', saveDraft);
+  form.addEventListener('change', saveDraft);
+
+  const FIELDS = [
+    ['foremanName','Name of Crew Foreman Issuing Statement'],
+    ['injuredEmployee','Name of Injured Employee'],
+    ['location','Location'],['incidentDate','Date'],['incidentTime','Time'],
+    ['injuriesNoted','Injuries Noted'],['incidentType','Type of Incident'],
+    ['narrative','What You Observed'],
+    ['ppeUsed','Using Proper PPE'],['ppeIdentify','PPE Used'],
+    ['followingSafety','Following Safety Policies'],['safetyExplain','Safety Policy — Explanation'],
+    ['trainingReceived','Training Received'],
+    ['medicalFactor','Contributing Medical Factor'],['medicalFactorExplain','Medical Factor — Explanation'],
+    ['weatherFactor','Weather a Factor'],['weatherExplain','Weather Conditions'],
+    ['equipmentUsed','Equipment Being Used'],['equipmentDescribe','Equipment — Description'],
+    ['equipmentChecked','Equipment Checked Before Use'],
+    ['equipmentFailure','Injury Due to Equipment Usage/Failure'],['equipmentFailureExplain','Equipment Failure — Explanation'],
+    ['foremanSignature','Foreman Signature'],['signDate','Date Signed'],['foremanPhone','Foreman Contact Phone Number']
+  ];
+
+  function valueFor(name){
+    const els = form.querySelectorAll('[name="'+name+'"]');
+    if(els.length===0) return '';
+    if(els[0].type==='radio'){
+      const c = Array.from(els).find(e=>e.checked);
+      return c? c.value : '';
+    }
+    return els[0].value||'';
+  }
+
+  function buildReportText(){
+    const lines = ['CREW FOREMAN STATEMENT — Builder\'s Bloc','Generated: '+new Date().toLocaleString(),''];
+    FIELDS.forEach(([name,label])=>{
+      const v = valueFor(name);
+      if(v && v.trim()!=='') lines.push(label+': '+v);
+    });
+    return lines.join('\n');
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', async ()=>{
+    const emailEl = document.getElementById('officeEmail');
+    const statusEl = document.getElementById('statusMsg');
+    const requiredEls = form.querySelectorAll('[required]');
+    for(const el of requiredEls){
+      el.classList.add('touched');
+      if(el.type==='radio'){
+        const group = form.querySelectorAll('input[name="'+el.name+'"]');
+        if(!Array.from(group).some(g=>g.checked)){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus(); return; }
+      } else if(!el.value){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus(); return; }
+    }
+    if(!emailEl.value){ statusEl.textContent='Enter an office email address.'; statusEl.className='status-msg show status-warn'; return; }
+
+    const text = buildReportText();
+    const name = valueFor('injuredEmployee') || 'Employee';
+    const dateStr = valueFor('incidentDate') || new Date().toLocaleDateString();
+    const subject = 'Foreman Statement — '+name+' — '+dateStr;
+
+    let copied=false;
+    try{ await navigator.clipboard.writeText(text); copied=true; }catch(e){}
+
+    const mailBody = (copied? 'Report copied to your clipboard — paste below if it does not appear.\n\n':'') + text;
+    window.location.href = 'mailto:'+encodeURIComponent(emailEl.value)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(mailBody);
+
+    statusEl.textContent = copied ? 'Copied and opening your email app — hit send.' : 'Opening your email app.';
+    statusEl.className = 'status-msg show status-ok';
+    localStorage.removeItem(STORAGE_KEY);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(!confirm('Clear all fields and start a blank statement?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    form.reset();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  loadDraft();
+})();
+</script>
+</body>
+</html>
