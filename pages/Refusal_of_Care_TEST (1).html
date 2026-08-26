@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Emergency Medical Refusal of Care — Builder's Bloc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12181F; --ink-soft:#3C4652; --paper:#EEF0F3; --card:#FFFFFF; --line:#D7DBE1;
+    --amber:#F5A623; --amber-ink:#5C3A00; --red:#C63C3C; --green:#2E7D5B; --focus:#1D5FD6;
+    --radius:10px; --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'Inter',-apple-system,system-ui,sans-serif; --display:'Archivo Expanded',var(--sans);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--paper); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased; padding-bottom:120px;}
+  a{color:var(--focus);}
+  :focus-visible{outline:3px solid var(--focus); outline-offset:2px;}
+  .masthead{background:var(--ink); color:#fff; padding:18px 18px 22px; position:relative; overflow:hidden;}
+  .masthead .tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--red); display:flex; align-items:center; gap:8px;}
+  .masthead .tag::before{content:""; width:8px;height:8px;border-radius:50%; background:var(--red); box-shadow:0 0 0 3px rgba(198,60,60,.25);}
+  .masthead h1{font-family:var(--display); font-weight:800; font-size:21px; line-height:1.15; margin:8px 0 4px; letter-spacing:-.01em;}
+  .masthead p{margin:0; font-size:13px; color:#B9C0CA; max-width:46ch; line-height:1.5;}
+  .perf{position:absolute; left:0; right:0; bottom:0; height:8px; background-image:radial-gradient(circle, rgba(255,255,255,.35) 1.4px, transparent 1.6px); background-size:10px 10px; background-position:5px 4px;}
+  main{max-width:640px; margin:0 auto; padding:18px 16px 0;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 16px; margin-bottom:14px;}
+  .card h2{font-family:var(--display); font-size:17px; margin:0 0 4px; letter-spacing:-.01em;}
+  .card .sub{font-size:12.5px; color:var(--ink-soft); margin:0 0 14px; line-height:1.5;}
+  .step-eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#8A6A00; background:#FFF3DC; display:inline-block; padding:3px 8px; border-radius:5px; margin-bottom:8px;}
+  .warn-banner{
+    background:#FBEAEA; border:1.5px solid #F0C6C6; color:var(--red);
+    border-radius:9px; padding:12px 13px; font-size:12.5px; line-height:1.55; margin-bottom:16px;
+  }
+  .warn-banner strong{display:block; margin-bottom:3px; font-size:13px;}
+  fieldset{border:0; padding:0; margin:0 0 16px;}
+  legend{font-weight:600; font-size:13.5px; margin-bottom:8px;}
+  .field{margin-bottom:14px;}
+  .field label.flabel{display:block; font-size:13px; font-weight:600; margin-bottom:5px;}
+  .req::after{content:" *"; color:var(--red);}
+  input[type=text],input[type=tel],input[type=email],input[type=date]{
+    width:100%; font-family:var(--sans); font-size:16px; padding:11px 12px; border:1.5px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);
+  }
+  input.touched:invalid{border-color:var(--red);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .checklist{display:flex; flex-direction:column; gap:2px;}
+  .checkline{display:flex; align-items:flex-start; gap:9px; padding:9px 10px; border:1.5px solid var(--line); border-radius:8px; margin-bottom:8px; background:#fff;}
+  .checkline input{margin-top:3px; width:18px; height:18px; flex:none;}
+  .checkline .txt{font-size:13.5px; line-height:1.45; font-weight:500;}
+  .sticky-send{
+    position:fixed; left:0; right:0; bottom:0; background:var(--card); border-top:1.5px solid var(--line);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom)); z-index:30;
+  }
+  .sticky-inner{max-width:640px; margin:0 auto;}
+  .send-row{display:flex; gap:10px; align-items:flex-end;}
+  .send-row .field{flex:1; margin-bottom:0;}
+  .send-row .field label.flabel{font-size:11.5px; margin-bottom:3px;}
+  button{font-family:var(--sans); font-weight:700; font-size:14.5px; border-radius:8px; border:1.5px solid var(--ink); padding:13px 18px; cursor:pointer;}
+  .btn-send{background:var(--amber); border-color:var(--amber); color:var(--amber-ink); white-space:nowrap;}
+  .status-msg{font-size:12px; margin-top:8px; padding:8px 10px; border-radius:7px; display:none;}
+  .status-msg.show{display:block;}
+  .status-ok{background:#E7F5EE; color:var(--green); border:1px solid #BFE4D2;}
+  .status-warn{background:#FBEAEA; color:var(--red); border:1px solid #F0C6C6;}
+  .draft-note{font-family:var(--mono); font-size:11px; color:var(--ink-soft); text-align:center; margin:8px 0 0;}
+  .draft-note button{all:unset; text-decoration:underline; cursor:pointer; font-family:var(--mono);}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="tag">Builder's Bloc — Field Report</div>
+  <h1>Emergency Medical Refusal of Care</h1>
+  <p>Complete this on-site when a team member declines offered care, ambulance transport, and/or a drug screen.</p>
+  <div class="perf"></div>
+</div>
+
+<main>
+  <form id="mainForm" novalidate>
+    <div class="card">
+      <span class="step-eyebrow">Refusal record</span>
+      <h2>Team member declining care</h2>
+
+      <div class="warn-banner">
+        <strong>Before completing this form</strong>
+        Make sure the team member has genuinely been offered care and understands what they are declining. This form documents a refusal — it does not replace calling 911 in a life-threatening situation.
+      </div>
+
+      <div class="field">
+        <label class="flabel req">Print name of team member</label>
+        <input type="text" name="teamMemberName" data-label="Name of Team Member" required>
+      </div>
+      <div class="field">
+        <label class="flabel req">Date</label>
+        <input type="date" name="refusalDate" data-label="Date" required>
+      </div>
+
+      <fieldset>
+        <legend>What is being refused? (check all that apply)</legend>
+        <label class="checkline">
+          <input type="checkbox" name="refusalType" value="Refuses the care offered">
+          <span class="txt">I refuse the care offered to me</span>
+        </label>
+        <label class="checkline">
+          <input type="checkbox" name="refusalType" value="Refuses transport per ambulance">
+          <span class="txt">I refuse the transport per ambulance</span>
+        </label>
+        <label class="checkline">
+          <input type="checkbox" name="refusalType" value="Refused drug screening">
+          <span class="txt">I refused drug screening</span>
+        </label>
+      </fieldset>
+
+      <div class="field">
+        <label class="flabel">As advised by the Company Representative — name</label>
+        <input type="text" name="companyRepName" data-label="Name of Builder's Bloc Representative">
+      </div>
+
+      <div class="field">
+        <label class="flabel req">Signature of team member (typed, serves as signature)</label>
+        <input type="text" name="teamMemberSignature" data-label="Signature of Team Member" placeholder="Type your full name" required>
+      </div>
+    </div>
+  </form>
+</main>
+
+<div class="sticky-send">
+  <div class="sticky-inner">
+    <p style="font-size:12px; color:var(--ink-soft); margin:0 0 8px;">Tap Send, then choose <strong>Email to Laura</strong> (or Mail) from the share sheet — the PDF comes along attached.</p>
+    <button type="button" class="btn-send" id="sendBtn" style="width:100%;">Send Form</button>
+    <div class="status-msg" id="statusMsg"></div>
+    <p class="draft-note">Filling this out after someone else? <button type="button" id="resetBtn">Clear form &amp; start new</button></p>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'bb_refusal_of_care_v1';
+  const form = document.getElementById('mainForm');
+
+  function saveDraft(){
+    try{
+      const data={};
+      new FormData(form).forEach((v,k)=>{
+        if(data[k]===undefined) data[k]=v;
+        else if(Array.isArray(data[k])) data[k].push(v);
+        else data[k]=[data[k],v];
+      });
+      form.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+        data['__cb_'+cb.name+'::'+cb.value] = cb.checked;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }catch(e){}
+  }
+  function loadDraft(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach(k=>{
+        if(k.startsWith('__cb_')){
+          const rest = k.slice(5);
+          const sep = rest.lastIndexOf('::');
+          const name = rest.slice(0,sep), val = rest.slice(sep+2);
+          const cb = form.querySelector('input[type=checkbox][name="'+name+'"][value="'+CSS.escape(val)+'"]');
+          if(cb) cb.checked = !!data[k];
+          return;
+        }
+        const els = form.querySelectorAll('[name="'+k+'"]');
+        if(els.length===0 || els[0].type==='checkbox') return;
+        els[0].value = Array.isArray(data[k]) ? data[k][0] : data[k];
+      });
+    }catch(e){}
+  }
+  form.addEventListener('input', saveDraft);
+  form.addEventListener('change', saveDraft);
+
+  const FIELDS = [
+    ['teamMemberName','Name of Team Member'],
+    ['refusalDate','Date'],
+    ['refusalType','What Is Being Refused'],
+    ['companyRepName',"Name of Builder's Bloc Representative"],
+    ['teamMemberSignature','Signature of Team Member']
+  ];
+
+  function valueFor(name){
+    const els = form.querySelectorAll('[name="'+name+'"]');
+    if(els.length===0) return '';
+    if(els[0].type==='checkbox'){
+      return Array.from(els).filter(e=>e.checked).map(e=>e.value).join('; ');
+    }
+    return els[0].value||'';
+  }
+
+  function buildReportText(){
+    const lines = ["EMERGENCY MEDICAL REFUSAL OF CARE — Builder's Bloc",'Generated: '+new Date().toLocaleString(),''];
+    FIELDS.forEach(([name,label])=>{
+      const v = valueFor(name);
+      if(v && v.trim()!=='') lines.push(label+': '+v);
+    });
+    return lines.join('\n');
+  }
+
+  function buildPdfBytes(text){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({unit:'pt', format:'letter'});
+    const marginX = 48;
+    let y = 56;
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(14);
+    doc.text("Builder's Bloc — Emergency Medical Refusal of Care", marginX, y);
+    y += 22;
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(10.5);
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const lines = text.split('\n');
+    lines.forEach(line=>{
+      const wrapped = doc.splitTextToSize(line || ' ', 515);
+      wrapped.forEach(w=>{
+        if(y > pageHeight - 50){ doc.addPage(); y = 56; }
+        doc.text(w, marginX, y);
+        y += 15;
+      });
+    });
+    return doc.output('arraybuffer');
+  }
+
+  function canShareFiles(){
+    try{
+      if(!navigator.share || !navigator.canShare) return false;
+      const probe = new File([new Uint8Array([37,80,68,70])], 'p.pdf', {type:'application/pdf'});
+      return navigator.canShare({files:[probe]});
+    }catch(e){ return false; }
+  }
+  const IOSISH = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                 (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+
+  function downloadBytes(bytes, filename){
+    const blob = new Blob([bytes], {type:'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=> URL.revokeObjectURL(url), 60000);
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', async ()=>{
+    const statusEl = document.getElementById('statusMsg');
+    const requiredEls = form.querySelectorAll('[required]');
+    for(const el of requiredEls){
+      el.classList.add('touched');
+      if(!el.value){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus(); return; }
+    }
+
+    const text = buildReportText();
+    const name = valueFor('teamMemberName') || 'Team Member';
+    const dateStr = valueFor('refusalDate') || new Date().toLocaleDateString();
+    const subject = 'Refusal of Care — '+name+' — '+dateStr;
+    const filenameBase = 'Refusal_of_Care_'+name.replace(/[^a-z0-9]+/gi,'_')+'_'+dateStr.replace(/[^a-z0-9]+/gi,'-');
+    const filename = filenameBase + '.pdf';
+
+    let bytes;
+    try{ bytes = buildPdfBytes(text); }
+    catch(e){
+      console.error('PDF generation failed', e);
+      statusEl.textContent = 'Could not generate the PDF. Try again, or contact the office.';
+      statusEl.className = 'status-msg show status-warn';
+      return;
+    }
+
+    if(canShareFiles()){
+      try{
+        const file = new File([bytes], filename, {type:'application/pdf'});
+        await navigator.share({files:[file], title:subject, text:subject});
+        statusEl.textContent = 'Share sheet opened — choose "Email to Laura" (or Mail) to send the attached PDF.';
+        statusEl.className = 'status-msg show status-ok';
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }catch(err){
+        if(err && err.name === 'AbortError'){
+          statusEl.textContent = 'Share cancelled.';
+          statusEl.className = 'status-msg show';
+          return;
+        }
+        console.error(err);
+        // fall through to download fallback below
+      }
+    }
+
+    // Fallback: no share sheet available (e.g. laptop) — just download the PDF.
+    downloadBytes(bytes, filename);
+    statusEl.textContent = IOSISH
+      ? 'Saved "'+filename+'". Open it from Files and use the share icon to email it.'
+      : 'Downloaded "'+filename+'" to your Downloads folder — attach it to an email to the office.';
+    statusEl.className = 'status-msg show status-ok';
+    localStorage.removeItem(STORAGE_KEY);
+  });
+
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(!confirm('Clear all fields and start blank?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    form.reset();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  loadDraft();
+})();
+</script>
+</body>
+</html>
