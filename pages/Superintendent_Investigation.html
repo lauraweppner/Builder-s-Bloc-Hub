@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Superintendent Incident Investigation — Builder's Bloc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#12181F; --ink-soft:#3C4652; --paper:#EEF0F3; --card:#FFFFFF; --line:#D7DBE1;
+    --amber:#F5A623; --amber-ink:#5C3A00; --red:#C63C3C; --green:#2E7D5B; --focus:#1D5FD6;
+    --radius:10px; --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'Inter',-apple-system,system-ui,sans-serif; --display:'Archivo Expanded',var(--sans);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--paper); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased; padding-bottom:48px;}
+  a{color:var(--focus);}
+  :focus-visible{outline:3px solid var(--focus); outline-offset:2px;}
+  .masthead{background:var(--ink); color:#fff; padding:18px 18px 22px; position:relative; overflow:hidden;}
+  .masthead .tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--amber); display:flex; align-items:center; gap:8px;}
+  .masthead .tag::before{content:""; width:8px;height:8px;border-radius:50%; background:var(--amber); box-shadow:0 0 0 3px rgba(245,166,35,.25);}
+  .masthead h1{font-family:var(--display); font-weight:800; font-size:21px; line-height:1.15; margin:8px 0 4px; letter-spacing:-.01em;}
+  .masthead p{margin:0; font-size:13px; color:#B9C0CA; max-width:46ch;}
+  .perf{position:absolute; left:0; right:0; bottom:0; height:8px; background-image:radial-gradient(circle, rgba(255,255,255,.35) 1.4px, transparent 1.6px); background-size:10px 10px; background-position:5px 4px;}
+  .progress-wrap{background:var(--card); border-bottom:1px solid var(--line); padding:10px 16px; position:sticky; top:0; z-index:20;}
+  .progress-label{font-family:var(--mono); font-size:11px; color:var(--ink-soft); display:flex; justify-content:space-between; margin-bottom:6px;}
+  .progress-track{height:6px; background:var(--paper); border-radius:99px; overflow:hidden; border:1px solid var(--line);}
+  .progress-bar{height:100%; background:linear-gradient(90deg,var(--amber),#E88A00); width:8%; transition:width .35s ease;}
+  @media (prefers-reduced-motion: reduce){ .progress-bar{transition:none;} }
+  main{max-width:640px; margin:0 auto; padding:18px 16px 0;}
+  .step{display:none;}
+  .step.active{display:block; animation:rise .25s ease;}
+  @keyframes rise{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+  @media (prefers-reduced-motion: reduce){ .step.active{animation:none;} }
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 16px; margin-bottom:14px;}
+  .step-eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#8A6A00; background:#FFF3DC; display:inline-block; padding:3px 8px; border-radius:5px; margin-bottom:8px;}
+  .step h2{font-family:var(--display); font-size:19px; margin:0 0 4px; letter-spacing:-.01em;}
+  .step .sub{font-size:13px; color:var(--ink-soft); margin:0 0 16px; line-height:1.5;}
+  fieldset{border:0; padding:0; margin:0 0 16px;}
+  legend{font-weight:600; font-size:13.5px; margin-bottom:8px;}
+  .field{margin-bottom:14px;}
+  .field label.flabel{display:block; font-size:13px; font-weight:600; margin-bottom:5px; color:var(--ink);}
+  .req::after{content:" *"; color:var(--red);}
+  input[type=text],input[type=tel],input[type=email],input[type=date],textarea,select{
+    width:100%; font-family:var(--sans); font-size:16px; padding:11px 12px; border:1.5px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);
+  }
+  textarea{min-height:90px; resize:vertical; line-height:1.5;}
+  input.touched:invalid, textarea.touched:invalid{border-color:var(--red);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+  @media (max-width:420px){ .row3{grid-template-columns:1fr 1fr;} }
+  .choices{display:flex; flex-wrap:wrap; gap:8px;}
+  .choice{position:relative;}
+  .choice input{position:absolute; opacity:0; width:1px; height:1px;}
+  .choice label{display:inline-flex; align-items:center; gap:6px; padding:10px 14px; border:1.5px solid var(--line); border-radius:99px; font-size:13.5px; font-weight:500; cursor:pointer; background:#fff; user-select:none;}
+  .choice input:checked + label{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .choice input:focus-visible + label{outline:3px solid var(--focus); outline-offset:2px;}
+  .checklist{display:flex; flex-direction:column; gap:2px;}
+  .checkline{display:flex; align-items:flex-start; gap:9px; padding:6px 2px;}
+  .checkline input{margin-top:3px; width:18px; height:18px; flex:none;}
+  .checkline .txt{font-size:13px; line-height:1.4;}
+  .factor-col{margin-bottom:18px;}
+  .factor-col h4{font-family:var(--display); font-size:13.5px; margin:0 0 6px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft);}
+  .entry-card{border:1.5px solid var(--line); border-radius:9px; padding:12px; margin-bottom:12px; background:#FAFBFC; position:relative;}
+  .entry-card .entry-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .entry-card .entry-head span{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);}
+  .entry-card .removeEntry{font-size:11px; padding:4px 9px; border-radius:6px; border:1px solid var(--line); background:#fff; font-weight:600; color:var(--red); cursor:pointer;}
+  .add-entry-btn{width:100%; padding:12px; border:1.5px dashed var(--ink-soft); border-radius:9px; background:#fff; color:var(--ink-soft); font-weight:600; font-size:13.5px; cursor:pointer;}
+  .nav-buttons{display:flex; gap:10px; margin:6px 0 26px;}
+  button{font-family:var(--sans); font-weight:700; font-size:14.5px; border-radius:8px; border:1.5px solid var(--ink); padding:13px 18px; cursor:pointer; -webkit-tap-highlight-color:transparent;}
+  .btn-primary{background:var(--ink); color:#fff; flex:1;}
+  .btn-secondary{background:#fff; color:var(--ink);}
+  .btn-send{background:var(--amber); border-color:var(--amber); color:var(--amber-ink); flex:1; font-size:15.5px;}
+  button:disabled{opacity:.45; cursor:not-allowed;}
+  .toc{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;}
+  .toc button{font-size:11px; font-weight:600; padding:6px 9px; border-radius:99px; border:1px solid var(--line); background:#fff; color:var(--ink-soft);}
+  .toc button.done{border-color:var(--green); color:var(--green);}
+  .toc button.current{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .review-block{margin-bottom:16px;}
+  .review-block h3{font-family:var(--display); font-size:14px; margin:0 0 8px; padding-bottom:6px; border-bottom:1.5px solid var(--line);}
+  .kv{display:flex; gap:8px; font-size:13px; padding:3px 0; border-bottom:1px dotted #E4E7EB;}
+  .kv .k{color:var(--ink-soft); flex:0 0 46%;}
+  .kv .v{flex:1; font-weight:500; word-break:break-word;}
+  .kv .v.empty{color:#B3B9C1; font-style:italic; font-weight:400;}
+  .send-panel{background:var(--card); border:1.5px solid var(--ink); border-radius:var(--radius); padding:16px;}
+  .send-panel .field label.flabel{margin-bottom:4px;}
+  .status-msg{font-size:12.5px; margin-top:10px; padding:9px 10px; border-radius:7px; display:none;}
+  .status-msg.show{display:block;}
+  .status-ok{background:#E7F5EE; color:var(--green); border:1px solid #BFE4D2;}
+  .status-warn{background:#FBEAEA; color:var(--red); border:1px solid #F0C6C6;}
+  .draft-note{font-family:var(--mono); font-size:11px; color:var(--ink-soft); text-align:center; margin:4px 0 18px;}
+  .draft-note button{all:unset; text-decoration:underline; cursor:pointer; font-family:var(--mono);}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="tag">Builder's Bloc — Field Report</div>
+  <h1>Superintendent Incident Investigation</h1>
+  <p>Investigation report, contributing factors, corrective action, timeline, and root-cause analysis — all in one packet. Progress saves automatically on this device.</p>
+  <div class="perf"></div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label"><span id="progressStepLabel">Step 1 of 11</span><span id="progressPct">9%</span></div>
+  <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+</div>
+
+<main>
+  <div class="toc" id="tocNav" aria-label="Jump to section"></div>
+
+  <form id="mainForm" novalidate>
+
+    <!-- STEP 0: Incident basics -->
+    <section class="step active" data-step="0" data-title="Basics">
+      <div class="card">
+        <span class="step-eyebrow">Section 1 of 11 — Incident Investigation Report</span>
+        <h2>Who, where, when</h2>
+        <p class="sub">This is not a Report of Injury form on its own — it's the superintendent's investigation record.</p>
+        <div class="field"><label class="flabel req">Name of injured employee</label><input type="text" name="injuredEmployee" data-label="Name of Injured Employee" required></div>
+        <div class="row3">
+          <div class="field"><label class="flabel req">Date of incident</label><input type="date" name="incidentDate" data-label="Date of Incident" required></div>
+          <div class="field"><label class="flabel">Time</label><input type="text" name="incidentTime" data-label="Time of Incident" placeholder="e.g. 2:15"></div>
+          <div class="field">
+            <label class="flabel">&nbsp;</label>
+            <div class="choices">
+              <div class="choice"><input type="radio" name="incidentAmPm" value="AM" id="ampm-am" data-label="AM/PM"><label for="ampm-am">AM</label></div>
+              <div class="choice"><input type="radio" name="incidentAmPm" value="PM" id="ampm-pm"><label for="ampm-pm">PM</label></div>
+            </div>
+          </div>
+        </div>
+        <div class="field"><label class="flabel">Date reported</label><input type="date" name="dateReported" data-label="Date Reported"></div>
+        <div class="row2">
+          <div class="field"><label class="flabel">Job title / department</label><input type="text" name="jobTitleDept" data-label="Job Title/Department"></div>
+          <div class="field"><label class="flabel">Hire date</label><input type="date" name="hireDate" data-label="Hire Date"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label class="flabel">Employer</label><input type="text" name="employer" data-label="Employer"></div>
+          <div class="field"><label class="flabel">Policy no.</label><input type="text" name="policyNo" data-label="Policy No."></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label class="flabel">Employer contact name</label><input type="text" name="employerContactName" data-label="Employer Contact Name"></div>
+          <div class="field"><label class="flabel">Employer telephone no.</label><input type="tel" name="employerContactPhone" data-label="Employer Telephone No."></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label class="flabel">Job performed</label><input type="text" name="jobPerformed" data-label="Job Performed"></div>
+          <div class="field"><label class="flabel">Experience performing job</label><input type="text" name="experiencePerformingJob" data-label="Experience Performing Job"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label class="flabel req">Location of incident</label><input type="text" name="locationOfIncident" data-label="Location of Incident" required></div>
+          <div class="field"><label class="flabel">Person incident was reported to</label><input type="text" name="personReportedTo" data-label="Person Incident was Reported To"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 1: Injury & narrative -->
+    <section class="step" data-step="1" data-title="Injury & cause">
+      <div class="card">
+        <span class="step-eyebrow">Section 2 of 11</span>
+        <h2>Injury, description &amp; cause</h2>
+        <fieldset>
+          <legend>Extent of injury</legend>
+          <div class="choices">
+            <div class="choice"><input type="radio" name="extentOfInjury" value="No Injury" id="ext1" data-label="Extent of Injury"><label for="ext1">No Injury</label></div>
+            <div class="choice"><input type="radio" name="extentOfInjury" value="First Aid Only" id="ext2"><label for="ext2">First Aid Only</label></div>
+            <div class="choice"><input type="radio" name="extentOfInjury" value="Taken to Clinic" id="ext3"><label for="ext3">Taken to Clinic</label></div>
+            <div class="choice"><input type="radio" name="extentOfInjury" value="Taken to ER" id="ext4"><label for="ext4">Taken to ER</label></div>
+            <div class="choice"><input type="radio" name="extentOfInjury" value="Fatality" id="ext5"><label for="ext5">Fatality</label></div>
+          </div>
+        </fieldset>
+        <div class="field"><label class="flabel">Treating medical facility</label><input type="text" name="treatingFacility" data-label="Treating Medical Facility"></div>
+        <div class="field"><label class="flabel req">Description of incident</label><textarea name="descriptionOfIncident" data-label="Description of Incident" rows="6" required></textarea></div>
+        <div class="field"><label class="flabel">Cause of incident</label><textarea name="causeOfIncident" data-label="Cause of Incident" rows="4"></textarea></div>
+        <div class="field"><label class="flabel">Was there physical damage?</label><textarea name="physicalDamage" data-label="Was There Physical Damage" rows="3"></textarea></div>
+      </div>
+    </section>
+
+    <!-- STEP 2: Witnesses -->
+    <section class="step" data-step="2" data-title="Witnesses">
+      <div class="card">
+        <span class="step-eyebrow">Section 3 of 11</span>
+        <h2>Witnesses &amp; others injured</h2>
+        <fieldset>
+          <legend>Any witnesses?</legend>
+          <div class="choices"><div class="choice"><input type="radio" name="anyWitnesses" value="Yes" id="wy" data-label="Any Witnesses"><label for="wy">Yes</label></div><div class="choice"><input type="radio" name="anyWitnesses" value="No" id="wn"><label for="wn">No</label></div></div>
+        </fieldset>
+        <div class="field"><label class="flabel">Witness 1 name</label><input type="text" name="witness1" data-label="Witness 1"></div>
+        <div class="field"><label class="flabel">Witness 2 name</label><input type="text" name="witness2" data-label="Witness 2"></div>
+        <div class="field"><label class="flabel">Witness 3 name</label><input type="text" name="witness3" data-label="Witness 3"></div>
+        <fieldset>
+          <legend>Were there others injured?</legend>
+          <div class="choices"><div class="choice"><input type="radio" name="othersInjured" value="Yes" id="oy" data-label="Others Injured"><label for="oy">Yes</label></div><div class="choice"><input type="radio" name="othersInjured" value="No" id="on"><label for="on">No</label></div></div>
+        </fieldset>
+        <div class="field"><label class="flabel">Other injured 1 name</label><input type="text" name="otherInjured1" data-label="Other Injured 1"></div>
+        <div class="field"><label class="flabel">Other injured 2 name</label><input type="text" name="otherInjured2" data-label="Other Injured 2"></div>
+        <div class="field"><label class="flabel">Other injured 3 name</label><input type="text" name="otherInjured3" data-label="Other Injured 3"></div>
+      </div>
+    </section>
+
+    <!-- STEP 3: Contributing factors -->
+    <section class="step" data-step="3" data-title="Factors">
+      <div class="card">
+        <span class="step-eyebrow">Section 4 of 11 — Contributing Incident Factors</span>
+        <h2>What contributed to this incident?</h2>
+        <p class="sub">Check all that apply in each category.</p>
+
+        <div class="factor-col">
+          <h4>Physical</h4>
+          <div class="checklist">
+            <label class="checkline"><input type="checkbox" name="factorPhysical" value="Poor housekeeping" data-label="Physical Factor"><span class="txt">Poor housekeeping</span></label>
+            <label class="checkline"><input type="checkbox" name="factorPhysical" value="Poor or no equipment guarding"><span class="txt">Poor or no equipment guarding</span></label>
+            <label class="checkline"><input type="checkbox" name="factorPhysical" value="Improper illumination"><span class="txt">Improper illumination</span></label>
+            <label class="checkline"><input type="checkbox" name="factorPhysical" value="Improper ventilation"><span class="txt">Improper ventilation</span></label>
+            <label class="checkline"><input type="checkbox" name="factorPhysical" value="Equipment failure"><span class="txt">Equipment failure</span></label>
+            <label class="checkline"><input type="checkbox" name="factorPhysical" value="Unsafe apparel"><span class="txt">Unsafe apparel</span></label>
+            <label class="checkline"><input type="checkbox" name="factorPhysical" value="Medical condition, e.g. stroke, cardiac arrest"><span class="txt">Medical condition, e.g. stroke, cardiac arrest</span></label>
+            <label class="checkline"><input type="checkbox" name="factorPhysical" value="Surrounding subcontractor at fault"><span class="txt">Surrounding subcontractor at fault</span></label>
+          </div>
+          <div class="field" style="margin-top:8px;"><label class="flabel">Conditions (e.g. wet)</label><input type="text" name="factorPhysicalConditions" data-label="Physical — Conditions"></div>
+          <div class="field"><label class="flabel">Other</label><input type="text" name="factorPhysicalOther1" data-label="Physical — Other 1"></div>
+          <div class="field"><label class="flabel">Other</label><input type="text" name="factorPhysicalOther2" data-label="Physical — Other 2"></div>
+        </div>
+
+        <div class="factor-col">
+          <h4>Behavioral</h4>
+          <div class="checklist">
+            <label class="checkline"><input type="checkbox" name="factorBehavioral" value="Not using required PPE" data-label="Behavioral Factor"><span class="txt">Not using required PPE</span></label>
+            <label class="checkline"><input type="checkbox" name="factorBehavioral" value="Performing duties outside scope of job"><span class="txt">Performing duties outside scope of job</span></label>
+            <label class="checkline"><input type="checkbox" name="factorBehavioral" value="Failure to obey supervisor's instructions"><span class="txt">Failure to obey supervisor's instructions</span></label>
+            <label class="checkline"><input type="checkbox" name="factorBehavioral" value="Failure to obey job procedures"><span class="txt">Failure to obey job procedures</span></label>
+            <label class="checkline"><input type="checkbox" name="factorBehavioral" value="Suspected intoxication"><span class="txt">Suspected intoxication</span></label>
+            <label class="checkline"><input type="checkbox" name="factorBehavioral" value="Employee was engaged in horseplay"><span class="txt">Employee was engaged in horseplay</span></label>
+            <label class="checkline"><input type="checkbox" name="factorBehavioral" value="Employee was unsuited for the job"><span class="txt">Employee was unsuited for the job</span></label>
+          </div>
+          <div class="field" style="margin-top:8px;"><label class="flabel">Other</label><input type="text" name="factorBehavioralOther1" data-label="Behavioral — Other 1"></div>
+          <div class="field"><label class="flabel">Other</label><input type="text" name="factorBehavioralOther2" data-label="Behavioral — Other 2"></div>
+          <div class="field"><label class="flabel">Other</label><input type="text" name="factorBehavioralOther3" data-label="Behavioral — Other 3"></div>
+        </div>
+
+        <div class="factor-col">
+          <h4>Procedural</h4>
+          <div class="checklist">
+            <label class="checkline"><input type="checkbox" name="factorProcedural" value="Asked to perform job without training" data-label="Procedural Factor"><span class="txt">Asked to perform job without training</span></label>
+            <label class="checkline"><input type="checkbox" name="factorProcedural" value="Operating equipment without training"><span class="txt">Operating equipment without training</span></label>
+            <label class="checkline"><input type="checkbox" name="factorProcedural" value="Poor enforcement of PPE use"><span class="txt">Poor enforcement of PPE use</span></label>
+            <label class="checkline"><input type="checkbox" name="factorProcedural" value="Needed equipment not supplied"><span class="txt">Needed equipment not supplied</span></label>
+            <label class="checkline"><input type="checkbox" name="factorProcedural" value="Failure to inspect equipment"><span class="txt">Failure to inspect equipment</span></label>
+            <label class="checkline"><input type="checkbox" name="factorProcedural" value="Failure to correct poor procedures"><span class="txt">Failure to correct poor procedures</span></label>
+            <label class="checkline"><input type="checkbox" name="factorProcedural" value="Wrong equipment for the operation"><span class="txt">Wrong equipment for the operation</span></label>
+            <label class="checkline"><input type="checkbox" name="factorProcedural" value="Wrong chemical or other used"><span class="txt">Wrong chemical or other used</span></label>
+            <label class="checkline"><input type="checkbox" name="factorProcedural" value="No pre-site inspection"><span class="txt">No pre-site inspection</span></label>
+          </div>
+          <div class="field" style="margin-top:8px;"><label class="flabel">Other</label><input type="text" name="factorProceduralOther1" data-label="Procedural — Other 1"></div>
+          <div class="field"><label class="flabel">Other</label><input type="text" name="factorProceduralOther2" data-label="Procedural — Other 2"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: Investigation sign-off -->
+    <section class="step" data-step="4" data-title="Sign-off">
+      <div class="card">
+        <span class="step-eyebrow">Section 5 of 11</span>
+        <h2>Investigation report — sign-off</h2>
+        <div class="field"><label class="flabel req">Report completed by</label><input type="text" name="invCompletedBy" data-label="Investigation — Report Completed By" required></div>
+        <div class="row2">
+          <div class="field"><label class="flabel">Title / employer</label><input type="text" name="invTitleEmployer" data-label="Investigation — Title/Employer"></div>
+          <div class="field"><label class="flabel">Phone number</label><input type="tel" name="invPhone" data-label="Investigation — Phone Number"></div>
+        </div>
+        <div class="field"><label class="flabel req">Typed signature</label><input type="text" name="invSignature" data-label="Investigation — Signature" placeholder="Type your full name" required></div>
+        <div class="field"><label class="flabel">Date</label><input type="date" name="invDate" data-label="Investigation — Date"></div>
+      </div>
+    </section>
+
+    <!-- STEP 5: Corrective action basics -->
+    <section class="step" data-step="5" data-title="Corrective — basics">
+      <div class="card">
+        <span class="step-eyebrow">Section 6 of 11 — Incident Corrective Action Form</span>
+        <h2>Corrective action — basics</h2>
+        <div class="field"><label class="flabel">Employee name or incident reference</label><input type="text" name="caEmployeeOrRef" data-label="Employee Name or Incident Reference"></div>
+        <div class="row3">
+          <div class="field"><label class="flabel">Date of incident</label><input type="date" name="caIncidentDate" data-label="Corrective Action — Date of Incident"></div>
+          <div class="field"><label class="flabel">Time</label><input type="text" name="caIncidentTime" data-label="Corrective Action — Time"></div>
+          <div class="field">
+            <label class="flabel">&nbsp;</label>
+            <div class="choices">
+              <div class="choice"><input type="radio" name="caAmPm" value="AM" id="ca-am" data-label="Corrective Action — AM/PM"><label for="ca-am">AM</label></div>
+              <div class="choice"><input type="radio" name="caAmPm" value="PM" id="ca-pm"><label for="ca-pm">PM</label></div>
+            </div>
+          </div>
+        </div>
+        <div class="field"><label class="flabel">Date reported</label><input type="date" name="caDateReported" data-label="Corrective Action — Date Reported"></div>
+        <div class="row2">
+          <div class="field"><label class="flabel">Employer</label><input type="text" name="caEmployer" data-label="Corrective Action — Employer"></div>
+          <div class="field"><label class="flabel">MEM policy no.</label><input type="text" name="caMemPolicyNo" data-label="MEM Policy No."></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label class="flabel">Employer contact name</label><input type="text" name="caContactName" data-label="Corrective Action — Contact Name"></div>
+          <div class="field"><label class="flabel">Employer telephone number</label><input type="tel" name="caContactPhone" data-label="Corrective Action — Contact Phone"></div>
+        </div>
+        <div class="field"><label class="flabel">Location of incident</label><input type="text" name="caLocation" data-label="Corrective Action — Location"></div>
+        <div class="field"><label class="flabel">Brief description of incident</label><textarea name="caBriefDescription" data-label="Brief Description of Incident" rows="4"></textarea></div>
+        <fieldset>
+          <legend>Do you know of any similar incidents occurring in the past?</legend>
+          <div class="choices"><div class="choice"><input type="radio" name="similarIncidents" value="Yes" id="si1" data-label="Similar Incidents in Past"><label for="si1">Yes</label></div><div class="choice"><input type="radio" name="similarIncidents" value="No" id="si2"><label for="si2">No</label></div></div>
+        </fieldset>
+        <div class="field"><label class="flabel">If yes, describe incidents</label><textarea name="similarIncidentsDescribe" data-label="Similar Incidents — Description" rows="3"></textarea></div>
+      </div>
+    </section>
+
+    <!-- STEP 6: Corrective action & follow-up -->
+    <section class="step" data-step="6" data-title="Corrective — action">
+      <div class="card">
+        <span class="step-eyebrow">Section 7 of 11</span>
+        <h2>Corrective action &amp; follow-up</h2>
+        <div class="field"><label class="flabel">Corrective action</label><textarea name="correctiveAction" data-label="Corrective Action" rows="4"></textarea></div>
+        <div class="row2">
+          <div class="field"><label class="flabel">Date corrective action completed</label><input type="date" name="caCompletedDate" data-label="Date Corrective Action Completed"></div>
+          <div class="field"><label class="flabel">Corrective action performed by</label><input type="text" name="caPerformedBy" data-label="Corrective Action Performed By"></div>
+        </div>
+        <div class="field"><label class="flabel">Corrective action reference number (work order, P.O., or account number)</label><input type="text" name="caRefNumber" data-label="Corrective Action Reference Number"></div>
+        <div class="field"><label class="flabel">Follow-up action required</label><textarea name="followUpRequired" data-label="Follow Up Action Required" rows="4"></textarea></div>
+        <div class="field"><label class="flabel">Follow-up action to be completed by</label><input type="text" name="followUpCompletedBy" data-label="Follow Up Action to be Completed By"></div>
+        <div class="field"><label class="flabel">Report completed by</label><input type="text" name="caReportCompletedBy" data-label="Corrective Action — Report Completed By"></div>
+        <div class="row2">
+          <div class="field"><label class="flabel">Title</label><input type="text" name="caTitle" data-label="Corrective Action — Title"></div>
+          <div class="field"><label class="flabel">Date</label><input type="date" name="caSignDate" data-label="Corrective Action — Date"></div>
+        </div>
+        <div class="field"><label class="flabel">Typed signature</label><input type="text" name="caSignature" data-label="Corrective Action — Signature" placeholder="Type your full name"></div>
+      </div>
+    </section>
+
+    <!-- STEP 7: Timeline of actions -->
+    <section class="step" data-step="7" data-title="Timeline">
+      <div class="card">
+        <span class="step-eyebrow">Section 8 of 11 — Timeline of Actions</span>
+        <h2>Timeline of actions</h2>
+        <p class="sub">Add an entry for each action taken, with supporting facts and open questions.</p>
+        <div id="timelineList"></div>
+        <button type="button" class="add-entry-btn" id="addTimeline">+ Add timeline entry</button>
+      </div>
+    </section>
+
+    <!-- STEP 8: Direct and root causes -->
+    <section class="step" data-step="8" data-title="Root causes">
+      <div class="card">
+        <span class="step-eyebrow">Section 9 of 11 — Direct and Root Causes</span>
+        <h2>Direct and root causes</h2>
+        <p class="sub"><strong>Direct cause:</strong> any problem associated with the incident that, if corrected, could have prevented it or significantly mitigated its consequences. <strong>Root cause:</strong> the most basic cause(s) that management has the control to fix, and which, when fixed, will prevent or reduce recurrence.</p>
+        <div id="causesList"></div>
+        <button type="button" class="add-entry-btn" id="addCause">+ Add direct cause</button>
+      </div>
+    </section>
+
+    <!-- STEP 9: Root cause corrective action / 5 whys -->
+    <section class="step" data-step="9" data-title="5 Whys">
+      <div class="card">
+        <span class="step-eyebrow">Section 10 of 11 — Root and Cause Corrective Action</span>
+        <h2>Root cause analysis</h2>
+        <fieldset>
+          <legend>Step 1 — From areas identified, choose the major cause</legend>
+          <div class="choices">
+            <div class="choice"><input type="radio" name="majorCauseArea" value="Equipment" id="mca1" data-label="Major Cause Area"><label for="mca1">Equipment</label></div>
+            <div class="choice"><input type="radio" name="majorCauseArea" value="Environment" id="mca2"><label for="mca2">Environment</label></div>
+            <div class="choice"><input type="radio" name="majorCauseArea" value="People" id="mca3"><label for="mca3">People</label></div>
+            <div class="choice"><input type="radio" name="majorCauseArea" value="Management" id="mca4"><label for="mca4">Management</label></div>
+            <div class="choice"><input type="radio" name="majorCauseArea" value="Other" id="mca5"><label for="mca5">Other</label></div>
+          </div>
+        </fieldset>
+        <div class="field"><label class="flabel">Step 2 — Major cause (identified in step 1)</label><input type="text" name="majorCause" data-label="Major Cause"></div>
+        <div class="field"><label class="flabel">Why did this happen?</label><textarea name="why1" data-label="Why #1" rows="2"></textarea></div>
+        <div class="field"><label class="flabel">Why?</label><textarea name="why2" data-label="Why #2" rows="2"></textarea></div>
+        <div class="field"><label class="flabel">Why?</label><textarea name="why3" data-label="Why #3" rows="2"></textarea></div>
+        <div class="field"><label class="flabel">Why?</label><textarea name="why4" data-label="Why #4" rows="2"></textarea></div>
+
+        <div class="field"><label class="flabel">Step 3 — Corrective steps</label><textarea name="correctiveSteps" data-label="Corrective Steps" rows="3"></textarea></div>
+        <div class="field"><label class="flabel">Corrective steps for sub-causes</label><textarea name="correctiveStepsSubCauses" data-label="Corrective Steps for Sub-Causes" rows="3"></textarea></div>
+        <div class="row2">
+          <div class="field"><label class="flabel">Date for corrective steps to be completed</label><input type="date" name="correctiveStepsDate" data-label="Date for Corrective Steps to be Completed"></div>
+          <div class="field"><label class="flabel">Responsible party for corrective steps</label><input type="text" name="correctiveStepsResponsible" data-label="Responsible Party for Corrective Steps"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label class="flabel">Completed by</label><input type="text" name="rccaCompletedBy" data-label="Root Cause Corrective Action — Completed By"></div>
+          <div class="field"><label class="flabel">Date</label><input type="date" name="rccaDate" data-label="Root Cause Corrective Action — Date"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 10: Review & send -->
+    <section class="step" data-step="10" data-title="Review & send">
+      <div class="card">
+        <span class="step-eyebrow">Section 11 of 11</span>
+        <h2>Review &amp; send</h2>
+        <p class="sub">Check the summary below, then send. This opens the share sheet with a formatted PDF ready to go.</p>
+        <div id="reviewOutput"></div>
+      </div>
+      <div class="send-panel">
+        <p style="font-size:12.5px; color:var(--ink-soft); margin:0 0 12px;">Tap Send, then choose <strong>Email to Laura</strong> (or Mail) from the share sheet — the PDF comes along attached.</p>
+        <button type="button" class="btn-send" id="sendBtn" style="width:100%;">Send Report</button>
+        <div class="status-msg" id="statusMsg"></div>
+      </div>
+    </section>
+
+  </form>
+
+  <div class="nav-buttons">
+    <button type="button" class="btn-secondary" id="backBtn">Back</button>
+    <button type="button" class="btn-primary" id="nextBtn">Next</button>
+  </div>
+  <div class="draft-note">Draft auto-saves on this device · <button type="button" id="resetBtn">start a new investigation</button></div>
+</main>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'bb_super_investigation_v1';
+  const form = document.getElementById('mainForm');
+  const steps = Array.from(document.querySelectorAll('.step'));
+  const total = steps.length;
+  let current = 0;
+
+  const tocNav = document.getElementById('tocNav');
+  steps.forEach((s,i)=>{
+    const b = document.createElement('button');
+    b.type='button';
+    b.textContent = (i+1)+'. '+s.dataset.title;
+    b.addEventListener('click', ()=>goTo(i));
+    tocNav.appendChild(b);
+  });
+
+  function updateToc(){
+    Array.from(tocNav.children).forEach((b,i)=>{
+      b.classList.toggle('current', i===current);
+      b.classList.toggle('done', i<current);
+    });
+  }
+  function updateProgress(){
+    const pct = Math.round(((current+1)/total)*100);
+    document.getElementById('progressStepLabel').textContent = 'Step '+(current+1)+' of '+total;
+    document.getElementById('progressPct').textContent = pct+'%';
+    document.getElementById('progressBar').style.width = pct+'%';
+  }
+  function goTo(idx){
+    steps[current].classList.remove('active');
+    current = Math.max(0, Math.min(total-1, idx));
+    steps[current].classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+    updateProgress(); updateToc(); updateNavButtons();
+    if(current===total-1) renderReview();
+  }
+  function currentInvalid(){
+    const els = steps[current].querySelectorAll('[required]');
+    for(const el of els){
+      el.classList.add('touched');
+      if(el.type==='radio'){
+        const group = steps[current].querySelectorAll('input[name="'+el.name+'"]');
+        if(!Array.from(group).some(g=>g.checked)) return el;
+      } else if(!el.value){ return el; }
+    }
+    return null;
+  }
+  function updateNavButtons(){
+    document.getElementById('backBtn').disabled = current===0;
+    document.getElementById('nextBtn').textContent = current===total-1 ? 'Done' : 'Next';
+  }
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    const bad = currentInvalid();
+    if(bad){ bad.scrollIntoView({behavior:'smooth', block:'center'}); bad.focus(); return; }
+    if(current < total-1) goTo(current+1);
+  });
+  document.getElementById('backBtn').addEventListener('click', ()=> goTo(current-1));
+
+  // ---------- Repeatable: Timeline of Actions ----------
+  let timelineCount = 0;
+  function addTimelineEntry(){
+    const idx = timelineCount++;
+    const div = document.createElement('div');
+    div.className = 'entry-card';
+    div.innerHTML = `
+      <div class="entry-head"><span>Timeline entry ${idx+1}</span><button type="button" class="removeEntry">Remove</button></div>
+      <div class="row2">
+        <div class="field"><label class="flabel">Date</label><input type="date" name="timeline_${idx}_date" data-label="Timeline ${idx+1} — Date"></div>
+        <div class="field"><label class="flabel">Time</label><input type="text" name="timeline_${idx}_time" data-label="Timeline ${idx+1} — Time"></div>
+      </div>
+      <div class="field"><label class="flabel">Actions</label><textarea name="timeline_${idx}_actions" data-label="Timeline ${idx+1} — Actions" rows="2"></textarea></div>
+      <div class="field"><label class="flabel">Facts / known information</label><textarea name="timeline_${idx}_facts" data-label="Timeline ${idx+1} — Facts/Known Information" rows="2"></textarea></div>
+      <div class="field"><label class="flabel">Assumptions / questions / further research</label><textarea name="timeline_${idx}_assumptions" data-label="Timeline ${idx+1} — Assumptions/Questions" rows="2"></textarea></div>
+    `;
+    div.querySelector('.removeEntry').addEventListener('click', ()=>{ div.remove(); saveDraft(); });
+    document.getElementById('timelineList').appendChild(div);
+    return div;
+  }
+  document.getElementById('addTimeline').addEventListener('click', ()=>{ addTimelineEntry(); saveDraft(); });
+
+  // ---------- Repeatable: Direct & Root Causes ----------
+  let causeCount = 0;
+  const CAUSE_CATEGORIES = ['Policies/Procedures','Training','Management','Preparation and Supervision','Instructions','Interface with Equipment and Work Area'];
+  function addCauseEntry(){
+    const idx = causeCount++;
+    const div = document.createElement('div');
+    div.className = 'entry-card';
+    let catHtml = '';
+    CAUSE_CATEGORIES.forEach(cat=>{
+      catHtml += `<label class="checkline"><input type="checkbox" name="cause_${idx}_category" value="${cat}" data-label="Cause ${idx+1} — Category"><span class="txt">${cat}</span></label>`;
+    });
+    div.innerHTML = `
+      <div class="entry-head"><span>Direct cause ${idx+1}</span><button type="button" class="removeEntry">Remove</button></div>
+      <div class="field"><label class="flabel">Direct cause</label><textarea name="cause_${idx}_text" data-label="Cause ${idx+1} — Direct Cause" rows="2"></textarea></div>
+      <fieldset>
+        <legend>Is this a root cause?</legend>
+        <div class="choices">
+          <div class="choice"><input type="radio" name="cause_${idx}_isroot" value="Yes" id="cause_${idx}_yes" data-label="Cause ${idx+1} — Is Root Cause"><label for="cause_${idx}_yes">Yes</label></div>
+          <div class="choice"><input type="radio" name="cause_${idx}_isroot" value="No" id="cause_${idx}_no"><label for="cause_${idx}_no">No</label></div>
+        </div>
+      </fieldset>
+      <fieldset><legend>Category</legend><div class="checklist">${catHtml}</div></fieldset>
+    `;
+    div.querySelector('.removeEntry').addEventListener('click', ()=>{ div.remove(); saveDraft(); });
+    document.getElementById('causesList').appendChild(div);
+    return div;
+  }
+  document.getElementById('addCause').addEventListener('click', ()=>{ addCauseEntry(); saveDraft(); });
+
+  // ---------- Draft persistence ----------
+  function saveDraft(){
+    try{
+      const data = {};
+      new FormData(form).forEach((v,k)=>{
+        if(data[k]===undefined){ data[k]=v; }
+        else if(Array.isArray(data[k])){ data[k].push(v); }
+        else { data[k]=[data[k], v]; }
+      });
+      form.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+        const key='__cb_'+cb.name+'::'+cb.value;
+        data[key]=cb.checked;
+      });
+      data.__timelineCount = timelineCount;
+      data.__causeCount = causeCount;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }catch(e){}
+  }
+  function loadDraft(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw){ addTimelineEntry();addTimelineEntry();addTimelineEntry(); addCauseEntry();addCauseEntry();addCauseEntry(); return; }
+      const data = JSON.parse(raw);
+      const tCount = data.__timelineCount || 0;
+      const cCount = data.__causeCount || 0;
+      for(let i=0;i<Math.max(tCount,1);i++) addTimelineEntry();
+      for(let i=0;i<Math.max(cCount,1);i++) addCauseEntry();
+      Object.keys(data).forEach(k=>{
+        if(k.startsWith('__cb_')){
+          const rest = k.slice(5);
+          const sep = rest.lastIndexOf('::');
+          const name = rest.slice(0,sep), val = rest.slice(sep+2);
+          const cb = form.querySelector('input[type=checkbox][name="'+name+'"][value="'+CSS.escape(val)+'"]');
+          if(cb) cb.checked = !!data[k];
+          return;
+        }
+        if(k==='__timelineCount' || k==='__causeCount') return;
+        const els = form.querySelectorAll('[name="'+k+'"]');
+        if(els.length===0) return;
+        if(els[0].type==='radio'){
+          const v = Array.isArray(data[k]) ? data[k][0] : data[k];
+          els.forEach(el=>{ if(el.value===v) el.checked=true; });
+        } else if(els[0].type!=='checkbox'){
+          els[0].value = Array.isArray(data[k]) ? data[k][0] : data[k];
+        }
+      });
+    }catch(e){ addTimelineEntry();addTimelineEntry();addTimelineEntry(); addCauseEntry();addCauseEntry();addCauseEntry(); }
+  }
+  form.addEventListener('input', saveDraft);
+  form.addEventListener('change', saveDraft);
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(!confirm('Clear this investigation and start over?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    form.reset();
+    document.getElementById('timelineList').innerHTML='';
+    document.getElementById('causesList').innerHTML='';
+    timelineCount=0; causeCount=0;
+    addTimelineEntry();addTimelineEntry();addTimelineEntry();
+    addCauseEntry();addCauseEntry();addCauseEntry();
+    goTo(0);
+  });
+
+  // ---------- Review & PDF ----------
+  const SECTION_ORDER = [
+    ['Incident Basics', ['injuredEmployee','incidentDate','incidentTime','incidentAmPm','dateReported','jobTitleDept','hireDate','employer','policyNo','employerContactName','employerContactPhone','jobPerformed','experiencePerformingJob','locationOfIncident','personReportedTo']],
+    ['Injury, Description & Cause', ['extentOfInjury','treatingFacility','descriptionOfIncident','causeOfIncident','physicalDamage']],
+    ['Witnesses & Others Injured', ['anyWitnesses','witness1','witness2','witness3','othersInjured','otherInjured1','otherInjured2','otherInjured3']],
+    ['Contributing Incident Factors', ['factorPhysical','factorPhysicalConditions','factorPhysicalOther1','factorPhysicalOther2','factorBehavioral','factorBehavioralOther1','factorBehavioralOther2','factorBehavioralOther3','factorProcedural','factorProceduralOther1','factorProceduralOther2']],
+    ['Investigation Sign-off', ['invCompletedBy','invTitleEmployer','invPhone','invSignature','invDate']],
+    ['Corrective Action — Basics', ['caEmployeeOrRef','caIncidentDate','caIncidentTime','caAmPm','caDateReported','caEmployer','caMemPolicyNo','caContactName','caContactPhone','caLocation','caBriefDescription','similarIncidents','similarIncidentsDescribe']],
+    ['Corrective Action & Follow-up', ['correctiveAction','caCompletedDate','caPerformedBy','caRefNumber','followUpRequired','followUpCompletedBy','caReportCompletedBy','caTitle','caSignDate','caSignature']],
+    ['Root Cause Analysis (5 Whys)', ['majorCauseArea','majorCause','why1','why2','why3','why4','correctiveSteps','correctiveStepsSubCauses','correctiveStepsDate','correctiveStepsResponsible','rccaCompletedBy','rccaDate']]
+  ];
+
+  function labelFor(name){
+    const el = form.querySelector('[name="'+name+'"][data-label]');
+    return el ? el.dataset.label : name;
+  }
+  function valueFor(name){
+    const els = form.querySelectorAll('[name="'+name+'"]');
+    if(els.length===0) return '';
+    if(els[0].type==='checkbox'){
+      return Array.from(els).filter(e=>e.checked).map(e=>e.value).join(', ');
+    }
+    if(els[0].type==='radio'){
+      const c = Array.from(els).find(e=>e.checked);
+      return c ? c.value : '';
+    }
+    return els[0].value || '';
+  }
+
+  function renderReview(){
+    const out = document.getElementById('reviewOutput');
+    let html='';
+    SECTION_ORDER.forEach(([title, fields])=>{
+      html += '<div class="review-block"><h3>'+title+'</h3>';
+      fields.forEach(f=>{
+        const v = valueFor(f);
+        html += '<div class="kv"><span class="k">'+labelFor(f)+'</span><span class="v'+(v?'':' empty')+'">'+(v||'—')+'</span></div>';
+      });
+      html += '</div>';
+    });
+    const tCount = document.getElementById('timelineList').children.length;
+    const cCount = document.getElementById('causesList').children.length;
+    html += '<div class="review-block"><h3>Timeline of Actions</h3><div class="kv"><span class="k">Entries</span><span class="v">'+tCount+'</span></div></div>';
+    html += '<div class="review-block"><h3>Direct and Root Causes</h3><div class="kv"><span class="k">Entries</span><span class="v">'+cCount+'</span></div></div>';
+    out.innerHTML = html;
+  }
+
+  /* ---------- Reusable form-style PDF drawing kit ---------- */
+  const PDF = {
+    ink: [18,24,31], inkSoft: [90,102,115], line: [200,206,214], amber: [245,166,35], red: [198,60,60],
+    marginX: 46, pageW: 612, pageH: 792, top: 0, doc: null,
+    start(title, eyebrow){
+      const { jsPDF } = window.jspdf;
+      this.doc = new jsPDF({unit:'pt', format:'letter'});
+      this.pageW = this.doc.internal.pageSize.getWidth();
+      this.pageH = this.doc.internal.pageSize.getHeight();
+      this.top = this.header(title, eyebrow);
+      return this.top;
+    },
+    header(title, eyebrow){
+      const d = this.doc;
+      d.setFillColor(...this.ink); d.rect(0,0,this.pageW,74,'F');
+      d.setFillColor(...this.amber); d.rect(0,74,this.pageW,3,'F');
+      d.setTextColor(245,166,35); d.setFont('helvetica','bold'); d.setFontSize(8.5);
+      d.text((eyebrow||"Builder's Bloc — Field Report").toUpperCase(), this.marginX, 26);
+      d.setTextColor(255,255,255); d.setFont('helvetica','bold'); d.setFontSize(16);
+      d.text(title, this.marginX, 48);
+      d.setFont('helvetica','normal'); d.setFontSize(8.5); d.setTextColor(200,206,214);
+      const gen = 'Generated: '+new Date().toLocaleString();
+      d.text(gen, this.pageW - this.marginX - d.getTextWidth(gen), 26);
+      d.setTextColor(...this.ink);
+      return 100;
+    },
+    ensureSpace(y, needed){
+      if(y + needed > this.pageH - 50){ this.doc.addPage(); return 46; }
+      return y;
+    },
+    sectionHeading(y, label){
+      const d = this.doc;
+      y = this.ensureSpace(y, 24);
+      d.setFont('helvetica','bold'); d.setFontSize(9.5); d.setTextColor(...this.inkSoft);
+      d.text(label.toUpperCase(), this.marginX, y);
+      d.setDrawColor(...this.line); d.setLineWidth(0.75);
+      d.line(this.marginX, y+5, this.pageW-this.marginX, y+5);
+      d.setTextColor(...this.ink);
+      return y + 20;
+    },
+    subHeading(y, label){
+      const d = this.doc;
+      y = this.ensureSpace(y, 18);
+      d.setFont('helvetica','bold'); d.setFontSize(9); d.setTextColor(...this.amber);
+      d.text(label, this.marginX, y);
+      d.setTextColor(...this.ink);
+      return y + 13;
+    },
+    field(x, y, width, label, value){
+      const d = this.doc;
+      y = this.ensureSpace(y, 34);
+      d.setFont('helvetica','bold'); d.setFontSize(7.8); d.setTextColor(...this.inkSoft);
+      d.text(label.toUpperCase(), x, y);
+      d.setFont('helvetica','normal'); d.setFontSize(11);
+      const v = (value && value.trim()) ? value : '—';
+      d.setTextColor(...(value && value.trim() ? this.ink : this.inkSoft));
+      d.text(v, x, y+16);
+      d.setTextColor(...this.ink);
+      d.setDrawColor(...this.line); d.setLineWidth(0.75);
+      d.line(x, y+21, x+width, y+21);
+      return y + 34;
+    },
+    multilineField(x, y, width, label, value){
+      const d = this.doc;
+      d.setFont('helvetica','bold'); d.setFontSize(7.8); d.setTextColor(...this.inkSoft);
+      y = this.ensureSpace(y, 30);
+      d.text(label.toUpperCase(), x, y);
+      y += 12;
+      d.setFont('helvetica','normal'); d.setFontSize(10.5);
+      const v = (value && value.trim()) ? value : '—';
+      d.setTextColor(...(value && value.trim() ? this.ink : this.inkSoft));
+      const lines = d.splitTextToSize(v, width);
+      lines.forEach(line=>{ y = this.ensureSpace(y, 14); d.text(line, x, y); y += 13.5; });
+      d.setTextColor(...this.ink);
+      return y + 10;
+    },
+    footer(text){
+      const d = this.doc;
+      const pages = d.internal.getNumberOfPages();
+      for(let i=1;i<=pages;i++){
+        d.setPage(i);
+        d.setFont('helvetica','normal'); d.setFontSize(8); d.setTextColor(...this.inkSoft);
+        const w = d.getTextWidth(text);
+        d.text(text, (this.pageW-w)/2, this.pageH-24);
+        if(pages>1){
+          const pn = 'Page '+i+' of '+pages;
+          d.text(pn, this.pageW-this.marginX-d.getTextWidth(pn), this.pageH-24);
+        }
+      }
+    },
+    bytes(){ return this.doc.output('arraybuffer'); }
+  };
+
+  const MULTILINE_FIELDS = new Set([
+    'descriptionOfIncident','causeOfIncident','physicalDamage','caBriefDescription','similarIncidentsDescribe',
+    'correctiveAction','followUpRequired','correctiveStepsSubCauses','correctiveSteps',
+    'why1','why2','why3','why4','factorPhysical','factorBehavioral','factorProcedural'
+  ]);
+  const WIDE_FIELDS = new Set([
+    'locationOfIncident','employer','employerContactName','jobPerformed','experiencePerformingJob',
+    'personReportedTo','treatingFacility','caLocation','caEmployer','caContactName',
+    'correctiveStepsResponsible','caPerformedBy','followUpCompletedBy'
+  ]);
+
+  function layoutFields(fields, y, fullW, col2, gap){
+    let i = 0;
+    while(i < fields.length){
+      const f = fields[i];
+      if(MULTILINE_FIELDS.has(f)){
+        y = PDF.multilineField(PDF.marginX, y, fullW, labelFor(f), valueFor(f));
+        i++; continue;
+      }
+      if(WIDE_FIELDS.has(f)){
+        y = PDF.field(PDF.marginX, y, fullW, labelFor(f), valueFor(f));
+        i++; continue;
+      }
+      const f2 = fields[i+1];
+      if(f2 && !MULTILINE_FIELDS.has(f2) && !WIDE_FIELDS.has(f2)){
+        let ry = y;
+        PDF.field(PDF.marginX, ry, col2, labelFor(f), valueFor(f));
+        y = PDF.field(PDF.marginX+col2+gap, ry, col2, labelFor(f2), valueFor(f2));
+        i += 2;
+      } else {
+        y = PDF.field(PDF.marginX, y, fullW, labelFor(f), valueFor(f));
+        i++;
+      }
+    }
+    return y;
+  }
+
+  function timelineHasContent(b){
+    const get = suf => { const el=b.querySelector('[name$="_'+suf+'"]'); return el?el.value:''; };
+    return [get('date'),get('time'),get('actions'),get('facts'),get('assumptions')].some(v=>v && v.trim());
+  }
+  function causeHasContent(b){
+    const text = b.querySelector('textarea[name$="_text"]').value;
+    const isRoot = b.querySelector('input[name$="_isroot"]:checked');
+    const cats = Array.from(b.querySelectorAll('input[type=checkbox]:checked'));
+    return !!(text || isRoot || cats.length);
+  }
+
+  function layoutTimeline(y, fullW, col2, gap){
+    const blocks = Array.from(document.getElementById('timelineList').children).filter(timelineHasContent);
+    y = PDF.sectionHeading(y, 'Timeline of Actions');
+    if(blocks.length===0){ y = PDF.field(PDF.marginX, y, fullW, 'Entries', 'none'); return y; }
+    blocks.forEach((b,i)=>{
+      const get = suf => { const el=b.querySelector('[name$="_'+suf+'"]'); return el?el.value:''; };
+      y = PDF.subHeading(y, 'Entry '+(i+1));
+      let ry = y;
+      PDF.field(PDF.marginX, ry, col2, 'Date', get('date'));
+      y = PDF.field(PDF.marginX+col2+gap, ry, col2, 'Time', get('time'));
+      y = PDF.multilineField(PDF.marginX, y, fullW, 'Actions', get('actions'));
+      y = PDF.multilineField(PDF.marginX, y, fullW, 'Facts / Known Information', get('facts'));
+      y = PDF.multilineField(PDF.marginX, y, fullW, 'Assumptions / Questions / Further Research', get('assumptions'));
+      y += 4;
+    });
+    return y;
+  }
+
+  function layoutCauses(y, fullW, col2, gap){
+    const blocks = Array.from(document.getElementById('causesList').children).filter(causeHasContent);
+    y = PDF.sectionHeading(y, 'Direct and Root Causes');
+    if(blocks.length===0){ y = PDF.field(PDF.marginX, y, fullW, 'Entries', 'none'); return y; }
+    blocks.forEach((b,i)=>{
+      const text = b.querySelector('textarea[name$="_text"]').value;
+      const isRootEl = b.querySelector('input[name$="_isroot"]:checked');
+      const isRoot = isRootEl ? isRootEl.value : '';
+      const cats = Array.from(b.querySelectorAll('input[type=checkbox]:checked')).map(c=>c.value).join(', ');
+      y = PDF.subHeading(y, 'Cause '+(i+1));
+      y = PDF.multilineField(PDF.marginX, y, fullW, 'Direct Cause', text);
+      let ry = y;
+      PDF.field(PDF.marginX, ry, col2, 'Is This a Root Cause?', isRoot);
+      y = PDF.field(PDF.marginX+col2+gap, ry, col2, 'Category', cats);
+      y += 4;
+    });
+    return y;
+  }
+
+  function buildPdfBytes(){
+    let y = PDF.start('Superintendent Incident Investigation');
+    const fullW = PDF.pageW - PDF.marginX*2;
+    const gap = 16;
+    const col2 = (fullW - gap)/2;
+
+    SECTION_ORDER.forEach(([title, fields])=>{
+      y = PDF.sectionHeading(y, title);
+      y = layoutFields(fields, y, fullW, col2, gap);
+      y += 6;
+    });
+
+    y = layoutTimeline(y, fullW, col2, gap);
+    y += 6;
+    y = layoutCauses(y, fullW, col2, gap);
+
+    PDF.footer("Builder's Bloc — Field Incident Reporting");
+    return PDF.bytes();
+  }
+
+  function canShareFiles(){
+    try{
+      if(!navigator.share || !navigator.canShare) return false;
+      const probe = new File([new Uint8Array([37,80,68,70])], 'p.pdf', {type:'application/pdf'});
+      return navigator.canShare({files:[probe]});
+    }catch(e){ return false; }
+  }
+  const IOSISH = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                 (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+
+  function downloadBytes(bytes, filename){
+    const blob = new Blob([bytes], {type:'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=> URL.revokeObjectURL(url), 60000);
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', async ()=>{
+    const statusEl = document.getElementById('statusMsg');
+    const name = valueFor('injuredEmployee') || 'Employee';
+    const dateStr = valueFor('incidentDate') || new Date().toLocaleDateString();
+    const subject = 'Incident Investigation — '+name+' — '+dateStr;
+    const filename = 'Superintendent_Investigation_'+name.replace(/[^a-z0-9]+/gi,'_')+'_'+dateStr.replace(/[^a-z0-9]+/gi,'-')+'.pdf';
+
+    let bytes;
+    try{ bytes = buildPdfBytes(); }
+    catch(e){
+      console.error('PDF generation failed', e);
+      statusEl.textContent = 'Could not generate the PDF. Try again, or contact the office.';
+      statusEl.className = 'status-msg show status-warn';
+      return;
+    }
+
+    if(canShareFiles()){
+      try{
+        const file = new File([bytes], filename, {type:'application/pdf'});
+        await navigator.share({files:[file], title:subject, text:subject});
+        statusEl.textContent = 'Share sheet opened — choose "Email to Laura" (or Mail) to send the attached PDF.';
+        statusEl.className = 'status-msg show status-ok';
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }catch(err){
+        if(err && err.name === 'AbortError'){
+          statusEl.textContent = 'Share cancelled.';
+          statusEl.className = 'status-msg show';
+          return;
+        }
+        console.error(err);
+      }
+    }
+
+    downloadBytes(bytes, filename);
+    statusEl.textContent = IOSISH
+      ? 'Saved "'+filename+'". Open it from Files and use the share icon to email it.'
+      : 'Downloaded "'+filename+'" to your Downloads folder — attach it to an email to the office.';
+    statusEl.className = 'status-msg show status-ok';
+    localStorage.removeItem(STORAGE_KEY);
+  });
+
+  // init
+  loadDraft();
+  updateProgress(); updateToc(); updateNavButtons();
+})();
+</script>
+
+</body>
+</html>

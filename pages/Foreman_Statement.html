@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crew Foreman Statement — Builder's Bloc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#12181F; --ink-soft:#3C4652; --paper:#EEF0F3; --card:#FFFFFF; --line:#D7DBE1;
+    --amber:#F5A623; --amber-ink:#5C3A00; --red:#C63C3C; --green:#2E7D5B; --focus:#1D5FD6;
+    --radius:10px; --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'Inter',-apple-system,system-ui,sans-serif; --display:'Archivo Expanded',var(--sans);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--paper); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased; padding-bottom:110px;}
+  a{color:var(--focus);}
+  :focus-visible{outline:3px solid var(--focus); outline-offset:2px;}
+  .masthead{background:var(--ink); color:#fff; padding:18px 18px 22px; position:relative; overflow:hidden;}
+  .masthead .tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--amber); display:flex; align-items:center; gap:8px;}
+  .masthead .tag::before{content:""; width:8px;height:8px;border-radius:50%; background:var(--amber); box-shadow:0 0 0 3px rgba(245,166,35,.25);}
+  .masthead h1{font-family:var(--display); font-weight:800; font-size:22px; line-height:1.15; margin:8px 0 4px; letter-spacing:-.01em;}
+  .masthead p{margin:0; font-size:13px; color:#B9C0CA; max-width:46ch;}
+  .perf{position:absolute; left:0; right:0; bottom:0; height:8px; background-image:radial-gradient(circle, rgba(255,255,255,.35) 1.4px, transparent 1.6px); background-size:10px 10px; background-position:5px 4px;}
+  main{max-width:640px; margin:0 auto; padding:18px 16px 0;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 16px; margin-bottom:14px;}
+  .card h2{font-family:var(--display); font-size:17px; margin:0 0 4px; letter-spacing:-.01em;}
+  .card .sub{font-size:12.5px; color:var(--ink-soft); margin:0 0 14px; line-height:1.5;}
+  .step-eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#8A6A00; background:#FFF3DC; display:inline-block; padding:3px 8px; border-radius:5px; margin-bottom:8px;}
+  fieldset{border:0; padding:0; margin:0 0 16px;}
+  legend{font-weight:600; font-size:13.5px; margin-bottom:8px;}
+  .field{margin-bottom:14px;}
+  .field label.flabel{display:block; font-size:13px; font-weight:600; margin-bottom:5px;}
+  .req::after{content:" *"; color:var(--red);}
+  input[type=text],input[type=tel],input[type=email],input[type=date],textarea{
+    width:100%; font-family:var(--sans); font-size:16px; padding:11px 12px; border:1.5px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);
+  }
+  textarea{min-height:96px; resize:vertical; line-height:1.5;}
+  input.touched:invalid, textarea.touched:invalid{border-color:var(--red);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+  @media (max-width:420px){ .row3{grid-template-columns:1fr 1fr;} }
+  .choices{display:flex; flex-wrap:wrap; gap:8px;}
+  .choice{position:relative;}
+  .choice input{position:absolute; opacity:0; width:1px; height:1px;}
+  .choice label{display:inline-flex; align-items:center; gap:6px; padding:10px 16px; border:1.5px solid var(--line); border-radius:99px; font-size:13.5px; font-weight:500; cursor:pointer; background:#fff; user-select:none;}
+  .choice input:checked + label{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .choice input:focus-visible + label{outline:3px solid var(--focus); outline-offset:2px;}
+  .followup{margin-top:8px;}
+  .sticky-send{
+    position:fixed; left:0; right:0; bottom:0; background:var(--card); border-top:1.5px solid var(--line);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom)); z-index:30;
+  }
+  .sticky-inner{max-width:640px; margin:0 auto;}
+  .send-row{display:flex; gap:10px; align-items:flex-end;}
+  .send-row .field{flex:1; margin-bottom:0;}
+  .send-row .field label.flabel{font-size:11.5px; margin-bottom:3px;}
+  button{font-family:var(--sans); font-weight:700; font-size:14.5px; border-radius:8px; border:1.5px solid var(--ink); padding:13px 18px; cursor:pointer;}
+  .btn-send{background:var(--amber); border-color:var(--amber); color:var(--amber-ink); white-space:nowrap;}
+  .status-msg{font-size:12px; margin-top:8px; padding:8px 10px; border-radius:7px; display:none;}
+  .status-msg.show{display:block;}
+  .status-ok{background:#E7F5EE; color:var(--green); border:1px solid #BFE4D2;}
+  .status-warn{background:#FBEAEA; color:var(--red); border:1px solid #F0C6C6;}
+  .draft-note{font-family:var(--mono); font-size:11px; color:var(--ink-soft); text-align:center; margin:4px 0 18px;}
+  .draft-note button{all:unset; text-decoration:underline; cursor:pointer; font-family:var(--mono);}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="tag">Builder's Bloc — Field Report</div>
+  <h1>Crew Foreman Statement</h1>
+  <p>Complete on your phone or iPad at the scene. Your entries save automatically on this device until you send.</p>
+  <div class="perf"></div>
+</div>
+
+<main>
+  <form id="mainForm" novalidate>
+    <div class="card">
+      <span class="step-eyebrow">Statement details</span>
+      <h2>The basics</h2>
+      <div class="field">
+        <label class="flabel req">Your name (foreman issuing this statement)</label>
+        <input type="text" name="foremanName" data-label="Name of Crew Foreman Issuing Statement" required>
+      </div>
+      <div class="field">
+        <label class="flabel req">Name of injured employee</label>
+        <input type="text" name="injuredEmployee" data-label="Name of Injured Employee" required>
+      </div>
+      <div class="row3">
+        <div class="field"><label class="flabel">Location</label><input type="text" name="location" data-label="Location"></div>
+        <div class="field"><label class="flabel">Date</label><input type="date" name="incidentDate" data-label="Date"></div>
+        <div class="field"><label class="flabel">Time</label><input type="text" name="incidentTime" data-label="Time" placeholder="e.g. 2:15 PM"></div>
+      </div>
+      <div class="field">
+        <label class="flabel">Injuries noted</label>
+        <input type="text" name="injuriesNoted" data-label="Injuries Noted">
+      </div>
+      <fieldset>
+        <legend>Type of incident</legend>
+        <div class="choices">
+          <div class="choice"><input type="radio" name="incidentType" value="Report-Only" id="it1" data-label="Type of Incident"><label for="it1">Report-Only</label></div>
+          <div class="choice"><input type="radio" name="incidentType" value="First Aid" id="it2"><label for="it2">First Aid</label></div>
+          <div class="choice"><input type="radio" name="incidentType" value="Medical Treatment" id="it3"><label for="it3">Medical Treatment</label></div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="card">
+      <span class="step-eyebrow">What you observed</span>
+      <h2>Narrative</h2>
+      <div class="field">
+        <label class="flabel req">Explain what you observed during the accident</label>
+        <textarea name="narrative" data-label="What You Observed" rows="7" required></textarea>
+        <p style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;">Add any drawings or extra detail on paper and attach if needed — this field can also hold as much extra text as you want.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="step-eyebrow">Safety &amp; conditions</span>
+      <h2>PPE, training &amp; contributing factors</h2>
+
+      <fieldset>
+        <legend>Was the employee using proper Personal Protective Equipment?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="ppeUsed" value="Yes" id="ppe1" data-label="Using Proper PPE"><label for="ppe1">Yes</label></div><div class="choice"><input type="radio" name="ppeUsed" value="No" id="ppe2"><label for="ppe2">No</label></div></div>
+      </fieldset>
+      <div class="field"><label class="flabel">Identify the PPE used</label><input type="text" name="ppeIdentify" data-label="PPE Used"></div>
+
+      <fieldset>
+        <legend>Was the employee following safety policies?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="followingSafety" value="Yes" id="fs1" data-label="Following Safety Policies"><label for="fs1">Yes</label></div><div class="choice"><input type="radio" name="followingSafety" value="No" id="fs2"><label for="fs2">No</label></div></div>
+      </fieldset>
+      <div class="field followup"><label class="flabel">If not, explain</label><textarea name="safetyExplain" data-label="Safety Policy — Explanation" rows="3"></textarea></div>
+
+      <div class="field"><label class="flabel">Had the employee received training in the task assigned?</label><input type="text" name="trainingReceived" data-label="Training Received"></div>
+
+      <fieldset>
+        <legend>Any knowledge of a contributing medical factor?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="medicalFactor" value="Yes" id="mf1" data-label="Contributing Medical Factor"><label for="mf1">Yes</label></div><div class="choice"><input type="radio" name="medicalFactor" value="No" id="mf2"><label for="mf2">No</label></div></div>
+      </fieldset>
+      <div class="field followup"><label class="flabel">If so, explain</label><textarea name="medicalFactorExplain" data-label="Medical Factor — Explanation" rows="3"></textarea></div>
+
+      <fieldset>
+        <legend>Was weather a factor in this injury?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="weatherFactor" value="Yes" id="wf1" data-label="Weather a Factor"><label for="wf1">Yes</label></div><div class="choice"><input type="radio" name="weatherFactor" value="No" id="wf2"><label for="wf2">No</label></div></div>
+      </fieldset>
+      <div class="field followup"><label class="flabel">If so, describe weather conditions</label><textarea name="weatherExplain" data-label="Weather Conditions" rows="3"></textarea></div>
+    </div>
+
+    <div class="card">
+      <span class="step-eyebrow">Equipment</span>
+      <h2>Equipment involved</h2>
+      <fieldset>
+        <legend>Was any equipment being used by the employee at the time of injury?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="equipmentUsed" value="Yes" id="eq1" data-label="Equipment Being Used"><label for="eq1">Yes</label></div><div class="choice"><input type="radio" name="equipmentUsed" value="No" id="eq2"><label for="eq2">No</label></div></div>
+      </fieldset>
+      <div class="field followup"><label class="flabel">If so, describe</label><input type="text" name="equipmentDescribe" data-label="Equipment — Description"></div>
+
+      <fieldset>
+        <legend>Was the equipment checked before use that day?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="equipmentChecked" value="Yes" id="ec1" data-label="Equipment Checked Before Use"><label for="ec1">Yes</label></div><div class="choice"><input type="radio" name="equipmentChecked" value="No" id="ec2"><label for="ec2">No</label></div></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Was the injury a result of equipment usage or equipment failure?</legend>
+        <div class="choices"><div class="choice"><input type="radio" name="equipmentFailure" value="Yes" id="ef1" data-label="Injury Due to Equipment Usage/Failure"><label for="ef1">Yes</label></div><div class="choice"><input type="radio" name="equipmentFailure" value="No" id="ef2"><label for="ef2">No</label></div></div>
+      </fieldset>
+      <div class="field followup"><label class="flabel">If so, explain</label><textarea name="equipmentFailureExplain" data-label="Equipment Failure — Explanation" rows="3"></textarea></div>
+    </div>
+
+    <div class="card">
+      <span class="step-eyebrow">Sign-off</span>
+      <h2>Foreman signature</h2>
+      <div class="field">
+        <label class="flabel req">Typed signature (serves as your signature)</label>
+        <input type="text" name="foremanSignature" data-label="Foreman Signature" placeholder="Type your full name" required>
+      </div>
+      <div class="row2">
+        <div class="field"><label class="flabel">Date</label><input type="date" name="signDate" data-label="Date"></div>
+        <div class="field"><label class="flabel">Contact phone number</label><input type="tel" name="foremanPhone" data-label="Foreman Contact Phone Number"></div>
+      </div>
+    </div>
+
+    <div id="reviewAnchor"></div>
+  </form>
+</main>
+
+<div class="sticky-send">
+  <div class="sticky-inner">
+    <p style="font-size:12px; color:var(--ink-soft); margin:0 0 8px;">Tap Send, then choose <strong>Email to Laura</strong> (or Mail) from the share sheet — the PDF comes along attached.</p>
+    <button type="button" class="btn-send" id="sendBtn" style="width:100%;">Send Statement</button>
+    <div class="status-msg" id="statusMsg"></div>
+    <p class="draft-note" style="margin:8px 0 0;">Filling this out after someone else? <button type="button" id="resetBtn" style="all:unset; text-decoration:underline; cursor:pointer; font-family:var(--mono); font-size:11px;">Clear form &amp; start a new statement</button></p>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'bb_foreman_statement_v1';
+  const form = document.getElementById('mainForm');
+
+  function saveDraft(){
+    try{
+      const data={};
+      new FormData(form).forEach((v,k)=>{ data[k]=v; });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }catch(e){}
+  }
+  function loadDraft(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach(k=>{
+        const els = form.querySelectorAll('[name="'+k+'"]');
+        els.forEach(el=>{
+          if(el.type==='radio'){ if(el.value===data[k]) el.checked=true; }
+          else{ el.value=data[k]; }
+        });
+      });
+    }catch(e){}
+  }
+  form.addEventListener('input', saveDraft);
+  form.addEventListener('change', saveDraft);
+
+  function valueFor(name){
+    const els = form.querySelectorAll('[name="'+name+'"]');
+    if(els.length===0) return '';
+    if(els[0].type==='radio'){
+      const c = Array.from(els).find(e=>e.checked);
+      return c? c.value : '';
+    }
+    return els[0].value||'';
+  }
+
+  /* ---------- Reusable form-style PDF drawing kit ---------- */
+  const PDF = {
+    ink: [18,24,31], inkSoft: [90,102,115], line: [200,206,214], amber: [245,166,35], red: [198,60,60],
+    marginX: 46, pageW: 612, pageH: 792, top: 0, doc: null,
+    start(title, eyebrow){
+      const { jsPDF } = window.jspdf;
+      this.doc = new jsPDF({unit:'pt', format:'letter'});
+      this.pageW = this.doc.internal.pageSize.getWidth();
+      this.pageH = this.doc.internal.pageSize.getHeight();
+      this.top = this.header(title, eyebrow);
+      return this.top;
+    },
+    header(title, eyebrow){
+      const d = this.doc;
+      d.setFillColor(...this.ink); d.rect(0,0,this.pageW,74,'F');
+      d.setFillColor(...this.amber); d.rect(0,74,this.pageW,3,'F');
+      d.setTextColor(245,166,35); d.setFont('helvetica','bold'); d.setFontSize(8.5);
+      d.text((eyebrow||"Builder's Bloc — Field Report").toUpperCase(), this.marginX, 26);
+      d.setTextColor(255,255,255); d.setFont('helvetica','bold'); d.setFontSize(17);
+      d.text(title, this.marginX, 48);
+      d.setFont('helvetica','normal'); d.setFontSize(8.5); d.setTextColor(200,206,214);
+      const gen = 'Generated: '+new Date().toLocaleString();
+      d.text(gen, this.pageW - this.marginX - d.getTextWidth(gen), 26);
+      d.setTextColor(...this.ink);
+      return 100;
+    },
+    ensureSpace(y, needed){
+      if(y + needed > this.pageH - 50){ this.doc.addPage(); return 46; }
+      return y;
+    },
+    sectionHeading(y, label){
+      const d = this.doc;
+      y = this.ensureSpace(y, 24);
+      d.setFont('helvetica','bold'); d.setFontSize(9.5); d.setTextColor(...this.inkSoft);
+      d.text(label.toUpperCase(), this.marginX, y);
+      d.setDrawColor(...this.line); d.setLineWidth(0.75);
+      d.line(this.marginX, y+5, this.pageW-this.marginX, y+5);
+      d.setTextColor(...this.ink);
+      return y + 20;
+    },
+    field(x, y, width, label, value){
+      const d = this.doc;
+      y = this.ensureSpace(y, 34);
+      d.setFont('helvetica','bold'); d.setFontSize(7.8); d.setTextColor(...this.inkSoft);
+      d.text(label.toUpperCase(), x, y);
+      d.setFont('helvetica','normal'); d.setFontSize(11);
+      const v = (value && value.trim()) ? value : '—';
+      d.setTextColor(...(value && value.trim() ? this.ink : this.inkSoft));
+      d.text(v, x, y+16);
+      d.setTextColor(...this.ink);
+      d.setDrawColor(...this.line); d.setLineWidth(0.75);
+      d.line(x, y+21, x+width, y+21);
+      return y + 34;
+    },
+    multilineField(x, y, width, label, value){
+      const d = this.doc;
+      d.setFont('helvetica','bold'); d.setFontSize(7.8); d.setTextColor(...this.inkSoft);
+      y = this.ensureSpace(y, 30);
+      d.text(label.toUpperCase(), x, y);
+      y += 12;
+      d.setFont('helvetica','normal'); d.setFontSize(10.5);
+      const v = (value && value.trim()) ? value : '—';
+      d.setTextColor(...(value && value.trim() ? this.ink : this.inkSoft));
+      const lines = d.splitTextToSize(v, width);
+      lines.forEach(line=>{ y = this.ensureSpace(y, 14); d.text(line, x, y); y += 13.5; });
+      d.setTextColor(...this.ink);
+      return y + 10;
+    },
+    checkboxRow(x, y, checked, label){
+      const d = this.doc;
+      y = this.ensureSpace(y, 18);
+      const s = 9;
+      d.setDrawColor(...this.inkSoft); d.setLineWidth(0.9);
+      d.rect(x, y-8, s, s);
+      if(checked){
+        d.setFillColor(...this.ink); d.rect(x, y-8, s, s, 'F');
+        d.setDrawColor(255,255,255); d.setLineWidth(1.1);
+        d.line(x+1.6, y-4, x+3.6, y-1.7); d.line(x+3.6, y-1.7, x+7.4, y-6.6);
+      }
+      d.setFont('helvetica', checked?'bold':'normal'); d.setFontSize(10.5); d.setTextColor(...this.ink);
+      d.text(label, x+s+8, y);
+      return y + 17;
+    },
+    footer(text){
+      const d = this.doc;
+      const pages = d.internal.getNumberOfPages();
+      for(let i=1;i<=pages;i++){
+        d.setPage(i);
+        d.setFont('helvetica','normal'); d.setFontSize(8); d.setTextColor(...this.inkSoft);
+        const w = d.getTextWidth(text);
+        d.text(text, (this.pageW-w)/2, this.pageH-24);
+        if(pages>1){
+          const pn = 'Page '+i+' of '+pages;
+          d.text(pn, this.pageW-this.marginX-d.getTextWidth(pn), this.pageH-24);
+        }
+      }
+    },
+    bytes(){ return this.doc.output('arraybuffer'); }
+  };
+
+  function buildPdfBytes(){
+    const g = valueFor;
+    let y = PDF.start('Crew Foreman Statement');
+    const fullW = PDF.pageW - PDF.marginX*2;
+    const gap = 16;
+    const col3 = (fullW - gap*2)/3;
+    const col2 = (fullW - gap)/2;
+
+    y = PDF.field(PDF.marginX, y, fullW, 'Name of Crew Foreman Issuing Statement', g('foremanName'));
+    y = PDF.field(PDF.marginX, y, fullW, 'Name of Injured Employee', g('injuredEmployee'));
+
+    let ry = y;
+    PDF.field(PDF.marginX, ry, col3, 'Location', g('location'));
+    PDF.field(PDF.marginX+col3+gap, ry, col3, 'Date', g('incidentDate'));
+    y = PDF.field(PDF.marginX+2*(col3+gap), ry, col3, 'Time', g('incidentTime'));
+
+    y = PDF.field(PDF.marginX, y, fullW, 'Injuries Noted', g('injuriesNoted'));
+    y = PDF.field(PDF.marginX, y, fullW, 'Type of Incident', g('incidentType'));
+
+    y = PDF.sectionHeading(y, 'What you observed');
+    y = PDF.multilineField(PDF.marginX, y, fullW, 'Narrative', g('narrative'));
+
+    y = PDF.sectionHeading(y, 'PPE, training & contributing factors');
+    ry = y;
+    PDF.field(PDF.marginX, ry, col2, 'Using Proper PPE', g('ppeUsed'));
+    y = PDF.field(PDF.marginX+col2+gap, ry, col2, 'PPE Used', g('ppeIdentify'));
+
+    ry = y;
+    PDF.field(PDF.marginX, ry, col2, 'Following Safety Policies', g('followingSafety'));
+    y = PDF.field(PDF.marginX+col2+gap, ry, col2, 'Training Received', g('trainingReceived'));
+    if(g('safetyExplain')) y = PDF.multilineField(PDF.marginX, y, fullW, 'Safety Policy — Explanation', g('safetyExplain'));
+
+    ry = y;
+    PDF.field(PDF.marginX, ry, col2, 'Contributing Medical Factor', g('medicalFactor'));
+    y = PDF.field(PDF.marginX+col2+gap, ry, col2, 'Weather a Factor', g('weatherFactor'));
+    if(g('medicalFactorExplain')) y = PDF.multilineField(PDF.marginX, y, fullW, 'Medical Factor — Explanation', g('medicalFactorExplain'));
+    if(g('weatherExplain')) y = PDF.multilineField(PDF.marginX, y, fullW, 'Weather Conditions', g('weatherExplain'));
+
+    y = PDF.sectionHeading(y, 'Equipment');
+    ry = y;
+    PDF.field(PDF.marginX, ry, col2, 'Equipment Being Used', g('equipmentUsed'));
+    y = PDF.field(PDF.marginX+col2+gap, ry, col2, 'Equipment Checked Before Use', g('equipmentChecked'));
+    if(g('equipmentDescribe')) y = PDF.field(PDF.marginX, y, fullW, 'Equipment — Description', g('equipmentDescribe'));
+    y = PDF.field(PDF.marginX, y, fullW, 'Injury Due to Equipment Usage/Failure', g('equipmentFailure'));
+    if(g('equipmentFailureExplain')) y = PDF.multilineField(PDF.marginX, y, fullW, 'Equipment Failure — Explanation', g('equipmentFailureExplain'));
+
+    y = PDF.sectionHeading(y, 'Sign-off');
+    y = PDF.field(PDF.marginX, y, fullW, 'Foreman Signature (typed)', g('foremanSignature'));
+    ry = y;
+    PDF.field(PDF.marginX, ry, col2, 'Date Signed', g('signDate'));
+    y = PDF.field(PDF.marginX+col2+gap, ry, col2, 'Foreman Contact Phone Number', g('foremanPhone'));
+
+    PDF.footer("Builder's Bloc — Field Incident Reporting");
+    return PDF.bytes();
+  }
+
+  function canShareFiles(){
+    try{
+      if(!navigator.share || !navigator.canShare) return false;
+      const probe = new File([new Uint8Array([37,80,68,70])], 'p.pdf', {type:'application/pdf'});
+      return navigator.canShare({files:[probe]});
+    }catch(e){ return false; }
+  }
+  const IOSISH = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                 (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+
+  function downloadBytes(bytes, filename){
+    const blob = new Blob([bytes], {type:'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=> URL.revokeObjectURL(url), 60000);
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', async ()=>{
+    const statusEl = document.getElementById('statusMsg');
+    const requiredEls = form.querySelectorAll('[required]');
+    for(const el of requiredEls){
+      el.classList.add('touched');
+      if(el.type==='radio'){
+        const group = form.querySelectorAll('input[name="'+el.name+'"]');
+        if(!Array.from(group).some(g=>g.checked)){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus(); return; }
+      } else if(!el.value){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus(); return; }
+    }
+
+    const name = valueFor('injuredEmployee') || 'Employee';
+    const dateStr = valueFor('incidentDate') || new Date().toLocaleDateString();
+    const subject = 'Foreman Statement — '+name+' — '+dateStr;
+    const filename = 'Foreman_Statement_'+name.replace(/[^a-z0-9]+/gi,'_')+'_'+dateStr.replace(/[^a-z0-9]+/gi,'-')+'.pdf';
+
+    let bytes;
+    try{ bytes = buildPdfBytes(); }
+    catch(e){
+      console.error('PDF generation failed', e);
+      statusEl.textContent = 'Could not generate the PDF. Try again, or contact the office.';
+      statusEl.className = 'status-msg show status-warn';
+      return;
+    }
+
+    if(canShareFiles()){
+      try{
+        const file = new File([bytes], filename, {type:'application/pdf'});
+        await navigator.share({files:[file], title:subject, text:subject});
+        statusEl.textContent = 'Share sheet opened — choose "Email to Laura" (or Mail) to send the attached PDF.';
+        statusEl.className = 'status-msg show status-ok';
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }catch(err){
+        if(err && err.name === 'AbortError'){
+          statusEl.textContent = 'Share cancelled.';
+          statusEl.className = 'status-msg show';
+          return;
+        }
+        console.error(err);
+      }
+    }
+
+    downloadBytes(bytes, filename);
+    statusEl.textContent = IOSISH
+      ? 'Saved "'+filename+'". Open it from Files and use the share icon to email it.'
+      : 'Downloaded "'+filename+'" to your Downloads folder — attach it to an email to the office.';
+    statusEl.className = 'status-msg show status-ok';
+    localStorage.removeItem(STORAGE_KEY);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(!confirm('Clear all fields and start a blank statement?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    form.reset();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  loadDraft();
+})();
+</script>
+</body>
+</html>
