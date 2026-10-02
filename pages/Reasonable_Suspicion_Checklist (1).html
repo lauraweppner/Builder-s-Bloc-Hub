@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Reasonable Suspicion Checklist | Builder's Bloc</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+:root{--ink:#333333;--muted:#666666;--line:#cfcfcf;--soft:#f3f4f6;--red:#B32025;--redbg:#fdecea}
+html{-webkit-text-size-adjust:100%;color-scheme:light}
+body{font-size:17px;line-height:1.45}
+.form-page{padding-bottom:110px}
+@media (max-width:700px){.form-page{padding-bottom:150px}}
+.print-logo{display:none}
+.form-card h2{font-size:21px;margin:26px 0 10px;padding-bottom:6px;color:var(--primary);border-bottom:2px solid var(--primary)}
+.form-card p{margin:0 0 12px}
+.form-card ul{list-style:disc;padding-left:22px}
+.form-card li{border-top:0}
+.lede{color:var(--muted);margin-bottom:18px}
+.big{font-size:26px;font-weight:bold;line-height:1.15;color:var(--ink);margin:0 0 6px!important}
+.foot{margin-top:22px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn{appearance:none;-webkit-appearance:none;border:2px solid var(--primary);background:var(--primary);color:#fff;font:bold 18px/1 Arial,Helvetica,sans-serif;padding:14px 22px;border-radius:10px;min-height:50px;cursor:pointer}
+.btn.alt{background:#fff;color:var(--primary)}
+.btn:active{transform:scale(.98)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -4px 14px rgba(0,0,0,.08);padding:10px 20px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:900px;margin:0 auto;display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.barhint{margin-right:auto;font-size:14px;color:var(--muted)}
+.callout{border:2px solid var(--red);background:var(--redbg);border-radius:10px;padding:14px 16px;margin:0 0 18px;font-weight:bold}
+.callout a{color:var(--red);white-space:nowrap}
+@media (max-width:700px){.barhint{flex-basis:100%;margin:0;text-align:center}.bar .btn{flex:1;padding:14px 10px;font-size:16px}}
+@media (max-width:560px){body{padding:12px}.form-card{padding:16px}.bar .in{justify-content:stretch}}
+@page{margin:.5in}
+@media print{
+  html,body{background:#fff}
+  body{padding:0;font-size:11pt}
+  .form-page{max-width:none;padding:0}
+  .page-header{flex-direction:row!important;text-align:left!important;gap:12pt;box-shadow:none;border-radius:0;padding:0 0 6pt;margin-bottom:10pt;border-bottom:2px solid #000}
+  .page-title{font-size:16pt!important;color:#000}
+  .print-logo{display:block;height:30pt;width:auto}
+  .form-card{box-shadow:none;border-radius:0;padding:0;margin:0}
+  .noprint,.bar{display:none!important}
+  .form-card h2{font-size:13pt;margin-top:14pt;break-after:avoid;color:#000;border-color:#000}
+  .foot{margin-top:6pt;padding-top:3pt;font-size:8pt}
+  .big{font-size:13pt;margin-bottom:2pt!important}
+  .lede{margin-bottom:5pt}
+  input::-webkit-calendar-picker-indicator{display:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+.grid2 .wide{grid-column:1/-1}
+label.f{display:block;font-size:14px;font-weight:600;color:var(--muted)}
+label.f input{display:block;width:100%;margin-top:4px;font:inherit;font-size:17px;color:var(--ink);padding:10px 12px;min-height:46px;border:1.5px solid var(--line);border-radius:6px;background:#fff;-webkit-appearance:none;appearance:none}
+input:focus{outline:3px solid #9ec5fe;outline-offset:1px}
+.bad input,.bad canvas,fieldset.bad,.bad.item{border-color:var(--red)!important;background:var(--redbg)}
+.msg{display:none;border:2px solid var(--red);background:var(--redbg);color:#7a1611;border-radius:8px;padding:12px 14px;margin:0 0 16px;font-weight:600}
+.msg.on{display:block}
+.chk{display:flex;align-items:flex-start;gap:10px;padding:8px 4px;min-height:44px;cursor:pointer}
+.chk span{min-width:0;overflow-wrap:break-word}
+.chk input[type=checkbox]{flex:none;width:24px;height:24px;margin:1px 0 0;accent-color:#B32025}
+.sig{margin-top:6px}
+.sig canvas{display:block;width:100%;aspect-ratio:4/1;border:1.5px solid var(--line);border-radius:6px;background:#fff;touch-action:none}
+.sig .row{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-top:4px}
+.link{background:none;border:0;padding:6px 0;font:inherit;font-size:13px;color:var(--ink);text-decoration:underline;cursor:pointer}
+@media (max-width:560px){.grid2{grid-template-columns:1fr}}
+@media print{
+  .grid2{gap:6pt 14pt}
+  label.f{font-size:9pt}
+  label.f input{border:0;border-bottom:1px solid #000;border-radius:0;padding:1pt 0;min-height:0;font-size:11pt;margin-top:0}
+  .chk{min-height:0;padding:1.5pt 0;gap:6pt}
+  .chk input[type=checkbox]{width:11pt;height:11pt}
+  .sig canvas{border:0;border-bottom:1px solid #000;border-radius:0;aspect-ratio:5/1}
+  .sigs{grid-template-columns:2fr 1fr 2fr 1fr!important;gap:4pt 12pt}
+  .msg{display:none!important}
+}
+
+.grps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grp{border:1.5px solid var(--line);border-radius:8px;margin:0;padding:6px 12px 10px;min-width:0}
+.grp legend{font-weight:700;font-size:16px;padding:0 6px}
+.grp .chk{font-size:16px}
+.oth{flex-wrap:wrap}
+.otx{flex:1 1 120px;min-width:0;font:inherit;border:0;border-bottom:1.5px solid var(--line);border-radius:0;padding:2px 0;background:transparent}
+.cert{margin:20px 0 14px}
+.sigs{align-items:end}
+@media (max-width:760px){.grps{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:480px){.grps{grid-template-columns:1fr}}
+@media print{
+  body{font-size:10pt}
+  .lede{font-size:9pt;color:#000;margin-bottom:5pt;line-height:1.3}
+  .callout{padding:4pt 8pt;margin:5pt 0;font-size:9.5pt}
+  .grps{grid-template-columns:repeat(3,1fr);gap:0;border:1px solid #000;border-width:1px 0 0 1px}
+  .grp{border:1px solid #000;border-width:0 1px 1px 0;border-radius:0;padding:2pt 6pt 4pt;break-inside:avoid}
+  .grp legend{float:left;width:100%;text-align:center;font-size:10pt;padding:0;margin-bottom:2pt}
+  .grp .chk{font-size:8.6pt;line-height:1.2;clear:both;padding:.6pt 0;gap:5pt}
+  .grp .chk input[type=checkbox]{width:9pt;height:9pt;margin-top:.5pt}
+  .grid2{gap:4pt 14pt}
+  .hdr{grid-template-columns:2fr 1fr 1fr}
+  .hdr .wide{grid-column:span 2;order:4}
+  .hdr .tm{order:3}
+  .hdr label:last-child{order:5}
+  .otx{border-bottom:1px solid #000}
+  .cert{margin:10pt 0 6pt}
+  h2{margin-top:8pt;border:0;padding:0;font-size:11pt}
+}
+</style>
+</head>
+<body>
+
+<div class="form-page">
+
+<header class="page-header">
+    <h1 class="page-title">Reasonable Suspicion Checklist</h1>
+    <img class="print-logo" src="../images/logo.png" alt="Builder's Bloc">
+    <a class="home-button noprint" href="../index.html">🏠 Home</a>
+</header>
+
+<form class="form-card" id="form" autocomplete="off" onsubmit="return false">
+<p class="lede"><strong>Directions:</strong> Supervisor or Manager, please document your observations of the employee's behavior and indications on this form. You must personally observe the probable indicators of substance and/or alcohol use and note your observations below.</p>
+<div class="callout">Contact Laura Cannon at <a href="tel:+13145816841">314-581-6841</a> immediately to schedule drug testing. Employee MUST be escorted to testing facility.</div>
+<div class="msg" id="msg" role="alert"></div>
+<div class="grid2 hdr">
+ <label class="f">Employee name<input type="text" id="emp" required></label>
+ <label class="f">Date<input type="date" id="date" required></label>
+ <label class="f wide">Location of observations<input type="text" id="loc" required></label>
+ <label class="f tm">Time<input type="time" id="time" required></label>
+ <label class="f">Name of observer<input type="text" id="obs" required></label>
+</div>
+<h2>Check all that apply</h2>
+<div class="grps" id="grps"><fieldset class="grp"><legend>Speech</legend><label class="chk"><input type="checkbox" name="speech"> <span>Slurred, thick</span></label><label class="chk"><input type="checkbox" name="speech"> <span>Slow</span></label><label class="chk"><input type="checkbox" name="speech"> <span>Rapid</span></label><label class="chk"><input type="checkbox" name="speech"> <span>Silent</span></label><label class="chk"><input type="checkbox" name="speech"> <span>Loud</span></label><label class="chk"><input type="checkbox" name="speech"> <span>Hostile</span></label><label class="chk"><input type="checkbox" name="speech"> <span>Talkative</span></label><label class="chk"><input type="checkbox" name="speech"> <span>Incoherent</span></label><label class="chk"><input type="checkbox" name="speech"> <span>Difficulty speaking</span></label><label class="chk"><input type="checkbox" name="speech"> <span>Cursing, inappropriate</span></label><label class="chk"><input type="checkbox" name="speech"> <span>Nonsensical, silly</span></label></fieldset><fieldset class="grp"><legend>Eyes</legend><label class="chk"><input type="checkbox" name="eyes"> <span>Bloodshot/<wbr>Reddened</span></label><label class="chk"><input type="checkbox" name="eyes"> <span>Pupils dilated</span></label><label class="chk"><input type="checkbox" name="eyes"> <span>Pupils constricted</span></label><label class="chk"><input type="checkbox" name="eyes"> <span>Repetitive jerky motion</span></label><label class="chk"><input type="checkbox" name="eyes"> <span>Glazed appearance</span></label><label class="chk"><input type="checkbox" name="eyes"> <span>Droopy/<wbr>partially closed</span></label><label class="chk"><input type="checkbox" name="eyes"> <span>Tearing, watery</span></label><label class="chk"><input type="checkbox" name="eyes"> <span>Unfocused, blank stare</span></label></fieldset><fieldset class="grp"><legend>Odor</legend><label class="chk"><input type="checkbox" name="odor"> <span>Alcohol smell on breath or clothing</span></label><label class="chk"><input type="checkbox" name="odor"> <span>Chemical odor</span></label><label class="chk"><input type="checkbox" name="odor"> <span>Burnt rope odor</span></label><label class="chk oth"><input type="checkbox" name="odor"> <span>Other odor:</span><input type="text" class="otx" aria-label="Other odor (describe)"></label></fieldset><fieldset class="grp"><legend>Mood</legend><label class="chk"><input type="checkbox" name="mood"> <span>Hostile/<wbr>Angry</span></label><label class="chk"><input type="checkbox" name="mood"> <span>Elated, “up”</span></label><label class="chk"><input type="checkbox" name="mood"> <span>Irritable, agitated</span></label><label class="chk"><input type="checkbox" name="mood"> <span>Anxious</span></label><label class="chk"><input type="checkbox" name="mood"> <span>Combative</span></label><label class="chk"><input type="checkbox" name="mood"> <span>Aggressive</span></label><label class="chk"><input type="checkbox" name="mood"> <span>Violent</span></label><label class="chk"><input type="checkbox" name="mood"> <span>Evasive</span></label><label class="chk"><input type="checkbox" name="mood"> <span>Sad/<wbr>depressed</span></label></fieldset><fieldset class="grp"><legend>Mental</legend><label class="chk"><input type="checkbox" name="mental"> <span>Poor judgment</span></label><label class="chk"><input type="checkbox" name="mental"> <span>Decreased inhibitions</span></label><label class="chk"><input type="checkbox" name="mental"> <span>Disoriented</span></label><label class="chk"><input type="checkbox" name="mental"> <span>Unpredictable</span></label><label class="chk"><input type="checkbox" name="mental"> <span>Distracted</span></label><label class="chk"><input type="checkbox" name="mental"> <span>Drowsy/<wbr>sleepy</span></label><label class="chk"><input type="checkbox" name="mental"> <span>Restless</span></label><label class="chk"><input type="checkbox" name="mental"> <span>Suspicious/<wbr>paranoid</span></label><label class="chk"><input type="checkbox" name="mental"> <span>Withdrawn</span></label></fieldset><fieldset class="grp"><legend>Balance</legend><label class="chk"><input type="checkbox" name="balance"> <span>Slowed</span></label><label class="chk"><input type="checkbox" name="balance"> <span>Normal</span></label><label class="chk"><input type="checkbox" name="balance"> <span>Quickened</span></label><label class="chk"><input type="checkbox" name="balance"> <span>Staggering</span></label><label class="chk"><input type="checkbox" name="balance"> <span>Swaying</span></label><label class="chk"><input type="checkbox" name="balance"> <span>Falling</span></label><label class="chk"><input type="checkbox" name="balance"> <span>Holding on</span></label><label class="chk"><input type="checkbox" name="balance"> <span>Unsteady/<wbr>uncoordinated</span></label><label class="chk"><input type="checkbox" name="balance"> <span>Clumsy</span></label></fieldset><fieldset class="grp"><legend>Movement</legend><label class="chk"><input type="checkbox" name="movement"> <span>Slowed</span></label><label class="chk"><input type="checkbox" name="movement"> <span>Normal</span></label><label class="chk"><input type="checkbox" name="movement"> <span>Quickened</span></label><label class="chk"><input type="checkbox" name="movement"> <span>Shaking</span></label><label class="chk"><input type="checkbox" name="movement"> <span>Tremors</span></label></fieldset><fieldset class="grp"><legend>Appearance</legend><label class="chk"><input type="checkbox" name="appearance"> <span>Flushed</span></label><label class="chk"><input type="checkbox" name="appearance"> <span>Sweating</span></label><label class="chk"><input type="checkbox" name="appearance"> <span>Cold, clammy</span></label><label class="chk"><input type="checkbox" name="appearance"> <span>Disheveled, messy</span></label><label class="chk"><input type="checkbox" name="appearance"> <span>Vomit on clothing</span></label></fieldset><fieldset class="grp"><legend>Other</legend><label class="chk"><input type="checkbox" name="other"> <span>Frequent use of breath mints, gum, mouthwash</span></label><label class="chk"><input type="checkbox" name="other"> <span>Physical evidence (like liquor bottle, drug paraphernalia)</span></label><label class="chk oth"><input type="checkbox" name="other"> <span>Other:</span><input type="text" class="otx" aria-label="Other (describe)"></label></fieldset></div>
+<p class="cert">I certify that I have had training in the signs &amp; symptoms of substance use and alcohol abuse, and to the best of my judgment reasonable suspicion exists based on the physical and behavior indicators noted above.</p>
+<div class="grid2 sigs">
+ <div><div class="sig"><label class="f" style="margin-bottom:4px">Signed</label><canvas id="sig1" data-required="1" aria-label="Signed signature area"></canvas><div class="row noprint"><span>Sign with a finger or Apple Pencil</span><button type="button" class="link">Clear signature</button></div></div></div>
+ <label class="f">Date<input type="date" id="sdate1" required></label>
+ <div><div class="sig"><label class="f" style="margin-bottom:4px">2nd Observer, if required</label><canvas id="sig2" aria-label="2nd Observer, if required signature area"></canvas><div class="row noprint"><span>Sign with a finger or Apple Pencil</span><button type="button" class="link">Clear signature</button></div></div></div>
+ <label class="f">Date<input type="date" id="sdate2"></label>
+</div>
+<div class="foot"><span>Builder's Bloc</span><span>Confidential when completed</span></div>
+</form>
+
+</div>
+
+<div class="bar noprint"><div class="in"><span class="barhint">Email first, then save the signed PDF.</span><button class="btn alt" type="button" id="clear">Clear form</button><button class="btn alt" type="button" id="print">Print / Save as PDF</button><button class="btn" type="button" id="email">Email to HR</button></div></div>
+<script>var RECIPIENT='lweppner@buildersbloc.com';
+var FORM_TITLE='Reasonable Suspicion Checklist';
+window.summary=function(){var F=window.FX,L=['Reasonable Suspicion Checklist','','Employee: '+F.val('emp'),'Date: '+F.usDate(F.val('date')),'Time: '+F.time12(F.val('time')),'Location of observations: '+F.val('loc'),'Observer: '+F.val('obs'),'','OBSERVATIONS'];document.querySelectorAll('#grps .grp').forEach(function(g){var items=[];g.querySelectorAll('label.chk').forEach(function(l){var c=l.querySelector('input[type=checkbox]');if(!c.checked)return;var t=l.querySelector('span').textContent.trim(),o=l.querySelector('.otx');if(o)t=t+' '+o.value.trim();items.push(t.trim());});if(items.length)L.push(g.querySelector('legend').textContent+': '+items.join('; '));});L.push('','Signed by the observer on '+F.usDate(F.val('sdate1'))+'.');L.push(document.getElementById('sig2').dataset.signed?'Signed by a second observer'+(F.val('sdate2')?' on '+F.usDate(F.val('sdate2')):'')+'.':'No second observer signature.');L.push('','Signed PDF copy to follow.');return L;};
+window.extraCheck=function(){var g=document.getElementById('grps');if(g.querySelector('input[type=checkbox]:checked'))return null;g.querySelectorAll('.grp').forEach(function(f){f.classList.add('bad');});return g;};
+document.getElementById('grps').addEventListener('change',function(){this.querySelectorAll('.bad').forEach(function(f){f.classList.remove('bad');});});
+document.querySelectorAll('.otx').forEach(function(t){t.addEventListener('input',function(){if(t.value.trim()){t.closest('label').querySelector('input[type=checkbox]').checked=true;document.querySelectorAll('#grps .bad').forEach(function(f){f.classList.remove('bad');});}});});
+
+(function(){
+  var form=document.getElementById('form'),msg=document.getElementById('msg');
+  // ---- signature pads
+  document.querySelectorAll('.sig canvas').forEach(function(c){
+    c.width=1200;c.height=300;
+    var x=c.getContext('2d'),down=false;
+    x.lineWidth=4;x.lineCap='round';x.lineJoin='round';x.strokeStyle='#111';
+    function pt(e){var r=c.getBoundingClientRect();return [(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height];}
+    c.addEventListener('pointerdown',function(e){e.preventDefault();down=true;try{c.setPointerCapture(e.pointerId)}catch(_){ }var p=pt(e);x.beginPath();x.moveTo(p[0],p[1]);x.lineTo(p[0]+.1,p[1]+.1);x.stroke();c.dataset.signed='1';c.closest('.sig').classList.remove('bad');});
+    c.addEventListener('pointermove',function(e){if(!down)return;e.preventDefault();var p=pt(e);x.lineTo(p[0],p[1]);x.stroke();});
+    ['pointerup','pointercancel','pointerleave'].forEach(function(n){c.addEventListener(n,function(){down=false;});});
+    c.closest('.sig').querySelector('.link').addEventListener('click',function(){x.clearRect(0,0,c.width,c.height);delete c.dataset.signed;});
+  });
+  function check(){
+    var bad=[];
+    document.querySelectorAll('.bad').forEach(function(n){n.classList.remove('bad');});
+    form.querySelectorAll('input[required]').forEach(function(i){
+      var ok=i.type==='checkbox'?i.checked:i.value.trim()!=='';
+      if(!ok){var w=i.closest('label');w.classList.add('bad');bad.push(w);}
+    });
+    form.querySelectorAll('canvas[data-required]').forEach(function(c){
+      if(!c.dataset.signed){var w=c.closest('.sig');w.classList.add('bad');bad.push(w);}
+    });
+    if(typeof window.extraCheck==='function'){var e=window.extraCheck();if(e)bad.push(e);}
+    return bad;
+  }
+  form.addEventListener('input',function(e){var w=e.target.closest('.bad');if(w)w.classList.remove('bad');});
+  var NL=String.fromCharCode(10);
+  function val(id){var e=document.getElementById(id);return e?e.value.trim():'';}
+  function usDate(iso){if(!iso)return '';var a=iso.split('-');return a[1]+'/'+a[2]+'/'+a[0];}
+  function usShort(iso){if(!iso)return '';var a=iso.split('-');return a[1]+'-'+a[2]+'-'+a[0].slice(2);}
+  function time12(t){if(!t)return '';var a=t.split(':'),h=+a[0];return ((h%12)||12)+':'+a[1]+(h<12?' AM':' PM');}
+  function safe(s){return String(s||'').replace(/[/:*?"<>|.]/g,' ').replace(/ +/g,' ').trim();}
+  function ready(){
+    var bad=check();
+    if(bad.length){
+      msg.textContent=bad.length+(bad.length===1?' item still needs':' items still need')+' to be completed. They are outlined in red.';
+      msg.classList.add('on');bad[0].scrollIntoView({behavior:'smooth',block:'center'});return false;
+    }
+    msg.classList.remove('on');return true;
+  }
+  function fileName(){return [FORM_TITLE,safe(val('emp')),usShort(val('date'))].filter(Boolean).join(' ');}
+  function mailUrl(){
+    var subject=FORM_TITLE+' - '+val('emp')+' - '+usDate(val('date'));
+    return 'mailto:'+RECIPIENT+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(window.summary().join(NL));
+  }
+  window.FX={val:val,usDate:usDate,time12:time12,fileName:fileName,mailUrl:mailUrl};
+  document.getElementById('email').addEventListener('click',function(){
+    if(!ready())return;
+    window.location.href=mailUrl();
+  });
+  document.getElementById('print').addEventListener('click',function(){
+    if(!ready())return;
+    var blanks=[];form.querySelectorAll('input[type=date],input[type=time]').forEach(function(i){if(!i.value){blanks.push([i,i.type]);i.type='text';}});
+    var old=document.title;
+    document.title=fileName();
+    window.print();
+    setTimeout(function(){document.title=old;blanks.forEach(function(b){b[0].type=b[1];});},1500);
+  });
+  document.getElementById('clear').addEventListener('click',function(){
+    if(!confirm('Clear everything on this form and start over?'))return;
+    form.reset();
+    document.querySelectorAll('.sig canvas').forEach(function(c){c.getContext('2d').clearRect(0,0,c.width,c.height);delete c.dataset.signed;});
+    document.querySelectorAll('.bad').forEach(function(n){n.classList.remove('bad');});
+    msg.classList.remove('on');window.scrollTo(0,0);
+  });
+})();
+</script>
+</body>
+</html>
