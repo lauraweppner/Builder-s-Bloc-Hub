@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Someone Got Hurt: What To Do | Builder's Bloc</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+:root{--ink:#333333;--muted:#666666;--line:#cfcfcf;--soft:#f3f4f6;--red:#B32025;--redbg:#fdecea}
+html{-webkit-text-size-adjust:100%;color-scheme:light}
+body{font-size:17px;line-height:1.45}
+.form-page{padding-bottom:110px}
+@media (max-width:700px){.form-page{padding-bottom:150px}}
+.print-logo{display:none}
+.form-card h2{font-size:21px;margin:26px 0 10px;padding-bottom:6px;color:var(--primary);border-bottom:2px solid var(--primary)}
+.form-card p{margin:0 0 12px}
+.form-card ul{list-style:disc;padding-left:22px}
+.form-card li{border-top:0}
+.lede{color:var(--muted);margin-bottom:18px}
+.big{font-size:26px;font-weight:bold;line-height:1.15;color:var(--ink);margin:0 0 6px!important}
+.foot{margin-top:22px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn{appearance:none;-webkit-appearance:none;border:2px solid var(--primary);background:var(--primary);color:#fff;font:bold 18px/1 Arial,Helvetica,sans-serif;padding:14px 22px;border-radius:10px;min-height:50px;cursor:pointer}
+.btn.alt{background:#fff;color:var(--primary)}
+.btn:active{transform:scale(.98)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -4px 14px rgba(0,0,0,.08);padding:10px 20px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:900px;margin:0 auto;display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.barhint{margin-right:auto;font-size:14px;color:var(--muted)}
+.callout{border:2px solid var(--red);background:var(--redbg);border-radius:10px;padding:14px 16px;margin:0 0 18px;font-weight:bold}
+.callout a{color:var(--red);white-space:nowrap}
+@media (max-width:700px){.barhint{flex-basis:100%;margin:0;text-align:center}.bar .btn{flex:1;padding:14px 10px;font-size:16px}}
+@media (max-width:560px){body{padding:12px}.form-card{padding:16px}.bar .in{justify-content:stretch}}
+@page{margin:.5in}
+@media print{
+  html,body{background:#fff}
+  body{padding:0;font-size:11pt}
+  .form-page{max-width:none;padding:0}
+  .page-header{flex-direction:row!important;text-align:left!important;gap:12pt;box-shadow:none;border-radius:0;padding:0 0 6pt;margin-bottom:10pt;border-bottom:2px solid #000}
+  .page-title{font-size:16pt!important;color:#000}
+  .print-logo{display:block;height:30pt;width:auto}
+  .form-card{box-shadow:none;border-radius:0;padding:0;margin:0}
+  .noprint,.bar{display:none!important}
+  .form-card h2{font-size:13pt;margin-top:14pt;break-after:avoid;color:#000;border-color:#000}
+  .foot{margin-top:6pt;padding-top:3pt;font-size:8pt}
+  .big{font-size:13pt;margin-bottom:2pt!important}
+  .lede{margin-bottom:5pt}
+  input::-webkit-calendar-picker-indicator{display:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+.tel{color:var(--red);font-weight:bold;white-space:nowrap}
+.callbtn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:12px 20px;border-radius:10px;
+  background:var(--primary);color:#fff!important;font-size:19px;font-weight:bold;text-decoration:none;margin:4px 8px 4px 0}
+.callbtn.c911{background:#7a0c10}
+.form-card li{margin-bottom:5px}
+.form-card a{color:var(--primary)}
+/* the portal stylesheet turns every list link into a big menu row; undo that inside these pages */
+.form-card li a{display:inline;padding:0;font-size:inherit;text-decoration:underline;color:var(--primary)}
+.form-card li a:hover{background:none}
+.form-card li a.tel{color:var(--red);text-decoration:none}
+@media print{body{line-height:1.3}.callbtn{min-height:0;padding:2pt 8pt;font-size:10pt;border-radius:5pt;margin:1pt 6pt 1pt 0}.form-card li{margin-bottom:.6pt}.page-header{margin-bottom:6pt!important}}
+
+.step{display:grid;grid-template-columns:54px 1fr;gap:14px;padding:14px 14px 6px;border:1px solid var(--line);border-radius:12px;margin-bottom:12px;break-inside:avoid}
+.step .num{width:54px;height:54px;border-radius:50%;background:var(--primary);color:#fff;font-size:27px;font-weight:bold;display:flex;align-items:center;justify-content:center}
+.step h3{margin:6px 0 8px;font-size:21px;line-height:1.2;color:var(--ink)}
+.step.emerg{border:2px solid var(--red);background:var(--redbg)}
+.step.emerg h3{color:var(--red)}
+.step.emerg .num{background:#7a0c10}
+.two{columns:2;column-gap:28px}
+@media (max-width:600px){.step{grid-template-columns:40px 1fr;gap:10px;padding:12px 10px 4px}.step .num{width:40px;height:40px;font-size:21px}.step h3{font-size:19px}.two{columns:1}}
+@media print{
+  body{font-size:9.6pt}
+  .lede{margin-bottom:4pt}
+  .step{grid-template-columns:24pt 1fr;gap:8pt;padding:4pt 8pt 0;margin-bottom:4pt;border-radius:6pt}
+  .step .num{width:24pt;height:24pt;font-size:13pt}
+  .step h3{font-size:11.5pt;margin:3pt 0 2pt}
+  .form-card p{margin-bottom:3pt}
+  .form-card ul{margin:0 0 3pt}
+}
+</style>
+</head>
+<body>
+
+<div class="form-page">
+
+<header class="page-header">
+    <h1 class="page-title">Someone Got Hurt: What To Do</h1>
+    <img class="print-logo" src="../images/logo.png" alt="Builder's Bloc">
+    <a class="home-button noprint" href="../index.html">🏠 Home</a>
+</header>
+
+<div class="form-card">
+<p class="lede">Follow these steps in order for any injury on the job, no matter how small.</p>
+<section class="step emerg"><div class="num">1</div><div class="body"><h3>Is it an emergency? Call 911 first.</h3><p>Call 911 right away for any of these. <b>When in doubt, call.</b></p>
+<ul class="two">
+<li>Not breathing, or unconscious</li>
+<li>Chest pain or signs of a stroke</li>
+<li>Bleeding that will not stop</li>
+<li>A fall from height, or a possible head, neck or back injury</li>
+<li>An amputation or crushed limb</li>
+<li>A serious burn or an electrical shock</li>
+<li>Confusion, collapse or a seizure</li>
+<li>Trouble breathing or a severe allergic reaction</li>
+</ul>
+<p><a class="callbtn c911" href="tel:911">&#128222; Call 911</a></p>
+<p>Tell 911 the subdivision, street and lot number, and send someone to the entrance to wave them in. Do not move the injured person unless they are in danger where they are. Give first aid while you wait: see the <a href="First_Aid_Quick_Reference.html">First Aid Quick Reference</a>.</p></div></section><section class="step"><div class="num">2</div><div class="body"><h3>Call Laura Weppner-Herndon.</h3><p><a class="callbtn" href="tel:+13145816841">&#128222; Call Laura: 314-581-6841</a></p>
+<ul>
+<li><b>If 911 is not needed, call Laura first,</b> before anything else.</li>
+<li><b>If you called 911, call Laura next.</b></li>
+<li>Laura directs the care. She tells you where to go and sets up the appointment.</li>
+</ul></div></section><section class="step"><div class="num">3</div><div class="body"><h3>Call your superintendent.</h3><p>Let them know what happened and where.</p></div></section><section class="step"><div class="num">4</div><div class="body"><h3>Do not let the injured worker leave alone.</h3><ul>
+<li>The injured worker is <b>not allowed to leave the job site on their own.</b></li>
+<li>They must be escorted by a trusted Builder's Bloc employee, <b>in the same vehicle.</b></li>
+</ul></div></section><section class="step"><div class="num">5</div><div class="body"><h3>If the worker declines treatment.</h3><ul>
+<li>They must sign the <a href="Refusal_of_Care.html">Emergency Medical Refusal of Care</a> form <b>THAT DAY.</b></li>
+<li>Declining treatment also means declining the drug test. The <b>drug screening box must be checked</b> on the form.</li>
+<li>A refusal of care forfeits all future eligibility for treatment by the company for that injury.</li>
+<li>Under Missouri workers' compensation law (RSMo 287.120.6), refusing a drug or alcohol test requested by the employer results in the forfeiture of benefits.</li>
+</ul></div></section><section class="step"><div class="num">6</div><div class="body"><h3>Fill out the reports.</h3><p>Once the worker is taken care of, each person completes their own form:</p>
+<ul>
+<li><b>Injured employee:</b> <a href="Employee_Incident_Report.html">Employee Incident / Injury Report</a></li>
+<li><b>Crew foreman:</b> <a href="Foreman_Statement.html">Crew Foreman Statement</a></li>
+<li><b>Anyone who saw it:</b> <a href="Witness_Statement.html">Incident Witness Statement</a></li>
+<li><b>Superintendent:</b> <a href="Superintendent_Investigation.html">Superintendent Investigation</a></li>
+</ul>
+<p>Before the scene is cleaned up, take photos and leave any tools or equipment involved where they are.</p></div></section>
+<div class="foot"><span>Builder's Bloc</span><span>Someone Got Hurt: What To Do</span></div>
+</div>
+
+</div>
+
+<div class="bar noprint"><div class="in"><button class="btn" type="button" onclick="window.print()">Print / Save as PDF</button></div></div>
+
+</body>
+</html>
