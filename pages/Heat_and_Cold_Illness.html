@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Heat and Cold Illness | Builder's Bloc</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+:root{--ink:#333333;--muted:#666666;--line:#cfcfcf;--soft:#f3f4f6;--red:#B32025;--redbg:#fdecea}
+html{-webkit-text-size-adjust:100%;color-scheme:light}
+body{font-size:17px;line-height:1.45}
+.form-page{padding-bottom:110px}
+@media (max-width:700px){.form-page{padding-bottom:150px}}
+.print-logo{display:none}
+.form-card h2{font-size:21px;margin:26px 0 10px;padding-bottom:6px;color:var(--primary);border-bottom:2px solid var(--primary)}
+.form-card p{margin:0 0 12px}
+.form-card ul{list-style:disc;padding-left:22px}
+.form-card li{border-top:0}
+.lede{color:var(--muted);margin-bottom:18px}
+.big{font-size:26px;font-weight:bold;line-height:1.15;color:var(--ink);margin:0 0 6px!important}
+.foot{margin-top:22px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn{appearance:none;-webkit-appearance:none;border:2px solid var(--primary);background:var(--primary);color:#fff;font:bold 18px/1 Arial,Helvetica,sans-serif;padding:14px 22px;border-radius:10px;min-height:50px;cursor:pointer}
+.btn.alt{background:#fff;color:var(--primary)}
+.btn:active{transform:scale(.98)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -4px 14px rgba(0,0,0,.08);padding:10px 20px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:900px;margin:0 auto;display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.barhint{margin-right:auto;font-size:14px;color:var(--muted)}
+.callout{border:2px solid var(--red);background:var(--redbg);border-radius:10px;padding:14px 16px;margin:0 0 18px;font-weight:bold}
+.callout a{color:var(--red);white-space:nowrap}
+@media (max-width:700px){.barhint{flex-basis:100%;margin:0;text-align:center}.bar .btn{flex:1;padding:14px 10px;font-size:16px}}
+@media (max-width:560px){body{padding:12px}.form-card{padding:16px}.bar .in{justify-content:stretch}}
+@page{margin:.5in}
+@media print{
+  html,body{background:#fff}
+  body{padding:0;font-size:11pt}
+  .form-page{max-width:none;padding:0}
+  .page-header{flex-direction:row!important;text-align:left!important;gap:12pt;box-shadow:none;border-radius:0;padding:0 0 6pt;margin-bottom:10pt;border-bottom:2px solid #000}
+  .page-title{font-size:16pt!important;color:#000}
+  .print-logo{display:block;height:30pt;width:auto}
+  .form-card{box-shadow:none;border-radius:0;padding:0;margin:0}
+  .noprint,.bar{display:none!important}
+  .form-card h2{font-size:13pt;margin-top:14pt;break-after:avoid;color:#000;border-color:#000}
+  .foot{margin-top:6pt;padding-top:3pt;font-size:8pt}
+  .big{font-size:13pt;margin-bottom:2pt!important}
+  .lede{margin-bottom:5pt}
+  input::-webkit-calendar-picker-indicator{display:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+.tel{color:var(--red);font-weight:bold;white-space:nowrap}
+.callbtn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:12px 20px;border-radius:10px;
+  background:var(--primary);color:#fff!important;font-size:19px;font-weight:bold;text-decoration:none;margin:4px 8px 4px 0}
+.callbtn.c911{background:#7a0c10}
+.form-card li{margin-bottom:5px}
+.form-card a{color:var(--primary)}
+/* the portal stylesheet turns every list link into a big menu row; undo that inside these pages */
+.form-card li a{display:inline;padding:0;font-size:inherit;text-decoration:underline;color:var(--primary)}
+.form-card li a:hover{background:none}
+.form-card li a.tel{color:var(--red);text-decoration:none}
+@media print{body{line-height:1.3}.callbtn{min-height:0;padding:2pt 8pt;font-size:10pt;border-radius:5pt;margin:1pt 6pt 1pt 0}.form-card li{margin-bottom:.6pt}.page-header{margin-bottom:6pt!important}}
+
+.form-card h2.first{margin-top:0}
+.ill{border:1px solid var(--line);border-left:6px solid #9a9a9a;border-radius:10px;padding:12px 14px 6px;margin-bottom:12px;break-inside:avoid}
+.ill.emerg{border-color:var(--red);border-left-color:var(--red);background:var(--redbg)}
+.ill.warn{border-left-color:#d98a00}
+.ill h3{margin:0 0 8px;font-size:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ill.emerg h3{color:var(--red)}
+.badge{font-size:12px;letter-spacing:.06em;padding:4px 9px;border-radius:99px;background:#d98a00;color:#fff}
+.ill.emerg .badge{background:var(--red)}
+.cols2{display:grid;grid-template-columns:1fr 1.25fr;gap:6px 22px}
+.ill h4{margin:0 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ill ul{margin:0 0 8px}
+.note{font-size:15px;color:var(--muted)}
+@media (max-width:640px){.cols2{grid-template-columns:1fr}}
+@media print{
+  body{font-size:8.7pt}
+  .lede{margin-bottom:3pt}
+  .form-card h2{margin:0 0 4pt!important;font-size:12pt!important;padding-bottom:2pt}
+  .ill{padding:3pt 7pt 0;margin-bottom:3.5pt;border-left-width:4pt;border-radius:5pt}
+  .ill h3{font-size:10.5pt;margin-bottom:1.5pt}
+  .ill h4{font-size:6.8pt;margin-bottom:1pt}
+  .cols2{gap:1pt 14pt}
+  .badge{font-size:7.5pt;padding:1.5pt 6pt}
+  .ill ul{margin-bottom:2pt}
+  .note{font-size:8pt;margin-bottom:0!important}
+  .coldpart{break-before:page}
+  .coldpart h2{margin-top:0}
+}
+</style>
+</head>
+<body>
+
+<div class="form-page">
+
+<header class="page-header">
+    <h1 class="page-title">Heat and Cold Illness</h1>
+    <img class="print-logo" src="../images/logo.png" alt="Builder's Bloc">
+    <a class="home-button noprint" href="../index.html">🏠 Home</a>
+</header>
+
+<div class="form-card">
+<p class="lede">Know the signs and act early. Watch your coworkers, because people often do not notice it in themselves.</p>
+<h2 class="first">&#9728;&#65039; Heat</h2>
+<section class="ill emerg"><h3>Heat Stroke<span class="badge">CALL 911</span></h3><div class="cols2"><div><h4>Signs</h4><ul><li>Confusion, slurred speech or acting strangely</li><li>Passing out or a seizure</li><li>Hot, dry skin <b>or</b> heavy sweating</li><li>Very high body temperature</li></ul></div><div><h4>What to do</h4><ul><li><b>Call 911 right away.</b> This can kill.</li><li>Move to shade and take off outer clothing.</li><li>Cool fast: ice or cold water on the skin, cold wet cloths on the head, neck, armpits and groin.</li><li>Fan air over them. Stay with them until help arrives.</li><li>Then call Laura Weppner-Herndon at <a class="tel" href="tel:+13145816841">314-581-6841</a>.</li></ul></div></div></section><section class="ill warn"><h3>Heat Exhaustion<span class="badge">NEEDS MEDICAL CARE</span></h3><div class="cols2"><div><h4>Signs</h4><ul><li>Headache, dizziness or weakness</li><li>Nausea</li><li>Heavy sweating and strong thirst</li><li>Irritable</li><li>Urinating less than usual</li></ul></div><div><h4>What to do</h4><ul><li>Get them out of the heat and remove extra clothing.</li><li>Give frequent sips of cool water.</li><li>Cool the head, face and neck with cold water or cold cloths.</li><li>This needs a medical evaluation. Call Laura Weppner-Herndon at <a class="tel" href="tel:+13145816841">314-581-6841</a> so she can direct care.</li><li>If they get confused, pass out or get worse, call 911.</li></ul></div></div></section><section class="ill warn"><h3>Muscle Breakdown (Rhabdo)<span class="badge">NEEDS MEDICAL CARE</span></h3><div class="cols2"><div><h4>Signs</h4><ul><li>Muscle cramps or pain worse than expected</li><li>Dark, tea or cola colored urine</li><li>Weak, cannot finish normal tasks</li></ul></div><div><h4>What to do</h4><ul><li>Stop work right away.</li><li>Drink water.</li><li>This needs medical care the same day. Call Laura Weppner-Herndon at <a class="tel" href="tel:+13145816841">314-581-6841</a> so she can direct care.</li><li>See the <a href="Hydration_Chart.html">Hydration Chart</a> for urine color.</li></ul></div></div></section><section class="ill "><h3>Heat Cramps</h3><div class="cols2"><div><h4>Signs</h4><ul><li>Muscle cramps, pain or spasms in the stomach, arms or legs</li></ul></div><div><h4>What to do</h4><ul><li>Drink water and have a snack or a sports drink every 15 to 20 minutes.</li><li>Do not take salt tablets.</li><li>Call Laura Weppner-Herndon if cramps last more than an hour, or the worker has heart problems or is on a low-salt diet.</li></ul></div></div></section><section class="ill "><h3>Fainting or Dizziness</h3><div class="cols2"><div><h4>Signs</h4><ul><li>Brief fainting, dizziness or light-headedness after standing a long time or getting up fast</li></ul></div><div><h4>What to do</h4><ul><li>Sit or lie down somewhere cool.</li><li>Slowly drink water or a sports drink.</li><li>Any time someone passes out, call Laura Weppner-Herndon at <a class="tel" href="tel:+13145816841">314-581-6841</a>.</li></ul></div></div></section><section class="ill "><h3>Heat Rash</h3><div class="cols2"><div><h4>Signs</h4><ul><li>Clusters of red pimples or small blisters on the neck, chest, groin or elbow creases</li></ul></div><div><h4>What to do</h4><ul><li>Work somewhere cooler and less humid if possible.</li><li>Keep the rash dry. Powder helps; do not use ointments or creams.</li></ul></div></div></section>
+<p class="note">Prevention: drink 1 cup of water every 15 to 20 minutes in the heat, take breaks in the shade, and ease new workers into hot work. See the <a href="Hydration_Chart.html">Hydration Chart</a>.</p>
+<div class="coldpart">
+<h2>&#10052;&#65039; Cold</h2>
+<section class="ill emerg"><h3>Hypothermia<span class="badge">CALL 911</span></h3><div class="cols2"><div><h4>Signs</h4><ul><li><b>Early:</b> shivering, tired, clumsy, confused</li><li><b>Late:</b> shivering stops, blue skin, slow pulse and breathing, passing out</li></ul></div><div><h4>What to do</h4><ul><li><b>Call 911</b> for confusion or any late sign.</li><li>Move to a warm place and take off wet clothing.</li><li>Warm the chest, neck, head and groin first with blankets or body heat.</li><li>Give warm drinks if they are awake. No alcohol.</li><li>If there is no pulse, start CPR.</li><li>Then call Laura Weppner-Herndon at <a class="tel" href="tel:+13145816841">314-581-6841</a>.</li></ul></div></div></section><section class="ill warn"><h3>Frostbite<span class="badge">NEEDS MEDICAL CARE</span></h3><div class="cols2"><div><h4>Signs</h4><ul><li>Numbness, tingling or stinging</li><li>Aching</li><li>Bluish or pale, waxy skin, usually fingers, toes, nose or ears</li></ul></div><div><h4>What to do</h4><ul><li>Get into a warm place. Do not walk on frostbitten feet or toes.</li><li>Soak the area in warm (not hot) water, or warm it with body heat.</li><li>Do not rub or massage it.</li><li>Do not use a heating pad, heat lamp, stove or heater. Numb skin burns easily.</li><li>Call Laura Weppner-Herndon at <a class="tel" href="tel:+13145816841">314-581-6841</a> so she can direct care.</li></ul></div></div></section><section class="ill "><h3>Trench Foot (wet, cold feet)</h3><div class="cols2"><div><h4>Signs</h4><ul><li>Red skin, numbness or tingling pain</li><li>Swelling, leg cramps</li><li>Blisters</li></ul></div><div><h4>What to do</h4><ul><li>Take off wet boots and socks.</li><li>Dry the feet.</li><li>Stay off them.</li><li>Call Laura Weppner-Herndon at <a class="tel" href="tel:+13145816841">314-581-6841</a> so she can direct care.</li></ul></div></div></section>
+<p class="note">Prevention: dress in layers, keep a dry change of socks and gloves, stay dry, and warm up on breaks. Wind and wet clothing make cold far more dangerous.</p>
+</div>
+<div class="foot"><span>Builder's Bloc</span><span>Source: CDC/NIOSH heat and cold stress guidance</span></div>
+</div>
+
+</div>
+
+<div class="bar noprint"><div class="in"><button class="btn" type="button" onclick="window.print()">Print / Save as PDF</button></div></div>
+
+</body>
+</html>

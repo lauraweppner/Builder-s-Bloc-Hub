@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Severe Weather | Builder's Bloc</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+:root{--ink:#333333;--muted:#666666;--line:#cfcfcf;--soft:#f3f4f6;--red:#B32025;--redbg:#fdecea}
+html{-webkit-text-size-adjust:100%;color-scheme:light}
+body{font-size:17px;line-height:1.45}
+.form-page{padding-bottom:110px}
+@media (max-width:700px){.form-page{padding-bottom:150px}}
+.print-logo{display:none}
+.form-card h2{font-size:21px;margin:26px 0 10px;padding-bottom:6px;color:var(--primary);border-bottom:2px solid var(--primary)}
+.form-card p{margin:0 0 12px}
+.form-card ul{list-style:disc;padding-left:22px}
+.form-card li{border-top:0}
+.lede{color:var(--muted);margin-bottom:18px}
+.big{font-size:26px;font-weight:bold;line-height:1.15;color:var(--ink);margin:0 0 6px!important}
+.foot{margin-top:22px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn{appearance:none;-webkit-appearance:none;border:2px solid var(--primary);background:var(--primary);color:#fff;font:bold 18px/1 Arial,Helvetica,sans-serif;padding:14px 22px;border-radius:10px;min-height:50px;cursor:pointer}
+.btn.alt{background:#fff;color:var(--primary)}
+.btn:active{transform:scale(.98)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -4px 14px rgba(0,0,0,.08);padding:10px 20px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:900px;margin:0 auto;display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.barhint{margin-right:auto;font-size:14px;color:var(--muted)}
+.callout{border:2px solid var(--red);background:var(--redbg);border-radius:10px;padding:14px 16px;margin:0 0 18px;font-weight:bold}
+.callout a{color:var(--red);white-space:nowrap}
+@media (max-width:700px){.barhint{flex-basis:100%;margin:0;text-align:center}.bar .btn{flex:1;padding:14px 10px;font-size:16px}}
+@media (max-width:560px){body{padding:12px}.form-card{padding:16px}.bar .in{justify-content:stretch}}
+@page{margin:.5in}
+@media print{
+  html,body{background:#fff}
+  body{padding:0;font-size:11pt}
+  .form-page{max-width:none;padding:0}
+  .page-header{flex-direction:row!important;text-align:left!important;gap:12pt;box-shadow:none;border-radius:0;padding:0 0 6pt;margin-bottom:10pt;border-bottom:2px solid #000}
+  .page-title{font-size:16pt!important;color:#000}
+  .print-logo{display:block;height:30pt;width:auto}
+  .form-card{box-shadow:none;border-radius:0;padding:0;margin:0}
+  .noprint,.bar{display:none!important}
+  .form-card h2{font-size:13pt;margin-top:14pt;break-after:avoid;color:#000;border-color:#000}
+  .foot{margin-top:6pt;padding-top:3pt;font-size:8pt}
+  .big{font-size:13pt;margin-bottom:2pt!important}
+  .lede{margin-bottom:5pt}
+  input::-webkit-calendar-picker-indicator{display:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+.tel{color:var(--red);font-weight:bold;white-space:nowrap}
+.callbtn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:12px 20px;border-radius:10px;
+  background:var(--primary);color:#fff!important;font-size:19px;font-weight:bold;text-decoration:none;margin:4px 8px 4px 0}
+.callbtn.c911{background:#7a0c10}
+.form-card li{margin-bottom:5px}
+.form-card a{color:var(--primary)}
+/* the portal stylesheet turns every list link into a big menu row; undo that inside these pages */
+.form-card li a{display:inline;padding:0;font-size:inherit;text-decoration:underline;color:var(--primary)}
+.form-card li a:hover{background:none}
+.form-card li a.tel{color:var(--red);text-decoration:none}
+@media print{body{line-height:1.3}.callbtn{min-height:0;padding:2pt 8pt;font-size:10pt;border-radius:5pt;margin:1pt 6pt 1pt 0}.form-card li{margin-bottom:.6pt}.page-header{margin-bottom:6pt!important}}
+
+.wx{border:1px solid var(--line);border-left:6px solid #9a9a9a;border-radius:10px;padding:12px 14px 6px;margin-bottom:12px;break-inside:avoid}
+.wx.emerg{border-left-color:var(--red)}
+.wx h3{margin:0 0 4px;font-size:21px;display:flex;align-items:center;gap:8px}
+.wx .ic{font-size:24px}
+.rule{font-weight:bold;font-size:17px;margin-bottom:10px!important}
+.wx.emerg .rule{color:var(--red)}
+.cols2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 22px}
+.wx h4{margin:0 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wx .cols2>div:only-child{grid-column:1/-1}
+.wx ul{margin:0 0 8px}
+.note{font-size:15px;color:var(--muted)}
+@media print{
+  body{font-size:8.8pt}
+  .wx{padding:3pt 7pt 0;margin-bottom:3.5pt;border-left-width:4pt;border-radius:5pt}
+  .wx h3{font-size:10.5pt;margin-bottom:1pt}
+  .wx h4{font-size:6.8pt;margin-bottom:1pt}
+  .wx .ic{font-size:11pt}
+  .rule{font-size:9.2pt;margin-bottom:2pt!important}
+  .cols2{grid-template-columns:repeat(3,1fr);gap:2pt 12pt}
+  .wx ul{margin-bottom:2pt}
+  .note{font-size:8pt;margin-bottom:0!important}
+  .lede{margin-bottom:3pt}
+}
+</style>
+</head>
+<body>
+
+<div class="form-page">
+
+<header class="page-header">
+    <h1 class="page-title">Severe Weather</h1>
+    <img class="print-logo" src="../images/logo.png" alt="Builder's Bloc">
+    <a class="home-button noprint" href="../index.html">🏠 Home</a>
+</header>
+
+<div class="form-card">
+<p class="lede">No job is worth getting hurt over weather. If you see lightning, hear thunder or a warning is issued, stop work, take shelter and tell your superintendent.</p>
+<section class="wx emerg"><h3><span class="ic">&#9889;</span>Lightning</h3><p class="rule">When thunder roars, go indoors. If you can hear thunder, you are close enough to be struck.</p><div class="cols2"><div><h4>Do</h4><ul><li>Stop work and get off roofs, ladders, scaffolds and lifts.</li><li>Go to a <b>fully enclosed building with wiring and plumbing</b>, or a hard-topped vehicle with the windows up.</li><li>Stay there until <b>30 minutes after the last thunder.</b></li></ul></div><div><h4>Not safe</h4><ul><li>A house that is still being framed, or any open structure</li><li>Sheds, tents, porches and portable toilets</li><li>Under trees, or near water and metal</li><li>Lying flat on the ground</li></ul></div><div><h4>If someone is struck</h4><ul><li><b>Call 911.</b> They are safe to touch.</li><li>If they are not breathing or have no pulse, start CPR.</li><li>Then call Laura Weppner-Herndon at <a class="tel" href="tel:+13145816841">314-581-6841</a>.</li></ul></div></div></section><section class="wx emerg"><h3><span class="ic">&#127786;&#65039;</span>Tornado</h3><p class="rule"><b>Watch</b> means be ready and know where you would go. <b>Warning</b> means take shelter now.</p><div class="cols2"><div><h4>Do</h4><ul><li>Get inside a sturdy, finished building right away.</li><li>Go to the basement, or an inside room on the lowest floor, away from windows.</li><li>Crouch low and cover your head and neck.</li></ul></div><div><h4>Not safe</h4><ul><li>Vehicles, job trailers, sheds and portable toilets</li><li>A house that is still being framed</li><li>Under a highway overpass</li></ul></div><div><h4>If you cannot reach a building</h4><ul><li>Drive to the nearest sturdy shelter if there is time.</li><li>If not, stay buckled in the vehicle with your head down and covered, or get to a low spot like a ditch and cover your head.</li></ul></div></div></section><section class="wx "><h3><span class="ic">&#128168;</span>High Wind</h3><p class="rule">Your superintendent makes the call to stop work at heights.</p><div class="cols2"><div><h4>Do</h4><ul><li>Stop work on roofs and trusses, and get off ladders and scaffolds.</li><li>Stop carrying sheathing and other sheet goods. They act like sails.</li><li>Tie down or lay flat loose material, and make sure walls and trusses are braced before you leave them.</li></ul></div><div><h4>Watch for</h4><ul><li>Flying debris and falling material</li><li>Unbraced walls and trusses</li><li>Ladders and scaffolds shifting</li></ul></div></div></section><section class="wx "><h3><span class="ic">&#127783;&#65039;</span>Heavy Rain and Flash Flooding</h3><p class="rule">Turn around, do not drown.</p><div class="cols2"><div><h4>Do</h4><ul><li>Stay out of trenches and excavations. They can fill or cave in.</li><li>Never walk or drive through moving water.</li><li>Move vehicles, tools and materials out of low areas if there is time.</li></ul></div><div><h4>Remember</h4><ul><li>6 inches of moving water can knock you off your feet.</li><li>12 inches can carry away a car.</li><li>Wet decks, ladders and mud are slip hazards after the rain stops.</li></ul></div></div></section><section class="wx "><h3><span class="ic">&#10052;&#65039;</span>Ice and Snow</h3><p class="rule">Clear it before you work on it.</p><div class="cols2"><div><h4>Do</h4><ul><li>Clear ice and snow from decks, ladders, scaffolds and walkways before use.</li><li>Watch your footing getting in and out of vehicles and equipment.</li><li>Dress for the cold. See <a href="Heat_and_Cold_Illness.html">Heat and Cold Illness</a>.</li></ul></div></div></section>
+<p class="note">After the storm: check the site for downed power lines, damaged bracing, standing water and loose material before going back to work. If anyone is hurt, follow <a href="Injury_Response.html">Someone Got Hurt: What To Do</a>.</p>
+<div class="foot"><span>Builder's Bloc</span><span>Sources: OSHA/NOAA lightning safety, National Weather Service</span></div>
+</div>
+
+</div>
+
+<div class="bar noprint"><div class="in"><button class="btn" type="button" onclick="window.print()">Print / Save as PDF</button></div></div>
+
+</body>
+</html>
