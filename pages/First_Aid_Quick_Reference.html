@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>First Aid Quick Reference | Builder's Bloc</title>
+<style>
+:root{--ink:#161616;--muted:#5c5c5c;--line:#c9c9c9;--soft:#ececea;--bg:#f3f2ef;--red:#b3261e;--redbg:#fdecea}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.top{background:#161616;color:#fff;padding:14px 16px}
+.top .in{max-width:940px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lhs{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.back{color:#fff;text-decoration:none;font-size:15px;font-weight:600;border:1.5px solid rgba(255,255,255,.55);border-radius:8px;padding:9px 12px;min-height:40px;display:inline-flex;align-items:center}
+.brand{font:900 21px/1 Rockwell,"Roboto Slab","Rockwell Nova",Georgia,serif;letter-spacing:.05em;text-transform:uppercase}
+.code{font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+main{max-width:940px;margin:0 auto;padding:20px 16px 110px}
+.sheet{background:#fff;border:1px solid var(--line);border-radius:10px;padding:24px}
+h1{font-size:28px;line-height:1.15;margin:0 0 8px;letter-spacing:-.01em}
+h2{font-size:19px;margin:26px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+p{margin:0 0 12px}
+.lede{color:var(--muted);margin-bottom:18px}
+.foot{margin-top:22px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn{appearance:none;-webkit-appearance:none;border:2px solid var(--ink);background:var(--ink);color:#fff;font:600 16px/1 inherit;font-family:inherit;padding:14px 20px;border-radius:8px;min-height:48px;cursor:pointer}
+.btn.alt{background:#fff;color:var(--ink)}
+.btn:active{opacity:.75}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:940px;margin:0 auto;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.callout{border:2px solid var(--red);background:var(--redbg);border-radius:8px;padding:14px 16px;margin:18px 0;font-weight:600}
+.callout a{color:var(--red);white-space:nowrap}
+@media (max-width:560px){.sheet{padding:16px}h1{font-size:23px}}
+@page{margin:.5in}
+@media print{
+  html,body{background:#fff}
+  body{font-size:11pt}
+  .top{background:#fff;color:#000;padding:0 0 8px;border-bottom:2px solid #000;margin-bottom:12px}
+  .code{opacity:1}
+  main{max-width:none;padding:0}
+  .sheet{border:0;border-radius:0;padding:0}
+  .noprint,.bar{display:none!important}
+  h1{font-size:16pt;margin-bottom:4pt}
+  .foot{margin-top:8pt;padding-top:4pt;font-size:8pt}
+  input::-webkit-calendar-picker-indicator{display:none}
+  h2{font-size:13pt;margin-top:14pt;break-after:avoid}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+.fa{width:100%;border-collapse:collapse;font-size:16px}
+.fa th,.fa td{border:1px solid #8a8a8a;padding:10px 12px;vertical-align:top;text-align:left}
+.fa thead th{background:#161616;color:#fff;font-size:14px;letter-spacing:.08em;text-transform:uppercase;border-color:#161616}
+.fa tbody th{width:19%;font-size:17px}
+.fa td:nth-child(2){width:43%}
+.fa ul{margin:0;padding-left:18px}
+.fa ul.plain{list-style:none;padding:0}
+.fa li{margin-bottom:3px}
+.sub{display:block;font-weight:700;text-decoration:underline;text-transform:uppercase;font-size:14px;margin-bottom:2px}
+.c911{color:var(--red);letter-spacing:.02em}
+@media (max-width:700px){
+  .fa,.fa tbody,.fa tr,.fa th,.fa td{display:block;width:auto!important}
+  .fa thead{display:none}
+  .fa tr{border:1px solid #8a8a8a;border-radius:8px;margin-bottom:14px;overflow:hidden}
+  .fa tr.cont{margin-top:-6px}
+  .fa th,.fa td{border:0;border-bottom:1px solid var(--soft)}
+  .fa tbody th{background:#161616;color:#fff}
+  .fa td::before{content:attr(data-l);display:block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+}
+@media print{
+  .fa{font-size:8.6pt;line-height:1.3}
+  .fa th,.fa td{padding:3pt 5pt;border-color:#000}
+  .fa li{margin-bottom:0}
+  .fa tbody th{font-size:9.5pt}
+  .fa thead th{font-size:9pt}
+  .fa tr{break-inside:avoid}
+  .sub{font-size:9pt}
+  .lede{margin-bottom:6pt}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="in"><div class="lhs"><a class="back noprint" href="../index.html">&#8249; Field Portal</a><div class="brand">Builder's Bloc</div></div><div class="code">Reference</div></div></header>
+<main>
+<div class="sheet">
+<h1>First Aid Quick Reference</h1>
+<p class="lede">Illness and injury signs, symptoms and first aid.</p>
+<table class="fa">
+<thead><tr><th scope="col">Illness / Injury</th><th scope="col">Signs / Symptoms</th><th scope="col">First Aid</th></tr></thead>
+<tbody>
+<tr><th scope="row">Stroke</th>
+ <td data-l="Signs / Symptoms"><ul class="plain"><li><b>F Face</b> – facial droop or uneven smile</li><li><b>A Arm</b> – arm numbness or weakness</li><li><b>S Speech</b> – slurred speech, difficulty speaking</li><li><b>T Time</b> – call 911 and get to hospital immediately</li></ul></td>
+ <td data-l="First Aid"><strong class="c911">CALL 911 IMMEDIATELY!</strong></td></tr>
+<tr><th scope="row">Heart Attack / Chest Pain</th>
+ <td data-l="Signs / Symptoms"><ul><li>Chest discomfort that feels like pressure, fullness, or squeezing pain lasting more than a few minutes or goes away and returns</li><li>Pain and discomfort to other parts of your upper body, like one or both arms, or your back, neck, stomach, teeth, and jaw</li><li>Unexplained shortness of breath, with or without chest discomfort</li><li>Cold sweats</li><li>Nausea or vomiting</li><li>Lightheadedness</li><li>Anxiety, indigestion</li><li>Unexplained fatigue</li></ul></td>
+ <td data-l="First Aid"><strong class="c911">CALL 911 IMMEDIATELY!</strong></td></tr>
+<tr><th scope="row">Heat Stroke</th>
+ <td data-l="Signs / Symptoms">Hot dry flushed skin, no sweating, agitation and confusion, headache, nausea, vomiting, irregular pulse, rapid shallow breathing, seizure, loss of consciousness, possible cardiac arrest</td>
+ <td data-l="First Aid"><strong class="c911">CALL 911</strong><br>If conscious, use the heat exhaustion steps below.<br>If unconscious, clear airway and give CPR.</td></tr>
+<tr><th scope="row">Heat Exhaustion</th>
+ <td data-l="Signs / Symptoms">Pale moist skin, cramps, headache or light-headedness, nausea, rapid pulse, shallow breathing, muscle weakness</td>
+ <td data-l="First Aid">Move person to cool place, loosen outer clothing. Give fluids with electrolytes every 15 minutes as tolerated, spray with water, apply ice packs to armpits and groin.</td></tr>
+<tr><th scope="row" rowspan="2">Diabetic Related Emergency</th>
+ <td data-l="Signs / Symptoms"><span class="sub">Hypoglycemia (low blood sugar):</span> Shaky and weak, pale moist skin, nausea, confusion, irritable and behaving irrationally, palpitations, sweating.</td>
+ <td data-l="First Aid">Sit person down, give sugar if fully conscious and alert (sugary drink, juice, etc.). Check response and seek medical advice. If allowable, after 10 minutes, give carbohydrate food (sandwich, crackers, cereal bar, etc.).<br>If loss of consciousness, <strong class="c911">CALL 911</strong></td></tr>
+<tr class="cont">
+ <td data-l="Signs / Symptoms"><span class="sub">Hyperglycemia (high blood sugar):</span> Symptoms develop over time and include extreme thirst and frequent urination. In later stages, drowsy, which could lead to unconsciousness.</td>
+ <td data-l="First Aid">If person collapses and you suspect hyperglycemia (fruity breath, check for bracelet), open airway and check breathing.<br><strong class="c911">CALL 911!</strong><br>If breathing, place on side, causing airway to open so fluid and/or vomit can drain. Check and note level of consciousness, breathing and pulse until help arrives.</td></tr>
+</tbody>
+</table>
+<div class="foot"><span>Builder's Bloc</span><span>First Aid Quick Reference</span></div>
+</div>
+</main>
+<div class="bar noprint"><div class="in"><button class="btn" type="button" onclick="window.print()">Print / Save as PDF</button></div></div>
+
+</body>
+</html>

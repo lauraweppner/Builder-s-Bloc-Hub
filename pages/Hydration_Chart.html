@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hydration Chart: Are You Drinking Enough? | Builder's Bloc</title>
+<style>
+:root{--ink:#161616;--muted:#5c5c5c;--line:#c9c9c9;--soft:#ececea;--bg:#f3f2ef;--red:#b3261e;--redbg:#fdecea}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.top{background:#161616;color:#fff;padding:14px 16px}
+.top .in{max-width:940px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lhs{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.back{color:#fff;text-decoration:none;font-size:15px;font-weight:600;border:1.5px solid rgba(255,255,255,.55);border-radius:8px;padding:9px 12px;min-height:40px;display:inline-flex;align-items:center}
+.brand{font:900 21px/1 Rockwell,"Roboto Slab","Rockwell Nova",Georgia,serif;letter-spacing:.05em;text-transform:uppercase}
+.code{font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+main{max-width:940px;margin:0 auto;padding:20px 16px 110px}
+.sheet{background:#fff;border:1px solid var(--line);border-radius:10px;padding:24px}
+h1{font-size:28px;line-height:1.15;margin:0 0 8px;letter-spacing:-.01em}
+h2{font-size:19px;margin:26px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+p{margin:0 0 12px}
+.lede{color:var(--muted);margin-bottom:18px}
+.foot{margin-top:22px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn{appearance:none;-webkit-appearance:none;border:2px solid var(--ink);background:var(--ink);color:#fff;font:600 16px/1 inherit;font-family:inherit;padding:14px 20px;border-radius:8px;min-height:48px;cursor:pointer}
+.btn.alt{background:#fff;color:var(--ink)}
+.btn:active{opacity:.75}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:940px;margin:0 auto;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.callout{border:2px solid var(--red);background:var(--redbg);border-radius:8px;padding:14px 16px;margin:18px 0;font-weight:600}
+.callout a{color:var(--red);white-space:nowrap}
+@media (max-width:560px){.sheet{padding:16px}h1{font-size:23px}}
+@page{margin:.5in}
+@media print{
+  html,body{background:#fff}
+  body{font-size:11pt}
+  .top{background:#fff;color:#000;padding:0 0 8px;border-bottom:2px solid #000;margin-bottom:12px}
+  .code{opacity:1}
+  main{max-width:none;padding:0}
+  .sheet{border:0;border-radius:0;padding:0}
+  .noprint,.bar{display:none!important}
+  h1{font-size:16pt;margin-bottom:4pt}
+  .foot{margin-top:8pt;padding-top:4pt;font-size:8pt}
+  input::-webkit-calendar-picker-indicator{display:none}
+  h2{font-size:13pt;margin-top:14pt;break-after:avoid}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+.chart{display:grid;gap:8px;margin:6px 0 12px}
+.band{display:grid;grid-template-columns:150px 1fr 1.25fr;gap:14px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px 14px 10px 10px;break-inside:avoid}
+.sws{display:flex;gap:6px}
+.sw{flex:1;height:64px;border-radius:6px;border:1px solid rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#161616}
+.very .sw,.stop .sw{color:#fff}
+.band h3{margin:0 0 2px;font-size:19px}
+.band p{margin:0;color:var(--muted);font-size:15px}
+.act{font-weight:600}
+.act span{display:block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.band.stop{border:2px solid var(--red);background:var(--redbg)}
+.band.stop h3,.band.stop .act span{color:var(--red)}
+.note{font-size:14px;color:var(--muted)}
+.cols{columns:2;margin:0;padding-left:22px}
+.tips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tip a{color:inherit}
+.tip{border-left:4px solid #161616;background:var(--soft);padding:10px 12px;border-radius:0 6px 6px 0;font-size:16px;break-inside:avoid}
+@media (max-width:700px){
+  .band{grid-template-columns:96px 1fr;gap:10px 12px}
+  .act{grid-column:1/-1}
+  .sw{height:52px}
+  .tips{grid-template-columns:1fr}
+  .cols{columns:1}
+}
+@media print{
+  .lede{margin-bottom:6pt}
+  .chart{gap:4pt}
+  .band{grid-template-columns:1.25in 1fr 1.3fr;padding:4pt 8pt 4pt 4pt;gap:10pt}
+  .sw{height:.44in;font-size:13pt}
+  .band h3{font-size:12pt}
+  .band p{font-size:9.5pt}
+  .act{font-size:10pt}
+  .note{font-size:8.5pt;margin-bottom:0}
+  h2{margin-top:9pt;margin-bottom:5pt}
+  .cols{columns:4;font-size:9.5pt}
+  .tips{gap:4pt 8pt}
+  .tip{font-size:9pt;padding:3pt 7pt;line-height:1.28}
+  .foot{margin-top:8pt;padding-top:4pt}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="in"><div class="lhs"><a class="back noprint" href="../index.html">&#8249; Field Portal</a><div class="brand">Builder's Bloc</div></div><div class="code">Reference</div></div></header>
+<main>
+<div class="sheet">
+<h1>Are You Drinking Enough?</h1>
+<p class="lede">Check the color of your urine against this chart. The darker it is, the more water your body needs.</p>
+<div class="chart"><div class="band ok"><div class="sws"><span class="sw" style="background:#FAF6CF">1</span><span class="sw" style="background:#F5EC9C">2</span></div><div class="what"><h3>Hydrated</h3><p>Pale and plentiful.</p></div><div class="act"><span>What to do</span>Keep drinking at the same rate.</div></div><div class="band mild"><div class="sws"><span class="sw" style="background:#EFE066">3</span><span class="sw" style="background:#E9D03A">4</span></div><div class="what"><h3>Mildly dehydrated</h3><p>Slightly darker yellow.</p></div><div class="act"><span>What to do</span>Drink a cup of water now.</div></div><div class="band dehy"><div class="sws"><span class="sw" style="background:#E2BA27">5</span><span class="sw" style="background:#D39C1C">6</span></div><div class="what"><h3>Dehydrated</h3><p>Medium to dark yellow.</p></div><div class="act"><span>What to do</span>Drink 2 to 3 cups of water now.</div></div><div class="band very"><div class="sws"><span class="sw" style="background:#B67B17">7</span><span class="sw" style="background:#8C5B13">8</span></div><div class="what"><h3>Very dehydrated</h3><p>Dark, strong-smelling, small amounts.</p></div><div class="act"><span>What to do</span>Stop and drink a large bottle of water right away. Rest in the shade and tell your foreman.</div></div>
+<div class="band stop"><div class="sws"><span class="sw wide" style="background:#5A3312">!</span></div><div class="what"><h3>Brown, tea or cola colored</h3><p>Especially with muscle pain, cramps or weakness.</p></div><div class="act"><span>What to do</span>Stop work. Tell your supervisor and get medical treatment right away. Do not wait it out.</div></div>
+</div>
+<p class="note">This chart is a guide only. Some foods, medications and vitamin supplements can change urine color even when you are hydrated. If you are worried, talk to a doctor.</p>
+
+<h2>Signs you are getting dehydrated</h2>
+<ul class="cols">
+<li>Thirst or a dry mouth</li><li>Headache</li><li>Dizziness or light-headedness</li><li>Muscle cramps</li><li>Feeling tired or weak</li><li>Urinating less than usual</li><li>Dark urine</li>
+</ul>
+
+<h2>Preventing dehydration on the job site</h2>
+<div class="tips">
+<div class="tip"><b>Drink before you are thirsty.</b> In the heat, drink 1 cup (8 oz) of water every 15 to 20 minutes. Small amounts often work better than a lot at once.</div>
+<div class="tip"><b>Do not overdo it.</b> Stay under 6 cups (48 oz) in one hour.</div>
+<div class="tip"><b>Start the day hydrated.</b> Drink water before your shift, and keep drinking after you get home.</div>
+<div class="tip"><b>Replace electrolytes on long, sweaty days.</b> When you are sweating for several hours, add a sports drink with balanced electrolytes, and eat your regular meals.</div>
+<div class="tip"><b>Skip what dries you out.</b> Avoid alcohol and drinks that are high in caffeine or sugar, including energy drinks.</div>
+<div class="tip"><b>Keep cool water close.</b> Have water at the work area, not back at the truck, so it is easy to grab.</div>
+<div class="tip"><b>Take breaks in the shade.</b> Rest somewhere cool, and take breaks more often as the heat goes up.</div>
+<div class="tip"><b>Ease into the heat.</b> New workers and anyone coming back from time off need a week or two to build up heat tolerance.</div>
+<div class="tip"><b>Watch out for each other.</b> If a coworker seems confused, stops sweating or cannot keep fluids down, get help. See the <a href="First_Aid_Quick_Reference.html">First Aid Quick Reference</a>.</div>
+<div class="tip"><b>Cold weather counts too.</b> You still lose water in winter gear, and you feel less thirsty. Keep drinking year round.</div>
+</div>
+<div class="foot"><span>Builder's Bloc</span><span>Sources: OSHA, CDC/NIOSH, Healthdirect urine colour chart</span></div>
+</div>
+</main>
+<div class="bar noprint"><div class="in"><button class="btn" type="button" onclick="window.print()">Print / Save as PDF</button></div></div>
+
+</body>
+</html>

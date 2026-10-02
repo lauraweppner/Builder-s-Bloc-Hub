@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carpentry Division New Employee Field Orientation | Builder's Bloc</title>
+<style>
+:root{--ink:#161616;--muted:#5c5c5c;--line:#c9c9c9;--soft:#ececea;--bg:#f3f2ef;--red:#b3261e;--redbg:#fdecea}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.top{background:#161616;color:#fff;padding:14px 16px}
+.top .in{max-width:940px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lhs{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.back{color:#fff;text-decoration:none;font-size:15px;font-weight:600;border:1.5px solid rgba(255,255,255,.55);border-radius:8px;padding:9px 12px;min-height:40px;display:inline-flex;align-items:center}
+.brand{font:900 21px/1 Rockwell,"Roboto Slab","Rockwell Nova",Georgia,serif;letter-spacing:.05em;text-transform:uppercase}
+.code{font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+main{max-width:940px;margin:0 auto;padding:20px 16px 110px}
+.sheet{background:#fff;border:1px solid var(--line);border-radius:10px;padding:24px}
+h1{font-size:28px;line-height:1.15;margin:0 0 8px;letter-spacing:-.01em}
+h2{font-size:19px;margin:26px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+p{margin:0 0 12px}
+.lede{color:var(--muted);margin-bottom:18px}
+.foot{margin-top:22px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn{appearance:none;-webkit-appearance:none;border:2px solid var(--ink);background:var(--ink);color:#fff;font:600 16px/1 inherit;font-family:inherit;padding:14px 20px;border-radius:8px;min-height:48px;cursor:pointer}
+.btn.alt{background:#fff;color:var(--ink)}
+.btn:active{opacity:.75}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:940px;margin:0 auto;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.callout{border:2px solid var(--red);background:var(--redbg);border-radius:8px;padding:14px 16px;margin:18px 0;font-weight:600}
+.callout a{color:var(--red);white-space:nowrap}
+@media (max-width:560px){.sheet{padding:16px}h1{font-size:23px}}
+@page{margin:.5in}
+@media print{
+  html,body{background:#fff}
+  body{font-size:11pt}
+  .top{background:#fff;color:#000;padding:0 0 8px;border-bottom:2px solid #000;margin-bottom:12px}
+  .code{opacity:1}
+  main{max-width:none;padding:0}
+  .sheet{border:0;border-radius:0;padding:0}
+  .noprint,.bar{display:none!important}
+  h1{font-size:16pt;margin-bottom:4pt}
+  .foot{margin-top:8pt;padding-top:4pt;font-size:8pt}
+  input::-webkit-calendar-picker-indicator{display:none}
+  h2{font-size:13pt;margin-top:14pt;break-after:avoid}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+.grid2 .wide{grid-column:1/-1}
+label.f{display:block;font-size:14px;font-weight:600;color:var(--muted)}
+label.f input{display:block;width:100%;margin-top:4px;font:inherit;font-size:17px;color:var(--ink);padding:10px 12px;min-height:46px;border:1.5px solid var(--line);border-radius:6px;background:#fff;-webkit-appearance:none;appearance:none}
+input:focus{outline:3px solid #9ec5fe;outline-offset:1px}
+.bad input,.bad canvas,fieldset.bad,.bad.item{border-color:var(--red)!important;background:var(--redbg)}
+.msg{display:none;border:2px solid var(--red);background:var(--redbg);color:#7a1611;border-radius:8px;padding:12px 14px;margin:0 0 16px;font-weight:600}
+.msg.on{display:block}
+.chk{display:flex;align-items:flex-start;gap:10px;padding:8px 4px;min-height:44px;cursor:pointer}
+.chk span{min-width:0;overflow-wrap:break-word}
+.chk input[type=checkbox]{flex:none;width:24px;height:24px;margin:1px 0 0;accent-color:#161616}
+.sig{margin-top:6px}
+.sig canvas{display:block;width:100%;aspect-ratio:4/1;border:1.5px solid var(--line);border-radius:6px;background:#fff;touch-action:none}
+.sig .row{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-top:4px}
+.link{background:none;border:0;padding:6px 0;font:inherit;font-size:13px;color:var(--ink);text-decoration:underline;cursor:pointer}
+@media (max-width:560px){.grid2{grid-template-columns:1fr}}
+@media print{
+  .grid2{gap:6pt 14pt}
+  label.f{font-size:9pt}
+  label.f input{border:0;border-bottom:1px solid #000;border-radius:0;padding:1pt 0;min-height:0;font-size:11pt;margin-top:0}
+  .chk{min-height:0;padding:1.5pt 0;gap:6pt}
+  .chk input[type=checkbox]{width:11pt;height:11pt}
+  .sig canvas{border:0;border-bottom:1px solid #000;border-radius:0;aspect-ratio:5/1}
+  .sigs{grid-template-columns:2fr 1fr 2fr 1fr!important;gap:4pt 12pt}
+  .msg{display:none!important}
+}
+
+.item{border:1.5px solid transparent;border-radius:6px;padding:9px 8px}
+.item.head{cursor:default;padding-left:42px}
+.subs{margin-left:34px}
+.sigs{align-items:end}
+@media (max-width:560px){.subs{margin-left:14px}}
+@media print{
+  .lede{display:none}
+  body{font-size:10.5pt}
+  .item{padding:2pt 0;border:0}
+  .item.head{padding-left:17pt}
+  .subs{margin-left:22pt}
+  h2{margin-top:10pt}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="in"><div class="lhs"><a class="back noprint" href="../index.html">&#8249; Field Portal</a><div class="brand">Builder's Bloc</div></div><div class="code">Form CFO</div></div></header>
+<main>
+<form class="sheet" id="form" autocomplete="off" onsubmit="return false">
+<h1>Carpentry Division New Employee Field Orientation</h1>
+<p class="lede">Crew leader: check off each item as you cover it with the new employee, then both sign at the bottom.</p>
+<div class="msg" id="msg" role="alert"></div>
+<div class="grid2">
+ <label class="f">Employee name<input type="text" id="emp" required></label>
+ <label class="f">Date<input type="date" id="date" required></label>
+ <label class="f">Employee current union rank<input type="text" required></label>
+</div>
+<h2>Orientation items</h2>
+<div class="items">
+<label class="chk item"><input type="checkbox" required> <span><b>1.</b> Introduce new employee to all crew members.</span></label><label class="chk item"><input type="checkbox" required> <span><b>2.</b> Make employee aware of current start and end times, 10 minute mid-morning break (must stay on-site), and 30 minute lunch (allowed to leave site).</span></label><label class="chk item"><input type="checkbox" required> <span><b>3.</b> Work week is Tuesday – Monday. Payday is on Friday.</span></label><label class="chk item"><input type="checkbox" required> <span><b>4.</b> Inform new employee of their duties and responsibilities – moving material, lifting material, stocking material, picking up waste material and where to put it, etc.</span></label>
+<div class="chk item head"><span><b>5.</b> Review Safety Regulations:</span></div>
+<div class="subs"><label class="chk item sub"><input type="checkbox" required> <span><b>a.)</b> Proper clothing, pants, and what types of boots to wear and when</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>b.)</b> PPE – Hard hats and safety glasses must be worn at all times</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>c.)</b> It is everyone&#x27;s responsibility to keep walkways clean</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>d.)</b> Scrap material to be piled up or placed in dumpster</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>e.)</b> Explain what CAZ is</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>f.)</b> Locate fire extinguisher, first aid kit, and MSDS book</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>g.)</b> Identify the competent person(s)</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>h.)</b> Introduce employee to different material types, nails, and their uses</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>i.)</b> Show employee how to correctly pick up and carry material</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>j.)</b> Show how to start compressor, fuel up compressor</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>k.)</b> Review ladder safety</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>l.)</b> Show employee how to bend lumber bands</span></label><label class="chk item sub"><input type="checkbox" required> <span><b>m.)</b> New employees are not allowed to operate air or electric tools until trained</span></label></div>
+</div>
+<h2>Signatures</h2>
+<div class="grid2 sigs">
+ <div><div class="sig"><label class="f" style="margin-bottom:4px">Employee</label><canvas id="sig1" data-required="1" aria-label="Employee signature area"></canvas><div class="row noprint"><span>Sign with a finger or Apple Pencil</span><button type="button" class="link">Clear signature</button></div></div></div>
+ <label class="f">Date<input type="date" required></label>
+ <div><div class="sig"><label class="f" style="margin-bottom:4px">Crew Leader</label><canvas id="sig2" data-required="1" aria-label="Crew Leader signature area"></canvas><div class="row noprint"><span>Sign with a finger or Apple Pencil</span><button type="button" class="link">Clear signature</button></div></div></div>
+ <label class="f">Date<input type="date" required></label>
+</div>
+<div class="foot"><span>Builder's Bloc</span><span>Carpentry Division New Employee Field Orientation</span></div>
+</form>
+</main>
+<div class="bar noprint"><div class="in"><button class="btn alt" type="button" id="clear">Clear form</button><button class="btn" type="button" id="print">Print / Save as PDF</button></div></div>
+<script>var FORM_CODE='CFO';
+
+(function(){
+  var form=document.getElementById('form'),msg=document.getElementById('msg');
+  // ---- signature pads
+  document.querySelectorAll('.sig canvas').forEach(function(c){
+    c.width=1200;c.height=300;
+    var x=c.getContext('2d'),down=false;
+    x.lineWidth=4;x.lineCap='round';x.lineJoin='round';x.strokeStyle='#111';
+    function pt(e){var r=c.getBoundingClientRect();return [(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height];}
+    c.addEventListener('pointerdown',function(e){e.preventDefault();down=true;try{c.setPointerCapture(e.pointerId)}catch(_){ }var p=pt(e);x.beginPath();x.moveTo(p[0],p[1]);x.lineTo(p[0]+.1,p[1]+.1);x.stroke();c.dataset.signed='1';c.closest('.sig').classList.remove('bad');});
+    c.addEventListener('pointermove',function(e){if(!down)return;e.preventDefault();var p=pt(e);x.lineTo(p[0],p[1]);x.stroke();});
+    ['pointerup','pointercancel','pointerleave'].forEach(function(n){c.addEventListener(n,function(){down=false;});});
+    c.closest('.sig').querySelector('.link').addEventListener('click',function(){x.clearRect(0,0,c.width,c.height);delete c.dataset.signed;});
+  });
+  function clean(s){return (s||'').trim().replace(/[^A-Za-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
+  function check(){
+    var bad=[];
+    document.querySelectorAll('.bad').forEach(function(n){n.classList.remove('bad');});
+    form.querySelectorAll('input[required]').forEach(function(i){
+      var ok=i.type==='checkbox'?i.checked:i.value.trim()!=='';
+      if(!ok){var w=i.closest('label');w.classList.add('bad');bad.push(w);}
+    });
+    form.querySelectorAll('canvas[data-required]').forEach(function(c){
+      if(!c.dataset.signed){var w=c.closest('.sig');w.classList.add('bad');bad.push(w);}
+    });
+    if(typeof window.extraCheck==='function'){var e=window.extraCheck();if(e)bad.push(e);}
+    return bad;
+  }
+  form.addEventListener('input',function(e){var w=e.target.closest('.bad');if(w)w.classList.remove('bad');});
+  document.getElementById('print').addEventListener('click',function(){
+    var bad=check();
+    if(bad.length){
+      msg.textContent=bad.length+(bad.length===1?' item still needs':' items still need')+' to be completed. They are outlined in red.';
+      msg.classList.add('on');bad[0].scrollIntoView({behavior:'smooth',block:'center'});return;
+    }
+    msg.classList.remove('on');
+    var blanks=[];form.querySelectorAll('input[type=date],input[type=time]').forEach(function(i){if(!i.value){blanks.push([i,i.type]);i.type='text';}});
+    var old=document.title;
+    var name=clean(document.getElementById('emp').value),date=document.getElementById('date').value;
+    document.title=[FORM_CODE,name,date].filter(Boolean).join('_');
+    window.print();
+    setTimeout(function(){document.title=old;blanks.forEach(function(b){b[0].type=b[1];});},1500);
+  });
+  document.getElementById('clear').addEventListener('click',function(){
+    if(!confirm('Clear everything on this form and start over?'))return;
+    form.reset();
+    document.querySelectorAll('.sig canvas').forEach(function(c){c.getContext('2d').clearRect(0,0,c.width,c.height);delete c.dataset.signed;});
+    document.querySelectorAll('.bad').forEach(function(n){n.classList.remove('bad');});
+    msg.classList.remove('on');window.scrollTo(0,0);
+  });
+})();
+</script>
+</body>
+</html>
