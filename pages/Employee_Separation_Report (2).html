@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Employee Separation Report</title>
+<style>
+  :root {
+    --ink: #161616;   /* printed form text */
+    --pen: #0b2c6f;   /* what the person fills in */
+    --rh: 2.2em;      /* row height (bigger on screen for tapping, tighter in print) */
+    --lh: 2em;        /* comment line height */
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: #dfe1e4;
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.25;
+  }
+
+  /* ---------- Toolbar (screen only) ---------- */
+  .toolbar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+    padding: 10px 16px;
+    background: #22262b; color: #fff;
+  }
+  .toolbar p { margin: 0; flex: 1 1 260px; font-weight: 400; font-size: 14px; line-height: 1.35; }
+  .toolbar button {
+    font-family: inherit; font-size: 15px; font-weight: 600;
+    padding: 11px 16px; border-radius: 8px; border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-primary { background: #fff; color: #16191d; }
+  .btn-quiet { background: transparent; color: #fff; border-color: #6d747d !important; }
+  .toolbar a.back { font-size: 15px; font-weight: 600; padding: 11px 14px; border-radius: 8px; border: 1px solid; text-decoration: none; }
+  .toolbar a.back:focus-visible { outline: 3px solid #8ab4ff; outline-offset: 2px; }
+  .toolbar button:focus-visible { outline: 3px solid #8ab4ff; outline-offset: 2px; }
+
+  /* ---------- Status line and pop-ups (screen only) ---------- */
+  .toolbar .msg { flex-basis: 100%; font-size: 13.5px; font-weight: 600; color: #cfd6de; }
+  .toolbar .msg:empty { display: none; }
+  .toolbar .msg.ok { color: #8fe0ae; }
+  .toolbar .msg.err { color: #ffb4b4; }
+  .modal { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; padding: 18px; background: rgba(12,24,38,.55); }
+  .modal.on { display: grid; }
+  .modal .mbox { background: #fff; color: #1b2733; border-radius: 14px; max-width: 640px; width: 100%; padding: 22px 24px;
+                 box-shadow: 0 18px 50px rgba(0,0,0,.3); max-height: 88vh; overflow-y: auto; font-weight: 400; }
+  .modal h3 { font-size: 17px; margin: 0 0 12px; font-weight: 700; }
+  .modal p { font-size: 14.5px; margin: 0 0 12px; line-height: 1.45; }
+  .modal .fname { background: #f2f6fa; border: 1px solid #d7dfe8; border-radius: 9px; padding: 10px 12px; margin: 4px 0 14px;
+                  font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; word-break: break-all; }
+  .modal .foot { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+  .mbtn { display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 14px 22px; border-radius: 10px;
+          border: 1px solid transparent; font-family: inherit; font-size: 15px; font-weight: 650; text-decoration: none; cursor: pointer; }
+  .mbtn.go { background: #1c7c46; color: #fff; }
+  .mbtn.ghost { background: #fff; color: #123c66; border-color: #d7dfe8; }
+
+  /* ---------- The sheet ---------- */
+  .sheet {
+    background: #fff;
+    max-width: 8.5in;
+    margin: 18px auto 48px;
+    padding: clamp(20px, 6vw, 0.6in) clamp(14px, 7vw, 0.8in) clamp(24px, 6vw, 0.7in);
+    box-shadow: 0 1px 3px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.12);
+  }
+  h1 {
+    margin: 0 0 1.9em;
+    text-align: center;
+    font-size: 1.3em; font-weight: 700; letter-spacing: .03em;
+    text-decoration: underline; text-underline-offset: .12em;
+  }
+  h2 {
+    margin: 0;
+    font-size: 1em; font-weight: 600;
+    text-decoration: underline; text-underline-offset: .12em;
+  }
+  section { margin-top: 1.5em; }
+
+  /* Double-ruled boxes (top and bottom of the form) */
+  .box { border: 5px double var(--ink); padding: .7em .9em .9em; }
+  .box.history { padding-left: clamp(.9em, 8%, 4.2em); padding-right: clamp(.9em, 8%, 4.2em); }
+  .box.history h2 { text-decoration: none; margin-bottom: .2em; }
+  .box.history .row { font-size: .92em; }
+
+  /* ---------- Fill-in lines ---------- */
+  .row { display: flex; flex-wrap: wrap; align-items: flex-end; column-gap: 1.6em; min-height: var(--rh); }
+  .row.two { display: grid; grid-template-columns: 1fr 1fr; }
+  .field { display: flex; align-items: flex-end; gap: .3em; min-width: 0; min-height: var(--rh); }
+  .field.grow { flex: 1 1 0; }
+  .field > span { white-space: nowrap; padding-bottom: .12em; }
+
+  input[type=text], input[type=tel], input[type=date] {
+    flex: 1 1 auto; min-width: 0; width: 100%;
+    min-height: 1.7em;
+    margin: 0; padding: .1em .3em .05em;
+    border: 0; border-bottom: 1.5px solid var(--ink); border-radius: 0;
+    background: transparent;
+    font-family: inherit; font-size: 1em; font-weight: 400; color: var(--pen);
+    -webkit-appearance: none; appearance: none;
+    text-align: left;
+  }
+  input[type=date]::-webkit-date-and-time-value { text-align: left; }
+  input[type=date].empty:not(:focus)::-webkit-datetime-edit { color: transparent; }
+  input:focus, textarea:focus { outline: none; background: #fff6c9; }
+  .missing input, input.missing { border-bottom-color: #c22; background: #fdeaea; }
+  textarea::placeholder { color: #8a8f98; font-style: italic; opacity: 1; }
+
+  .w-name { max-width: 34em; }
+  .w-recall { flex: 0 1 11em; }
+
+  /* ---------- Checkboxes ---------- */
+  .cols { display: grid; grid-template-columns: 46% 54%; margin-top: .45em; }
+  .ck { display: flex; align-items: center; min-height: calc(var(--rh) * .82); cursor: pointer; }
+  .ck input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+  .bx {
+    flex: none; position: relative;
+    width: .95em; height: .95em; margin-right: .75em;
+    border: 1.5px solid var(--ink); background: #fff;
+  }
+  .ck input:checked + .bx::after {
+    content: ""; position: absolute; left: 26%; top: -28%;
+    width: 36%; height: 100%;
+    border: solid var(--pen); border-width: 0 .17em .17em 0;
+    transform: rotate(40deg);
+  }
+  .ck input:focus-visible + .bx { outline: 3px solid #4a86ff; outline-offset: 2px; }
+  .col.right .bx { margin-right: 2.6em; }
+
+  .other { display: flex; align-items: flex-end; gap: .3em; }
+  .other .ck { flex: none; }
+  .other input[type=text] { margin-bottom: .2em; }
+  .other-line { margin-top: .15em; }
+
+  .inline-checks { display: flex; flex-wrap: wrap; align-items: center; gap: 0 2.2em; }
+  .inline-checks .bx { margin-right: .4em; width: .85em; height: .85em; }
+
+  .head-row { display: grid; grid-template-columns: 46% 54%; align-items: center; }
+  .head-row .inline-checks { gap: 0 1.1em; }
+
+  /* ---------- Comments (ruled lines that grow with the text) ---------- */
+  .ruled { position: relative; display: grid; overflow: hidden; margin-top: .1em; }
+  .ruled .rules { position: absolute; left: 0; right: 0; top: 0; pointer-events: none; }
+  .ruled .rules i { display: block; height: var(--lh); border-bottom: 1.5px solid var(--ink); }
+  .ruled textarea, .ruled .mirror {
+    grid-area: 1 / 1;
+    min-height: calc(var(--lh) * 4);
+    margin: 0; padding: 0 .3em; border: 0;
+    font-family: inherit; font-size: 1em; font-weight: 400; line-height: var(--lh);
+    color: var(--pen); background: transparent;
+    white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;
+  }
+  .ruled textarea { position: relative; resize: none; overflow: hidden; width: 100%; border-radius: 0; -webkit-appearance: none; appearance: none; }
+  .ruled .mirror { visibility: hidden; }
+  .ruled textarea:focus { background: rgba(255, 232, 110, .28); }
+  .ruled textarea.missing { background: rgba(204, 34, 34, .12); }
+
+  /* ---------- Bottom box ---------- */
+  .signers { display: grid; grid-template-columns: 1fr 1fr; column-gap: 2.2em; }
+  .signers h3 { margin: 0; font-size: 1em; font-weight: 500; }
+  .signers .field { min-height: calc(var(--rh) * .8); }
+  .box.bottom { margin-top: 2.6em; padding: .55em .6em .8em; }
+
+  /* ---------- Phones ---------- */
+  @media screen and (max-width: 600px) {
+    .row.two, .cols, .head-row, .signers { grid-template-columns: 1fr; }
+    .col.right .bx { margin-right: .75em; }
+    .signers > div + div { margin-top: 1em; }
+    .head-row .inline-checks { margin-top: .3em; }
+    .other.recall { flex-wrap: wrap; }
+    .other.recall .ck { flex: 1 1 100%; align-items: flex-start; padding-top: .35em; }
+    .other.recall .bx { margin-top: .1em; }
+    .other.recall .w-recall { flex: 1 1 100%; margin-left: 1.7em; }
+  }
+
+  /* ---------- Print / Save as PDF ---------- */
+  @page { size: letter portrait; margin: 0.5in 0.6in; }
+  @media print {
+    :root { --rh: 1.6em; --lh: 1.6em; }
+    html, body { background: #fff; }
+    body { font-size: 10pt; }
+    .ck { min-height: 1.32em; }
+    .box.history .row, .box.history .field { min-height: 1.75em; }
+    .other input[type=text], .other-line, .w-recall { min-height: 1.45em; }
+    .box.bottom { margin-top: 2em; }
+    .toolbar, .modal { display: none !important; }
+    .sheet { max-width: none; margin: 0; padding: .3in .25in 0; box-shadow: none; }
+    h1 { margin-bottom: 1.6em; }
+    section { margin-top: 1.3em; }
+    input:focus, textarea:focus { background: transparent; }
+    .missing input, input.missing { border-bottom-color: var(--ink); background: transparent; }
+    input[type=date]::-webkit-calendar-picker-indicator { display: none; }
+    input[type=date].empty::-webkit-datetime-edit { color: transparent; }
+    .ruled textarea { visibility: hidden; }
+    .ruled .mirror { visibility: visible; }
+    .box, section, .signers { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <p>Fill out the form, tap <strong>Share / Send</strong>, choose Mail, and send it to HR: <strong id="hrEmailText"></strong></p>
+  <a class="btn-quiet back" href="../index.html">&lsaquo; Portal</a>
+  <button type="button" class="btn-quiet" id="clearBtn">Clear form</button>
+  <button type="button" class="btn-primary" id="sendBtn">Share / Send</button>
+  <div class="msg" id="msg" role="status"></div>
+</div>
+
+<form class="sheet" id="esr" autocomplete="off" novalidate>
+
+  <h1>EMPLOYEE SEPARATION NOTICE</h1>
+
+  <!-- ================= EMPLOYMENT HISTORY ================= -->
+  <div class="box history">
+    <h2>EMPLOYMENT HISTORY:</h2>
+
+    <div class="row">
+      <label class="field grow w-name"><span>EMPLOYEE NAME</span><input type="text" id="empName" autocapitalize="words"></label>
+    </div>
+
+    <div class="row two">
+      <label class="field"><span>Original Hire Date:</span><input type="date" id="hireDate"></label>
+      <label class="field"><span>Last Day Worked:</span><input type="date" id="lastDay"></label>
+    </div>
+  </div>
+
+  <!-- ================= VOLUNTARY RESIGNATION ================= -->
+  <section id="secVR">
+    <h2>VOLUNTARY RESIGNATION:</h2>
+    <div class="cols">
+      <div class="col">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>To take another job</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Moving from this area</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Personal Reasons</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Health Reasons/Pregnancy</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Family Obligations</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Attend School</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Abandoned the job- no call/no show</label>
+      </div>
+      <div class="col right">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Self employment</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Retirement</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Spousal Transfer</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Working Conditions</label>
+        <div class="other">
+          <label class="ck"><input type="checkbox" class="reason" id="vrOtherCk"><span class="bx"></span>OTHER REASONS:</label>
+          <input type="text" id="vrOther1" data-checks="vrOtherCk" aria-label="Other reasons">
+        </div>
+        <input type="text" class="other-line" id="vrOther2" data-checks="vrOtherCk" aria-label="Other reasons, continued">
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DISCHARGED FOR MISCONDUCT ================= -->
+  <section id="secDM">
+    <div class="head-row">
+      <h2>DISCHARGED FOR MISCONDUCT:</h2>
+      <div class="inline-checks">
+        <label class="ck"><input type="checkbox" id="dmYes"><span class="bx"></span>YES</label>
+        <label class="ck"><input type="checkbox" id="dmNo"><span class="bx"></span>NO (Not protesting unemployment)</label>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Violation of Company Policy</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Alcohol/Drug Violation</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Failure to Follow Instructions</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Negligence</label>
+      </div>
+      <div class="col right">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Absenteeism/Tardiness</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Insubordination</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Incompetence</label>
+        <div class="other">
+          <label class="ck"><input type="checkbox" class="reason" id="dmOtherCk"><span class="bx"></span>OTHER MISCONDUCT:</label>
+          <input type="text" id="dmOther1" data-checks="dmOtherCk" aria-label="Other misconduct">
+        </div>
+        <input type="text" class="other-line" id="dmOther2" data-checks="dmOtherCk" aria-label="Other misconduct, continued">
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LAYOFF / REDUCTION IN FORCE ================= -->
+  <section id="secLO">
+    <h2>LAYOFF/REDUCTION IN FORCE:</h2>
+    <div class="cols" style="margin-top:.1em">
+      <div class="col">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Position/Job Eliminated</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Reduction in Hours</label>
+      </div>
+      <div class="col right">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Lack of Work</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Job Over/Seasonal Employee</label>
+      </div>
+    </div>
+    <div class="other recall">
+      <label class="ck"><input type="checkbox" class="reason" id="loRecallCk"><span class="bx"></span>Vacation/Temporary shutdown- Expected Date of Recall:</label>
+      <input type="date" class="w-recall" id="loRecall" data-checks="loRecallCk" aria-label="Expected date of recall">
+    </div>
+  </section>
+
+  <!-- ================= COMMENTS ================= -->
+  <section>
+    <h2><label for="comments">COMMENTS SECTION:</label></h2>
+    <div class="ruled">
+      <div class="rules" aria-hidden="true"></div>
+      <div class="mirror" aria-hidden="true"></div>
+      <textarea id="comments" rows="4" placeholder="Required - describe what happened"></textarea>
+    </div>
+  </section>
+
+  <!-- ================= WHO FILLED THIS OUT ================= -->
+  <div class="box bottom">
+    <div class="signers">
+      <div>
+        <h3>Above information provided by:</h3>
+        <label class="field"><span>Name:</span><input type="text" id="byName" autocapitalize="words"></label>
+        <label class="field"><span>Title:</span><input type="text" id="byTitle" autocapitalize="words"></label>
+        <label class="field"><span>Phone#</span><input type="tel" id="byPhone"></label>
+        <label class="field"><span>Location/Branch:</span><input type="text" id="byLocation" autocapitalize="words"></label>
+      </div>
+      <div>
+        <h3>Employee's Immediate Supervisor:</h3>
+        <label class="field"><span>Name:</span><input type="text" id="supName" autocapitalize="words"></label>
+        <label class="field"><span>Title:</span><input type="text" id="supTitle" autocapitalize="words"></label>
+        <label class="field"><span>Phone#</span><input type="tel" id="supPhone"></label>
+        <label class="field"><span>Location/Branch:</span><input type="text" id="supLocation" autocapitalize="words"></label>
+      </div>
+    </div>
+  </div>
+
+</form>
+
+<div class="modal" id="tapShare"><div class="mbox">
+  <h3>Ready to share</h3>
+  <p>The completed PDF is built and waiting:</p>
+  <div class="fname" id="tsName"></div>
+  <p>Tap below to open the share sheet, then pick <b>Mail</b> to send it.</p>
+  <div class="foot">
+    <button type="button" class="mbtn ghost" id="tsCancel">Cancel</button>
+    <button type="button" class="mbtn go" id="tsGo">Share / Send</button>
+  </div>
+</div></div>
+
+<div class="modal" id="noShare"><div class="mbox">
+  <h3>No share sheet here</h3>
+  <p>This browser will not hand the PDF straight to Mail. Everything you typed is
+     safe &mdash; take one of these two routes instead.</p>
+  <div class="fname" id="nsName"></div>
+  <p style="margin-bottom:6px"><b>Save it, then attach it</b> &mdash; keeps the file name,
+     best for sending to <span id="nsTo"></span>.</p>
+  <a class="mbtn go" id="nsSave" download style="margin-bottom:14px">Save the PDF</a>
+  <p style="margin-bottom:6px"><b>Or open it</b> and use the share icon in that tab
+     &mdash; the square with the arrow. Quicker, but the file arrives with a jumbled name.</p>
+  <a class="mbtn ghost" id="nsOpen" target="_blank" rel="noopener">Open the PDF in a new tab</a>
+  <p id="nsWhy" style="margin-top:16px;font-size:13px;color:#5d6b7a">Why: the Apple
+     share sheet only works in Safari itself, on an address starting with <b>https://</b>.
+     Opening a file from inside another app &mdash; GitHub, Slack, Teams, Files &mdash; runs it
+     in that app's own cut-down browser, which has no share sheet to offer.</p>
+  <div class="foot"><button type="button" class="mbtn ghost" id="nsClose">Done</button></div>
+</div></div>
+
+<script>
+(function () {
+  /* ====== SETTINGS — change these here if they ever need to change ====== */
+  var HR_EMAIL  = "lweppner@buildersbloc.com";  // shown in the bar at the top of the screen
+  var FORM_CODE = "ESR";                        // start of the PDF file name (ESR_Employee_Name_2026-10-08.pdf)
+  /* ====================================================================== */
+
+  var $ = function (id) { return document.getElementById(id); };
+  var form = $("esr");
+  $("hrEmailText").textContent = HR_EMAIL;
+
+  /* Empty date boxes stay blank instead of showing mm/dd/yyyy */
+  function syncDates() {
+    form.querySelectorAll("input[type=date]").forEach(function (d) {
+      d.classList.toggle("empty", !d.value);
+    });
+  }
+
+  /* PDF file name comes from the page title: ESR_Employee_Name_2026-10-08 */
+  function syncTitle() {
+    var name = $("empName").value.trim();
+    if (name.normalize) name = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");   /* José -> Jose */
+    name = name.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    var day = $("lastDay").value;
+    document.title = name ? [FORM_CODE, name, day].filter(Boolean).join("_") : "Employee Separation Report";
+  }
+
+  /* Comment lines grow as the text grows */
+  var ta = $("comments"), mirror = form.querySelector(".mirror"), rules = form.querySelector(".rules");
+  rules.innerHTML = new Array(61).join("<i></i>");
+  function syncComments() { mirror.textContent = ta.value + "\u200b"; }
+
+  /* YES / NO: only one at a time */
+  function exclusive(a, b) {
+    a.addEventListener("change", function () { if (a.checked) b.checked = false; });
+    b.addEventListener("change", function () { if (b.checked) a.checked = false; });
+  }
+  exclusive($("dmYes"), $("dmNo"));
+
+  /* Typing in an "other" line checks its box */
+  form.querySelectorAll("[data-checks]").forEach(function (el) {
+    el.addEventListener("input", function () {
+      if (el.value) $(el.getAttribute("data-checks")).checked = true;
+    });
+  });
+
+  form.addEventListener("input", function (e) {
+    if (e.target.classList) e.target.classList.remove("missing");
+    syncDates(); syncTitle(); syncComments();
+  });
+  form.addEventListener("change", function () { syncDates(); syncTitle(); });
+
+  /* Check the basics before sending */
+  function validate() {
+    var problems = [], first = null;
+    [["empName", "Employee name"], ["lastDay", "Last day worked"], ["comments", "Comments - describe what happened"], ["byName", "Name of the person providing this information"]]
+      .forEach(function (pair) {
+        var el = $(pair[0]);
+        var bad = !el.value.trim();
+        el.classList.toggle("missing", bad);
+        if (bad) { problems.push(pair[1]); first = first || el; }
+      });
+    if (!form.querySelector("input.reason:checked")) {
+      problems.push("At least one reason (Voluntary Resignation, Discharged for Misconduct, or Layoff)");
+    }
+    if (problems.length) {
+      alert("Please fill in before sending:\n\n\u2022 " + problems.join("\n\u2022 "));
+      if (first) { first.scrollIntoView({ block: "center" }); first.focus(); }
+      return false;
+    }
+    return true;
+  }
+
+  /* =====================================================================
+     SHARE / SEND
+     Builds the PDF right here on the iPad (no internet needed) so it looks
+     like the paper form, then opens the Apple share sheet with it attached.
+     ===================================================================== */
+
+  /* Letter widths for Helvetica (regular, bold). Used to measure text. Do not edit. */
+  var WIDTHS = {
+    F1: [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],
+    F2: [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556]
+  };
+
+  /* The PDF uses a basic built-in font, so swap curly quotes, long dashes and emoji for plain text */
+  function pdfSafe(t) {
+    return String(t || "")
+      .replace(/[‘’‚′]/g, "'")
+      .replace(/[“”„″]/g, '"')
+      .replace(/[–—−]/g, "-")
+      .replace(/…/g, "...")
+      .replace(/•/g, "*")
+      .replace(/ /g, " ")
+      .replace(/[^\x09\x0A\x20-\x7E\xA1-\xFF]/g, "");
+  }
+
+  function usDate(v) {
+    var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(v || "");
+    return m ? m[2] + "/" + m[3] + "/" + m[1] : "";
+  }
+
+  /* Tiny PDF writer: text, lines and boxes on letter-size pages */
+  function PdfDoc() {
+    var H = 792, pages = [], cur = null, fnt = "F1", size = 10;
+    function n(v) { return String(Math.round(v * 100) / 100); }
+    function col(c, op) { return n(c[0] / 255) + " " + n(c[1] / 255) + " " + n(c[2] / 255) + " " + op; }
+    function esc(t) { return t.replace(/[\\()]/g, "\\$&"); }
+
+    this.addPage = function () { cur = []; pages.push(cur); };
+    this.font = function (bold, s) { fnt = bold ? "F2" : "F1"; size = s; };
+    this.width = function (t) {
+      var w = 0, tab = WIDTHS[fnt];
+      for (var i = 0; i < t.length; i++) w += tab[t.charCodeAt(i) - 32] || 556;
+      return w * size / 1000;
+    };
+    this.text = function (t, x, y, c) {
+      cur.push("BT /" + fnt + " " + n(size) + " Tf " + col(c, "rg") + " " + n(x) + " " + n(H - y) + " Td (" + esc(t) + ") Tj ET");
+    };
+    this.line = function (x1, y1, x2, y2, w, c) {
+      cur.push(col(c, "RG") + " " + n(w) + " w " + n(x1) + " " + n(H - y1) + " m " + n(x2) + " " + n(H - y2) + " l S");
+    };
+    this.rect = function (x, y, w, h, lw, c) {
+      cur.push(col(c, "RG") + " " + n(lw) + " w " + n(x) + " " + n(H - y - h) + " " + n(w) + " " + n(h) + " re S");
+    };
+    this.bytes = function (title) {
+      var objs = [], i;
+      objs[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+      objs[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>";
+      objs[4] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>";
+      objs[5] = "<< /Title (" + esc(pdfSafe(title)) + ") /Producer (Builders Bloc Field Portal) >>";
+      var kids = [];
+      for (i = 0; i < pages.length; i++) {
+        var stream = "1 J 1 j\n" + pages[i].join("\n");
+        kids.push((6 + 2 * i) + " 0 R");
+        objs[6 + 2 * i] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents " + (7 + 2 * i) + " 0 R >>";
+        objs[7 + 2 * i] = "<< /Length " + stream.length + " >>\nstream\n" + stream + "\nendstream";
+      }
+      objs[2] = "<< /Type /Pages /Kids [" + kids.join(" ") + "] /Count " + pages.length + " >>";
+
+      var out = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", offsets = [];
+      for (i = 1; i < objs.length; i++) {
+        offsets[i] = out.length;
+        out += i + " 0 obj\n" + objs[i] + "\nendobj\n";
+      }
+      var xref = out.length;
+      out += "xref\n0 " + objs.length + "\n0000000000 65535 f \n";
+      for (i = 1; i < objs.length; i++) out += ("0000000000" + offsets[i]).slice(-10) + " 00000 n \n";
+      out += "trailer\n<< /Size " + objs.length + " /Root 1 0 R /Info 5 0 R >>\nstartxref\n" + xref + "\n%%EOF\n";
+
+      var bytes = new Uint8Array(out.length);
+      for (i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 255;
+      return bytes;
+    };
+    this.addPage();
+  }
+
+  /* Lays the answers out like the paper form */
+  function buildPdf(title) {
+    var doc = new PdfDoc();
+    var INK = [22, 22, 22], PEN = [11, 44, 111];
+    var L = 58, R = 554, W = R - L, MID = L + Math.round(W * 0.46);
+    var FS = 10, ROW = 13.5;
+
+    function label(t, x, y, bold, size) { doc.font(!!bold, size || FS); doc.text(t, x, y, INK); return x + doc.width(t); }
+    function rule(x1, x2, y) { doc.line(x1, y, x2, y, 0.75, INK); }
+    function heading(t, x, y) { var e = label(t, x, y, true); doc.line(x, y + 1.8, e, y + 1.8, 0.7, INK); return e; }
+    function value(t, x, y, maxW) {          /* an answer, in blue; shrinks to fit its line */
+      t = pdfSafe(t).replace(/\s+/g, " ").trim();
+      if (!t) return;
+      var size = FS;
+      doc.font(false, size);
+      while (size > 6.5 && doc.width(t) > maxW) { size -= 0.5; doc.font(false, size); }
+      if (doc.width(t) > maxW) {
+        while (t.length > 1 && doc.width(t + "...") > maxW) t = t.slice(0, -1);
+        t += "...";
+      }
+      doc.text(t, x, y, PEN);
+    }
+    function field(t, x, y, xEnd, val) { var e = label(t, x, y) + 3; rule(e, xEnd, y + 2); value(val, e + 3, y, xEnd - e - 5); }
+    function box(x, y, on) {
+      var s = 7.5, top = y - s + 0.6;
+      doc.rect(x, top, s, s, 0.8, INK);
+      if (on) {
+        doc.line(x + 1.4, top + 4, x + 3.2, top + 6.2, 1.4, PEN);
+        doc.line(x + 3.2, top + 6.2, x + 7.8, top - 0.8, 1.4, PEN);
+      }
+    }
+    function doubleBox(x, y, w, h) { doc.rect(x, y, w, h, 1.6, INK); doc.rect(x + 3, y + 3, w - 6, h - 6, 0.6, INK); }
+    function items(sel) {
+      return Array.prototype.map.call(form.querySelectorAll(sel), function (l) {
+        return { t: l.textContent.replace(/\s+/g, " ").trim(), on: l.querySelector("input").checked };
+      });
+    }
+    function column(list, x, y0, gap) { list.forEach(function (it, i) { box(x, y0 + i * ROW, it.on); label(it.t, x + gap, y0 + i * ROW); }); }
+    function wrap(text, maxW) {
+      var out = [];
+      doc.font(false, FS);
+      text.split(/\r?\n/).forEach(function (para) {
+        var lineTxt = "";
+        para.replace(/\t/g, " ").split(" ").forEach(function (w) {
+          while (doc.width(w) > maxW) {      /* one very long word: break it */
+            var k = w.length;
+            while (k > 1 && doc.width(w.slice(0, k)) > maxW) k--;
+            if (lineTxt) { out.push(lineTxt); lineTxt = ""; }
+            out.push(w.slice(0, k)); w = w.slice(k);
+          }
+          var tryLine = lineTxt ? lineTxt + " " + w : w;
+          if (lineTxt && doc.width(tryLine) > maxW) { out.push(lineTxt); lineTxt = w; } else lineTxt = tryLine;
+        });
+        out.push(lineTxt);
+      });
+      while (out.length && !out[out.length - 1].trim()) out.pop();
+      return out;
+    }
+
+    /* Title */
+    var t = "EMPLOYEE SEPARATION NOTICE", y = 72;
+    doc.font(true, 13);
+    var tw = doc.width(t), tx = (612 - tw) / 2;
+    doc.text(t, tx, y, INK); doc.line(tx, y + 2.2, tx + tw, y + 2.2, 0.9, INK);
+
+    /* Employment history */
+    var top = 94, hx = L + 46, hr = R - 46, hm = hx + (hr - hx) / 2;
+    doubleBox(L, top, W, 72);
+    label("EMPLOYMENT HISTORY:", hx, top + 20, true);
+    field("EMPLOYEE NAME", hx, top + 38, hx + 310, $("empName").value);
+    field("Original Hire Date:", hx, top + 56, hm - 14, usDate($("hireDate").value));
+    field("Last Day Worked:", hm + 6, top + 56, hr, usDate($("lastDay").value));
+    y = top + 72;
+
+    /* Voluntary resignation */
+    y += 28; heading("VOLUNTARY RESIGNATION:", L, y); y += 18;
+    var left = items("#secVR .col:not(.right) > .ck"), right = items("#secVR .col.right > .ck");
+    column(left, L, y, 19); column(right, MID, y, 36);
+    var oy = y + right.length * ROW;
+    box(MID, oy, $("vrOtherCk").checked); field("OTHER REASONS:", MID + 36, oy, R, $("vrOther1").value);
+    rule(MID, R, oy + ROW + 2); value($("vrOther2").value, MID + 3, oy + ROW, R - MID - 5);
+    y += Math.max(left.length, right.length + 2) * ROW;
+
+    /* Discharged for misconduct */
+    y += 10; heading("DISCHARGED FOR MISCONDUCT:", L, y);
+    box(MID, y, $("dmYes").checked);
+    var e = label("YES", MID + 12, y);
+    box(e + 12, y, $("dmNo").checked); label("NO (Not protesting unemployment)", e + 24, y);
+    y += 18;
+    left = items("#secDM .col:not(.right) > .ck"); right = items("#secDM .col.right > .ck");
+    column(left, L, y, 19); column(right, MID, y, 36);
+    oy = y + right.length * ROW;
+    box(MID, oy, $("dmOtherCk").checked); field("OTHER MISCONDUCT:", MID + 36, oy, R, $("dmOther1").value);
+    rule(MID, R, oy + ROW + 2); value($("dmOther2").value, MID + 3, oy + ROW, R - MID - 5);
+    y += Math.max(left.length, right.length + 2) * ROW;
+
+    /* Layoff / reduction in force */
+    y += 10; heading("LAYOFF/REDUCTION IN FORCE:", L, y); y += 14;
+    left = items("#secLO .col:not(.right) > .ck"); right = items("#secLO .col.right > .ck");
+    column(left, L, y, 19); column(right, MID, y, 36);
+    var ry = y + Math.max(left.length, right.length) * ROW;
+    box(L, ry, $("loRecallCk").checked);
+    e = label("Vacation/Temporary shutdown- Expected Date of Recall:", L + 19, ry) + 3;
+    rule(e, e + 105, ry + 2); value(usDate($("loRecall").value), e + 3, ry, 100);
+    y = ry + ROW;
+
+    /* Comments: at least four ruled lines, more if the comment is longer */
+    y += 12; heading("COMMENTS SECTION:", L, y); y += 17;
+    var lines = wrap(pdfSafe($("comments").value), W - 8), count = Math.max(4, lines.length);
+    for (var i = 0; i < count; i++) {
+      if (y > 742) { doc.addPage(); y = 60; }
+      if (lines[i]) { doc.font(false, FS); doc.text(lines[i], L + 3, y, PEN); }
+      rule(L, R, y + 3);
+      y += 15;
+    }
+
+    /* Who filled this out */
+    var bh = 84;
+    y += 10;
+    if (y + bh > 752) { doc.addPage(); y = 50; }
+    doubleBox(L, y, W, bh);
+    [["by", "Above information provided by:", L + 9, L + W / 2 - 12],
+     ["sup", "Employee's Immediate Supervisor:", L + W / 2 + 6, R - 9]].forEach(function (c) {
+      label(c[1], c[2], y + 17);
+      field("Name:", c[2], y + 31, c[3], $(c[0] + "Name").value);
+      field("Title:", c[2], y + 45, c[3], $(c[0] + "Title").value);
+      field("Phone#", c[2], y + 59, c[3], $(c[0] + "Phone").value);
+      field("Location/Branch:", c[2], y + 73, c[3], $(c[0] + "Location").value);
+    });
+
+    return doc.bytes(title);
+  }
+
+  /* ---------------- output: same share steps as the Daily Safety Plan Log ---------------- */
+  var RECIPIENT = HR_EMAIL;
+  var SUPPORTS_DL = ("download" in document.createElement("a"));
+  var IOSISH = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+               (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var prepared = null;
+
+  /* Checked every time Share is tapped rather than once at load: some browsers
+     only admit to file sharing after the page has been interacted with. */
+  var _shareProbe = null;
+  function canShareFiles() {
+    try {
+      if (!navigator.share || !navigator.canShare) return false;
+      if (!_shareProbe)
+        _shareProbe = new File([new Uint8Array([37, 80, 68, 70])], "p.pdf", { type: "application/pdf" });
+      return navigator.canShare({ files: [_shareProbe] });
+    } catch (e) { return false; }
+  }
+  function say(t, cls) { var m = $("msg"); m.textContent = t || ""; m.className = "msg " + (cls || ""); }
+  function openModal(id) { $(id).classList.add("on"); }
+  function closeModal(id) { $(id).classList.remove("on"); }
+
+  /* Email subject and body that ride along with the PDF */
+  function subjectLine() {
+    return "Employee Separation Report - " + $("empName").value.trim() + " - " + usDate($("lastDay").value);
+  }
+  function bodyText() {
+    var reasons = [];
+    [["secVR", "Voluntary resignation"], ["secDM", "Discharged for misconduct"], ["secLO", "Layoff/reduction in force"]]
+      .forEach(function (sec) {
+        Array.prototype.forEach.call(form.querySelectorAll("#" + sec[0] + " input.reason:checked"), function (box) {
+          var text = box.parentNode.textContent.replace(/\s+/g, " ").trim().replace(/:$/, ""), extra = "";
+          if (box.id === "vrOtherCk") extra = [$("vrOther1").value, $("vrOther2").value].join(" ").trim();
+          if (box.id === "dmOtherCk") extra = [$("dmOther1").value, $("dmOther2").value].join(" ").trim();
+          if (box.id === "loRecallCk") extra = usDate($("loRecall").value);
+          reasons.push("  - " + sec[1] + ": " + text + (extra ? ": " + extra : ""));
+        });
+      });
+    function who(p) {
+      return [$(p + "Name").value, $(p + "Title").value, $(p + "Phone").value, $(p + "Location").value]
+        .map(function (x) { return x.trim(); }).filter(Boolean).join(", ");
+    }
+    var protest = $("dmYes").checked ? "YES" : ($("dmNo").checked ? "NO (Not protesting unemployment)" : "");
+    return "Completed employee separation report attached.\n\n" +
+      "Employee:           " + $("empName").value.trim() + "\n" +
+      "Original hire date: " + usDate($("hireDate").value) + "\n" +
+      "Last day worked:    " + usDate($("lastDay").value) + "\n\n" +
+      "Reason(s):\n" + reasons.join("\n") + "\n" +
+      (protest ? "Discharged for misconduct: " + protest + "\n" : "") +
+      "\nComments:\n  " + $("comments").value.trim().replace(/\r?\n/g, "\n  ") + "\n\n" +
+      "Provided by: " + who("by") + "\n" +
+      (who("sup") ? "Supervisor:  " + who("sup") + "\n" : "");
+  }
+
+  function prepare() {
+    syncDates(); syncTitle(); syncComments();
+    var name = document.title + ".pdf", bytes = buildPdf(document.title), file = null;
+    try { file = new File([bytes], name, { type: "application/pdf" }); } catch (e) {}
+    return { bytes: bytes, file: file, name: name, subject: subjectLine(), body: bodyText() };
+  }
+
+  function doShare(p) {
+    return navigator.share({ files: [p.file], title: p.subject, text: p.body }).then(function () {
+      say("Share sheet open — pick Mail to send it to " + RECIPIENT + ".", "ok");
+    }).catch(function (err) {
+      var n = err && err.name;
+      if (n === "AbortError") { say("Share cancelled.", ""); return; }
+      /* iOS withdraws permission to open the share sheet if anything at all happened
+         between the tap and the call - dismissing the keyboard is enough. One more
+         tap, with nothing in the way, always works. */
+      if (n === "NotAllowedError" || n === "SecurityError" || n === "InvalidStateError") {
+        $("tsName").textContent = p.name; openModal("tapShare"); say(""); return;
+      }
+      console.error(err);
+      $("nsName").textContent = p.name; $("nsTo").textContent = RECIPIENT; armPdfLink(p);
+      $("nsWhy").textContent = "The share sheet refused with: " + (n || "error") +
+        (err && err.message ? (" — " + err.message) : "");
+      openModal("noShare");
+      say("Share sheet refused (" + (n || "error") + ").", "err");
+    });
+  }
+
+  /* Two escape hatches that need no share sheet at all: a download link, which keeps
+     the file name, and a plain link that opens the PDF in its own tab so the browser's
+     own share button can take it from there. */
+  var lastTabUrl = null;
+  function armPdfLink(p) {
+    try {
+      if (lastTabUrl) { URL.revokeObjectURL(lastTabUrl); lastTabUrl = null; }
+      lastTabUrl = URL.createObjectURL(new Blob([p.bytes], { type: "application/pdf" }));
+      var save = $("nsSave"); save.href = lastTabUrl; save.setAttribute("download", p.name);
+      $("nsOpen").href = lastTabUrl;
+      return true;
+    } catch (e) { console.error(e); return false; }
+  }
+  function saveBlob(bytes, name) {
+    var url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+    var a = document.createElement("a"); a.href = url; a.download = name; a.rel = "noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+  }
+  function finishSave(p) {
+    /* Laptop: straight into Downloads. No mail draft - this button only makes the file. */
+    if (SUPPORTS_DL && !IOSISH) {
+      saveBlob(p.bytes, p.name);
+      say("Saved " + p.name + " to your Downloads folder.", "ok");
+      return;
+    }
+    /* iPad: the share sheet is where Mail lives. */
+    if (canShareFiles() && p.file) { doShare(p); return; }
+    $("nsName").textContent = p.name; $("nsTo").textContent = RECIPIENT; armPdfLink(p);
+    openModal("noShare"); say("No share sheet here — save the PDF or open it in a tab.", "err");
+  }
+
+  $("tsGo").onclick = function () { closeModal("tapShare"); if (prepared) doShare(prepared); };
+  $("tsCancel").onclick = function () { closeModal("tapShare"); };
+  $("nsClose").onclick = function () { closeModal("noShare"); };
+  $("nsOpen").onclick = function () {
+    closeModal("noShare");
+    say("PDF opened in a new tab — use the share icon there, then pick Mail.", "ok");
+  };
+  $("nsSave").onclick = function () {
+    closeModal("noShare");
+    say("PDF saved. Open Mail, start a message to " + RECIPIENT + ", and attach it.", "ok");
+  };
+  ["noShare", "tapShare"].forEach(function (id) {
+    $(id).addEventListener("click", function (e) { if (e.target === this) this.classList.remove("on"); });
+  });
+
+  /* Nothing may happen between the tap and the share call (no keyboard dismissing,
+     no pop-ups), or iOS will not open the share sheet. */
+  $("sendBtn").onclick = function () {
+    if (!validate()) { say("Fill in the highlighted items, then tap Share / Send again.", "err"); return; }
+    try { prepared = prepare(); }
+    catch (e) { console.error(e); prepared = null; say("Could not build the PDF.", "err"); return; }
+    finishSave(prepared);
+  };
+
+  $("clearBtn").addEventListener("click", function () {
+    if (!confirm("Clear everything on this form?")) return;
+    form.reset();
+    form.querySelectorAll(".missing").forEach(function (el) { el.classList.remove("missing"); });
+    syncDates(); syncTitle(); syncComments();
+    prepared = null; say("");
+    window.scrollTo(0, 0);
+  });
+
+  syncDates(); syncTitle(); syncComments();
+})();
+</script>
+</body>
+</html>
