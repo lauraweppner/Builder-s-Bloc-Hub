@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Drywall MSDS Book &middot; Builders Bloc</title>
+<style>
+  :root{
+    --navy:#123c66; --navy-dk:#0d2c4c; --red:#c8102e;
+    --ink:#1b2733; --muted:#5d6b7a; --line:#d7dfe8;
+    --bg:#eef2f6; --panel:#ffffff; --accent:#1a6fb5;
+    --ok:#1c7c46; --risk:#b3421a;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Arial,sans-serif;
+       color:var(--ink);background:var(--bg);-webkit-tap-highlight-color:rgba(26,111,181,.15)}
+
+  header{position:sticky;top:0;z-index:30;background:var(--navy);color:#fff;padding:11px 16px;
+         display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+  header .mark{width:34px;height:34px;border-radius:7px;background:var(--red);display:grid;
+        place-items:center;font-weight:800;font-size:15px;letter-spacing:-.5px;flex:none}
+  header h1{font-size:16px;margin:0;font-weight:650;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header .sub{font-size:12px;opacity:.72;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header .hgrow{min-width:0;flex:1}
+  #homeBtn{background:rgba(255,255,255,.15);color:#fff;border-radius:9px;padding:10px 14px;font-size:13.5px;
+        font-weight:600;min-height:44px;flex:none;text-decoration:none;display:flex;align-items:center;white-space:nowrap}
+  @media (max-width:560px){ header .mark{display:none} }
+
+  main{max-width:960px;margin:0 auto;padding:18px 16px 48px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:0 0 12px;
+        box-shadow:0 1px 3px rgba(16,32,52,.06)}
+
+  /* emergency strip */
+  .emerg{padding:14px 18px;border-left:6px solid var(--red)}
+  .emerg p{margin:0 0 6px;font-size:15px}
+  .emerg p:last-child{margin:0}
+  .emerg a{color:var(--accent);font-weight:650}
+  .how{padding:12px 18px;font-size:14px;color:var(--muted)}
+  .how b{color:var(--ink)}
+
+  /* search */
+  .find{position:sticky;top:66px;z-index:20;background:var(--bg);padding:6px 0 10px;margin:0 0 2px}
+  .find input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:16px;
+        background:#fff;outline:none;min-height:48px;-webkit-appearance:none;appearance:none}
+  .find input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,111,181,.13)}
+  .count{font-size:12.5px;color:var(--muted);margin:6px 2px 0}
+
+  /* product cards */
+  .prod summary{list-style:none;cursor:pointer;padding:14px 46px 14px 18px;position:relative;min-height:48px}
+  .prod summary::-webkit-details-marker{display:none}
+  .prod summary::after{content:"";position:absolute;right:20px;top:24px;width:10px;height:10px;
+        border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:rotate(45deg);transition:transform .15s}
+  .prod[open] summary::after{transform:rotate(-135deg);top:28px}
+  .prod[open]{border-color:#9fb4cc}
+  .pn{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .name{font-size:16.5px;font-weight:700;color:var(--navy)}
+  .mk{font-size:13.5px;color:var(--muted);margin-top:1px}
+  .sig{font-size:11px;font-weight:800;letter-spacing:.6px;padding:2px 8px;border-radius:5px;color:#fff;background:var(--risk)}
+  .sig.caution{background:#8a6d00}
+  .sig.danger{background:var(--red)}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .tags:empty{display:none}
+  .tag{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:#eef2f6;color:#3d4b5a;border:1px solid var(--line)}
+  .tag.hot{background:#fdecea;color:#8f1d12;border-color:#f3c4bd}
+
+  .body{padding:2px 18px 18px;border-top:1px solid #eef2f6}
+  .also{font-size:13.5px;color:var(--muted);margin:12px 0 0}
+  .also b{color:var(--ink)}
+  section{margin-top:16px}
+  h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);font-weight:700}
+  ul{margin:0;padding-left:20px}
+  li{margin-bottom:5px;font-size:15px}
+  .haz{background:#fff8f3;border:1px solid #f1d9c6;border-radius:10px;padding:12px 14px}
+  .haz h4{color:var(--risk)}
+  .aid{background:#f3faf6;border:1px solid #cfe6d8;border-radius:10px;padding:12px 14px}
+  .aid h4{color:var(--ok)}
+  .fa{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:6px 0;border-bottom:1px solid #dfeee5;font-size:15px}
+  .fa:last-child{border-bottom:0;padding-bottom:0}
+  .fa b{color:var(--ink)}
+  .about li{color:var(--muted);font-size:14px}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:18px;padding-top:14px;border-top:1px solid #eef2f6;font-size:14px}
+  .meta b{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:700}
+  .meta a{color:var(--accent);font-weight:650}
+  .btn{display:flex;align-items:center;justify-content:center;margin-top:16px;min-height:48px;padding:13px 20px;border-radius:10px;
+       background:var(--navy);color:#fff;font-size:15px;font-weight:650;text-decoration:none;box-shadow:0 2px 6px rgba(18,60,102,.3)}
+
+  h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);margin:26px 2px 10px;font-weight:700}
+  .xlink{display:block;padding:14px 18px;text-decoration:none;color:var(--ink);background:#fff;border:1px solid var(--line);
+         border-radius:12px;margin-bottom:10px}
+  .xlink b{display:block;color:var(--navy);font-size:15.5px}
+  .xlink span{font-size:13.5px;color:var(--muted)}
+  .none{display:none;padding:18px;color:var(--muted);font-size:15px}
+  footer{font-size:12.5px;color:var(--muted);margin:22px 2px 0;line-height:1.5}
+  @media (max-width:520px){ .fa{grid-template-columns:1fr;gap:1px} main{padding:14px 12px 40px} .find{top:66px} }
+</style>
+</head>
+<body>
+<header>
+  <a id="homeBtn" href="../index.html">&#127968; Home</a>
+  <div class="mark">BB</div>
+  <div class="hgrow">
+    <h1>Drywall MSDS Book</h1>
+    <div class="sub">Safety data sheets for drywall products</div>
+  </div>
+</header>
+
+<main>
+  <div class="card emerg">
+    <p><b>Emergency: call 911.</b> Someone got hurt? <a href="Injury_Response.html">Open the injury steps</a>.</p>
+    <p>Swallowed or breathed something? Poison Control: <a href="tel:+18002221222">1-800-222-1222</a>.</p>
+  </div>
+  <div class="card how">
+    <b>How to use this page:</b> find the product, tap it for the quick card, and tap
+    <b>Open the full sheet</b> for the complete safety data sheet from the book. The quick card is a summary;
+    the full sheet is the official document.
+  </div>
+
+  <div class="find">
+    <input id="q" type="search" placeholder="Search 15 products by name or maker" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search products">
+    <div class="count" id="count"></div>
+  </div>
+
+  <div id="list">
+  <details class="card prod" id="henkel-formula-38-adhesive" data-s="formula #38 drywall &amp; metal framing adhesive henkel consumer adhesives (pro-series) drywall construction adhesive solvent-based construction adhesive flammable solvent vapors">
+    <summary>
+      <div class="pn"><span class="name">Formula #38 Drywall &amp; Metal Framing Adhesive</span></div>
+      <div class="mk">Henkel Consumer Adhesives (Pro-Series) &middot; Solvent-based construction adhesive</div>
+      <div class="tags"><span class="tag hot">Flammable</span><span class="tag ">Solvent vapors</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Drywall construction adhesive</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>FLAMMABLE. Flash point 21°F. Vapors are heavier than air, travel along the ground, and can ignite explosively.</li><li>Closed containers may rupture in extreme heat.</li><li>Vapors can cause headache, drowsiness, dizziness and breathing irritation.</li><li>Irritates eyes. Repeated skin contact dries skin and can cause dermatitis.</li><li>Long, repeated overexposure to solvents has been linked to brain, nervous system, liver and kidney damage. Deliberately inhaling vapors may be harmful or fatal.</li><li>Contains heptane, petroleum naphtha and xylene.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Chemical goggles or safety glasses.</li><li>Rubber gloves where skin contact is likely; impervious clothing and shoes.</li><li>Ventilate during application and curing. Air-supplied respirator if limits are exceeded and ventilation is not adequate.</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Flush gently with water for at least 15 minutes, lifting the eyelids. Get prompt medical attention.</span></div><div class="fa"><b>Skin</b><span>Wash thoroughly with soap and water. Remove contaminated clothing.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air. If breathing is difficult, give oxygen; if it has stopped, give artificial respiration. Get medical attention.</span></div><div class="fa"><b>Swallowed</b><span>DO NOT induce vomiting. Get immediate medical attention.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>Use carbon dioxide, dry chemical or foam. Use water fog to cool nearby material.</li><li>Firefighters need self-contained breathing apparatus and full protective gear.</li></ul></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Eliminate all ignition sources. Ventilate (open windows and doors).</li><li>Wear protective clothing. Cover with absorbent and scoop into a sealable safety container.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Keep away from heat, sparks and flame.</li><li>Keep the container closed when not in use. Use only in a well-ventilated area.</li><li>Do not cut or burn empty containers. Do not reuse the container.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>September 27, 2005 (version 4)</div><div><b>MSDS number</b>33811</div><div><b>Phone on the sheet</b>CHEMTREC <a href="tel:+18004249300">(800) 424-9300</a> (24-hour emergency); <a href="tel:+18003210253">(800) 321-0253</a> (company, 24-hour)</div></div>
+      <a class="btn" href="msds/drywall/henkel-formula-38-adhesive.html">Open the full sheet (6 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="uss-galvanized-steel-metal-studs" data-s="galvanized sheet steel (metal studs) united states steel corporation galvanized (hot dipped) sheet, galvannealed sheet, acryzinc sheet, carbon steel. listed in the inventory as metal studs. galvanized steel cancer hazard label fume if cut or welded">
+    <summary>
+      <div class="pn"><span class="name">Galvanized Sheet Steel (Metal Studs)</span><span class="sig warning">WARNING</span></div>
+      <div class="mk">United States Steel Corporation &middot; Galvanized steel</div>
+      <div class="tags"><span class="tag hot">Cancer hazard label</span><span class="tag ">Fume if cut or welded</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Galvanized (hot dipped) sheet, galvannealed sheet, ACRYZINC sheet, carbon steel. Listed in the inventory as Metal Studs.</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>Little or no hazard as a solid. Welding, burning, cutting, sawing or grinding makes dust and fume that can damage lungs and other organs.</li><li>Zinc oxide fume from galvanized steel can cause &quot;metal fume fever&quot;: flu-like symptoms lasting 12 to 48 hours.</li><li>Cancer hazard label: the coating may contain small amounts of lead and/or nickel, and some product has a hexavalent chromium surface treatment.</li><li>Coatings and oils may irritate skin with prolonged contact.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Safety glasses or goggles for cutting, sawing, grinding or welding. Do not wear contact lenses.</li><li>Gloves when handling coated product and for welding or burning.</li><li>NIOSH-approved respirator if ventilation does not control dust and fume.</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Flush with large amounts of clean water to remove particles. Get medical attention if irritation persists.</span></div><div class="fa"><b>Skin</b><span>Remove contaminated clothing. Wash with soap and water. For a burn, flush with cold water and get medical attention.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air. If breathing is difficult or has stopped, give artificial respiration or oxygen. Get medical attention promptly.</span></div><div class="fa"><b>Swallowed</b><span>Not likely. If it happens, get medical attention immediately.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>Does not burn. Use an extinguisher that suits the surrounding materials.</li><li>Do not use water on molten metal.</li></ul></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Solid steel: not applicable.</li><li>For fine dust: vacuum or wet sweep. Do not use compressed air. Keep out of sewers and waterways.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Store away from acids.</li><li>Use ventilation when cutting, welding or grinding. Avoid breathing dust and fume.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>Revised 06/04 (USS code 3C012)</div><div><b>MSDS number</b>3C012</div><div><b>Phone on the sheet</b><a href="tel:+14124335811">(412) 433-5811</a>  (off-hour emergency); <a href="tel:+14124336840">(412) 433-6840</a> (general, 8 to 5)</div></div>
+      <a class="btn" href="msds/drywall/uss-galvanized-steel-metal-studs.html">Open the full sheet (8 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="grip-rite-drywall-nails" data-s="grip-rite drywall nails grip-rite steel nails and plastic cap nails steel nails ">
+    <summary>
+      <div class="pn"><span class="name">Grip-Rite Drywall Nails</span></div>
+      <div class="mk">Grip-Rite &middot; Steel nails</div>
+      <div class="tags"></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Steel nails and plastic cap nails</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>No inhalation hazard as solid nails under normal use.</li><li>Steel contains small amounts of chromium, manganese and nickel; galvanized nails have a zinc coating.</li><li>Above the melting point (welding, burning) it can give off metal oxide fume.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>None listed on this sheet for normal use.</li><li>Use ventilation and avoid breathing fume if welding, burning or grinding.</li></ul></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>Solid steel is not a fire or explosion hazard.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Keep away from strong acids (reacts to release hydrogen).</li></ul></section><section class="about"><h4><span aria-hidden="true">📝</span> About this sheet</h4><ul><li>This sheet is two pages and has no first aid, PPE or emergency phone section.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>Issued January 3, 2003; revised 2/1/03</div><div><b>Phone on the sheet</b>Not shown on the sheet</div></div>
+      <a class="btn" href="msds/drywall/grip-rite-drywall-nails.html">Open the full sheet (2 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="temple-inland-gypsum-board" data-s="gypsum board temple-inland gypsum wallboard, fire rated board, foil back wallboard, water resistant wallboard, gypsum sheathing, coreboard, veneer plaster base, shaft liner gypsum board (drywall) dust silica">
+    <summary>
+      <div class="pn"><span class="name">Gypsum Board</span></div>
+      <div class="mk">Temple-Inland &middot; Gypsum board (drywall)</div>
+      <div class="tags"><span class="tag ">Dust</span><span class="tag ">Silica</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Gypsum wallboard, fire rated board, foil back wallboard, water resistant wallboard, gypsum sheathing, coreboard, veneer plaster base, shaft liner</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>Dust from sawing, sanding or breaking can irritate the nose and throat.</li><li>Contains crystalline silica (quartz); may also contain asphalt and glass fiber.</li><li>Paper surfaces can burn.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Side-shield safety glasses and gloves when handling and installing.</li><li>Safety goggles if exposed to gypsum dust.</li><li>NIOSH-approved respirator when snapping or sawing makes dust; required if dust is over the OSHA limit.</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Flush with fresh water for at least 15 minutes. If irritation or other symptoms persist, see a physician.</span></div><div class="fa"><b>Skin</b><span>Flush with fresh water for at least 15 minutes. If irritation persists, see a physician.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air. If symptoms persist, see a physician.</span></div><div class="fa"><b>Swallowed</b><span>Not applicable for the product as supplied.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>Paper surface could burn. Use water spray or carbon dioxide.</li></ul></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Landfill in line with local, state and federal rules. Not a hazardous waste.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Avoid high humidity.</li><li>Score and snap instead of sawing to keep dust down.</li><li>Use local exhaust or dust collection when sanding or sawing.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>May 2005</div><div><b>Phone on the sheet</b><a href="tel:+19368291424">936-829-1424</a>  (emergency)</div></div>
+      <a class="btn" href="msds/drywall/temple-inland-gypsum-board.html">Open the full sheet (4 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="american-gypsum-wallboard" data-s="gypsum wallboard panels american gypsum eagleroc, firebloc type x and type c, aquabloc, m-bloc, smoothroc, exterior sheathing, soffit board, ceiling board, shaft liner, veneer plaster base gypsum board (drywall) dust silica heavy panels">
+    <summary>
+      <div class="pn"><span class="name">Gypsum Wallboard Panels</span></div>
+      <div class="mk">American Gypsum &middot; Gypsum board (drywall)</div>
+      <div class="tags"><span class="tag ">Dust</span><span class="tag ">Silica</span><span class="tag ">Heavy panels</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> EagleRoc, FireBloc Type X and Type C, AquaBloc, M-Bloc, SmoothRoc, exterior sheathing, soffit board, ceiling board, shaft liner, veneer plaster base</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>Dust from cutting, sawing or sanding can irritate eyes, skin, nose, throat and lungs.</li><li>May contain a small amount of crystalline silica. Breathing that dust over a long time can cause lung disease (silicosis); silica is classed as a cancer hazard.</li><li>Panels are heavy and can fall over, causing serious injury or death.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Safety glasses with side shields or goggles. Do not wear contact lenses in dusty areas.</li><li>NIOSH-approved respirator when cutting or sawing makes dust.</li><li>Gloves or protective clothing are usually not needed but may be wanted in some situations.</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Remove contact lenses. Flush thoroughly with water, including under the eyelids. Call a physician immediately.</span></div><div class="fa"><b>Skin</b><span>Wash gently with soap and water.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air. Get medical help if coughing or other symptoms do not go away.</span></div><div class="fa"><b>Swallowed</b><span>Not applicable for the product as supplied.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>Not combustible.</li><li>Self-contained breathing apparatus is recommended when fighting any fire.</li></ul></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Not a hazardous waste. Dispose of in line with local, state and federal rules.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Keep dry. Stack or store panels flat.</li><li>Do not store above 125°F for long periods or in high humidity.</li><li>Score and snap instead of sawing to keep dust down.</li><li>Use proper lifting methods and equipment.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>July 3, 2008</div><div><b>Phone on the sheet</b><a href="tel:+18005456302">1-800-545-6302</a>  ext. 560 (product safety)</div></div>
+      <a class="btn" href="msds/drywall/american-gypsum-wallboard.html">Open the full sheet (4 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="pro-twist-drywall-screws" data-s="pro-twist construction fasteners (drywall screws) primesource building products steel screws: bugle head coarse thread drywall screws steel screws ">
+    <summary>
+      <div class="pn"><span class="name">Pro-Twist Construction Fasteners (Drywall Screws)</span></div>
+      <div class="mk">PrimeSource Building Products &middot; Steel screws</div>
+      <div class="tags"></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Steel screws: bugle head coarse thread drywall screws</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>No inhalation hazard as solid screws under normal use.</li><li>Steel contains small amounts of manganese and nickel; galvanized product has a zinc coating.</li><li>Above the melting point (welding, burning) it can give off metal oxide fume.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>None listed on this sheet for normal use.</li><li>Use ventilation and avoid breathing fume if welding, burning or grinding.</li></ul></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>Solid steel is not a fire or explosion hazard.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Keep away from strong acids (reacts to release hydrogen).</li></ul></section><section class="about"><h4><span aria-hidden="true">📝</span> About this sheet</h4><ul><li>This sheet is two pages and has no first aid, PPE or emergency phone section.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>Issued 5/8/03; revised 5/20/03 (faxed copy from 2009)</div><div><b>Phone on the sheet</b>Not shown on the sheet</div></div>
+      <a class="btn" href="msds/drywall/pro-twist-drywall-screws.html">Open the full sheet (2 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="grabber-sandpaper" data-s="sandpaper (coated abrasive products) grabber aluminum oxide, silicon carbide or alumina zirconia abrasive on paper, cloth or fiber sandpaper sanding dust noise">
+    <summary>
+      <div class="pn"><span class="name">Sandpaper (Coated Abrasive Products)</span></div>
+      <div class="mk">Grabber &middot; Sandpaper</div>
+      <div class="tags"><span class="tag ">Sanding dust</span><span class="tag ">Noise</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Aluminum oxide, silicon carbide or alumina zirconia abrasive on paper, cloth or fiber</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>Sanding dust may cause coughing and shortness of breath; long-term it may affect breathing capacity.</li><li>Dust may irritate eyes. The abrasive can scrape skin.</li><li>Sanding some materials is loud enough to affect hearing.</li><li>Most of the dust comes from the material being sanded, not the sandpaper.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Approved dust respirator (required).</li><li>Eye protection (required).</li><li>Hearing protection.</li><li>Gloves as desired.</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Wash with a large amount of water. Get medical help if needed.</span></div><div class="fa"><b>Skin</b><span>Get first aid or medical help if needed.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air. Give artificial respiration if needed. Get first aid or medical help.</span></div><div class="fa"><b>Swallowed</b><span>No known harmful effects. Get first aid or medical help if needed.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>Backing and resin binder will burn or break down. Any fire-fighting material can be used; use respiratory protection.</li></ul></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Normal clean-up. Vacuum dust.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Handle with adequate ventilation. Use dust collection with proper filtration.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>Not shown on the sheet</div><div><b>Phone on the sheet</b><a href="tel:+18004778876">1-800-477-8876</a>  (emergency)</div></div>
+      <a class="btn" href="msds/drywall/grabber-sandpaper.html">Open the full sheet (2 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="usg-sheetrock-firecode-type-x" data-s="sheetrock brand gypsum panels, firecode core, type x united states gypsum company (usg) type x gypsum board fire-rated gypsum board dust silica heavy panels">
+    <summary>
+      <div class="pn"><span class="name">SHEETROCK Brand Gypsum Panels, FIRECODE Core, Type X</span><span class="sig warning">WARNING</span></div>
+      <div class="mk">United States Gypsum Company (USG) &middot; Fire-rated gypsum board</div>
+      <div class="tags"><span class="tag ">Dust</span><span class="tag ">Silica</span><span class="tag ">Heavy panels</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Type X gypsum board</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>High dust levels may irritate skin, eyes, nose, throat and upper airways.</li><li>Frequent contact can dry the skin and may lead to dermatitis.</li><li>Contains under 1% crystalline silica and under 1% glass fiber. Long, repeated breathing of respirable silica dust can cause lung disease (silicosis) and lung cancer.</li><li>Panels are heavy and can fall over, causing serious injury or death.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Safety glasses or goggles.</li><li>NIOSH/MSHA-approved particulate respirator when dusty, in poorly ventilated areas, or if exposure limits are exceeded.</li><li>Gloves and protective clothing for repeated or prolonged contact (chemical gloves are not needed).</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Flush thoroughly with water for 15 minutes to remove particles. If irritation persists, see a physician.</span></div><div class="fa"><b>Skin</b><span>Wash with mild soap and water. Hand lotion can help dry skin. If irritation persists, see a physician.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air and stay away from the dust until coughing and other symptoms stop. Contact a physician if conditions warrant.</span></div><div class="fa"><b>Swallowed</b><span>No harmful effects expected, but a large amount could block the gut. If stomach upset occurs, call a physician.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>Not expected to burn.</li><li>Use water or whatever suits the surrounding fire.</li></ul></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Shovel or sweep up dry material; avoid making dust.</li><li>Use a HEPA-filtered industrial vacuum, or a dust suppressant if sweeping. Do not use compressed air.</li><li>Washing it down may plug drains. Never discharge large releases into sewers or surface water.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Store cool, dry and ventilated, protected from weather and sustained moisture.</li><li>Store flat where possible. If stacked on edge, keep 4 to 6 inches from the wall.</li><li>Do not create a tripping hazard or exceed floor load limits.</li><li>Use proper lifting techniques; forklifts must be rated for the load.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>October 9, 2003 (version 4)</div><div><b>MSDS number</b>54-010-006</div><div><b>Phone on the sheet</b><a href="tel:+18005078899">1 (800) 507-8899</a>  (product safety)</div></div>
+      <a class="btn" href="msds/drywall/usg-sheetrock-firecode-type-x.html">Open the full sheet (8 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="usg-firecode-compound" data-s="sheetrock firecode compound united states gypsum company (usg) joint compound, taping compound, mud (powder, plaster of paris based) setting-type joint compound (powder) burn hazard sanding dust silica">
+    <summary>
+      <div class="pn"><span class="name">SHEETROCK FIRECODE Compound</span><span class="sig warning">WARNING</span></div>
+      <div class="mk">United States Gypsum Company (USG) &middot; Setting-type joint compound (powder)</div>
+      <div class="tags"><span class="tag hot">Burn hazard</span><span class="tag ">Sanding dust</span><span class="tag ">Silica</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Joint compound, taping compound, mud (powder, plaster of paris based)</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>When mixed with water it hardens and gets very hot, sometimes quickly. Never make a cast around any part of the body: it can cause severe burns that may need surgery or amputation.</li><li>Dust may irritate eyes, skin, nose, throat and upper airways.</li><li>Long, repeated breathing of respirable mica dust may cause lung disease (pneumoconiosis).</li><li>Contains under 5% crystalline silica. Long, repeated breathing of respirable silica dust can cause lung disease (silicosis) and lung cancer.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Safety glasses or goggles.</li><li>NIOSH/MSHA-approved particulate respirator when dusty, in poorly ventilated areas, or if exposure limits are exceeded.</li><li>Gloves and protective clothing to prevent repeated or prolonged skin contact.</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Do not rub or scratch. Flush thoroughly with water for 15 minutes. If irritation persists, see a physician.</span></div><div class="fa"><b>Skin</b><span>Wash with mild soap and water (plaster dries the skin). Hand lotion can help. If irritation persists, see a physician.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air and stay away until coughing and other symptoms stop. Contact a physician if conditions warrant.</span></div><div class="fa"><b>Swallowed</b><span>Plaster of paris hardens and may block the gut. Drinking gelatin solution or large amounts of water may delay setting. Call a physician.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>Not expected to burn.</li><li>Use water or whatever suits the surrounding fire.</li></ul></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Normal clean-up. No special precautions.</li><li>Never discharge large releases into sewers or surface water.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Store cool, dry and ventilated. Any moisture will harden the powder in storage.</li><li>Wet-sand to cut down dust.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>January 1, 2008 (version 6)</div><div><b>MSDS number</b>61-205-007</div><div><b>Phone on the sheet</b><a href="tel:+18005078899">1 (800) 507-8899</a>  (product safety)</div></div>
+      <a class="btn" href="msds/drywall/usg-firecode-compound.html">Open the full sheet (9 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="usg-sheetrock-gypsum-panels" data-s="sheetrock gypsum panels united states gypsum company (usg) gypsum panels, drywall gypsum board (drywall) dust silica heavy panels">
+    <summary>
+      <div class="pn"><span class="name">SHEETROCK Gypsum Panels</span><span class="sig warning">WARNING</span></div>
+      <div class="mk">United States Gypsum Company (USG) &middot; Gypsum board (drywall)</div>
+      <div class="tags"><span class="tag ">Dust</span><span class="tag ">Silica</span><span class="tag ">Heavy panels</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Gypsum panels, drywall</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>High dust levels may irritate skin, eyes, nose, throat and upper airways.</li><li>Contains under 1% crystalline silica. Long, repeated breathing of respirable silica dust can cause lung disease (silicosis) and lung cancer.</li><li>Panels are heavy and can fall over, causing serious injury or death. Heavy, awkward loads risk severe back injury.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Safety glasses or goggles.</li><li>NIOSH/MSHA-approved particulate respirator when dusty, in poorly ventilated areas, or if exposure limits are exceeded.</li><li>Gloves and protective clothing to prevent repeated or prolonged skin contact.</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Do not rub or scratch. Flush thoroughly with water for 15 minutes. If irritation persists, see a physician.</span></div><div class="fa"><b>Skin</b><span>Wash with mild soap and water. If irritation persists, see a physician.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air and stay away until coughing and other symptoms stop. Contact a physician if conditions warrant.</span></div><div class="fa"><b>Swallowed</b><span>Not meant to be eaten. If stomach upset occurs, call a physician.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>No known fire hazard.</li><li>Use water or whatever suits the surrounding fire.</li></ul></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Collect panels; undamaged, uncontaminated panels can be reused.</li><li>Normal clean-up. No special precautions.</li><li>Never discharge large releases into sewers or surface water.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Store cool, dry and ventilated, protected from weather and sustained moisture.</li><li>Store flat where possible. If stacked on edge, keep 4 to 6 inches from the wall.</li><li>Do not create a tripping hazard or exceed floor load limits.</li><li>If cutting with a power tool, use a wet or vacuum saw to cut down dust.</li><li>Remove board exposed to sustained moisture (mold risk).</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>June 1, 2008 (version 6)</div><div><b>MSDS number</b>54-000-001</div><div><b>Phone on the sheet</b><a href="tel:+18005078899">1 (800) 507-8899</a>  (product safety)</div></div>
+      <a class="btn" href="msds/drywall/usg-sheetrock-gypsum-panels.html">Open the full sheet (9 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="usg-sheetrock-joint-tape" data-s="sheetrock joint tape united states gypsum company (usg) cellulose (paper) tape paper joint tape paper cuts">
+    <summary>
+      <div class="pn"><span class="name">SHEETROCK Joint Tape</span><span class="sig caution">CAUTION</span></div>
+      <div class="mk">United States Gypsum Company (USG) &middot; Paper joint tape</div>
+      <div class="tags"><span class="tag ">Paper cuts</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Cellulose (paper) tape</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>Direct contact may irritate skin or eyes. Paper edges can cut skin.</li><li>Dust from sanding may irritate the eyes.</li><li>Gives off toxic gases in a fire. Bone-dry paper dust can be a dust explosion hazard.</li><li>Contains under 1% crystalline silica.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Safety glasses or goggles.</li><li>Gloves and protective clothing to prevent repeated or prolonged skin contact.</li><li>Respirator if work conditions call for one.</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Do not rub or scratch. Flush thoroughly with water for 15 minutes. If irritation persists, see a physician.</span></div><div class="fa"><b>Skin</b><span>Wash with mild soap and water. If irritation persists, see a physician.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air and stay away until coughing and other symptoms stop. Contact a physician if conditions warrant.</span></div><div class="fa"><b>Swallowed</b><span>Not meant to be eaten. If stomach upset occurs, call a physician.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>Paper burns and gives off toxic gases.</li><li>Use water or whatever suits the surrounding fire.</li></ul></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Normal clean-up. No special precautions.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Store cool, dry and ventilated, away from heat and moisture.</li><li>Keep dry. Paper stored wet can become a fire hazard (it can produce methane).</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>January 1, 2008 (version 5)</div><div><b>MSDS number</b>88-905-001</div><div><b>Phone on the sheet</b><a href="tel:+18005078899">1 (800) 507-8899</a>  (product safety)</div></div>
+      <a class="btn" href="msds/drywall/usg-sheetrock-joint-tape.html">Open the full sheet (8 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="usg-paper-faced-metal-bead" data-s="sheetrock paper faced metal bead and trim united states gypsum company (usg) corner bead, trim steel bead and trim with paper facing sharp edges">
+    <summary>
+      <div class="pn"><span class="name">SHEETROCK Paper Faced Metal Bead and Trim</span><span class="sig warning">WARNING</span></div>
+      <div class="mk">United States Gypsum Company (USG) &middot; Steel bead and trim with paper facing</div>
+      <div class="tags"><span class="tag ">Sharp edges</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Corner bead, trim</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>Edges may be sharp and can cut skin. Unload from the package with caution.</li><li>Direct contact may irritate skin or eyes.</li><li>Welding, burning, grinding or machining can release metal fume, which can cause flu-like &quot;metal fume fever&quot;.</li><li>The steel contains small amounts of nickel and chromium, some compounds of which are classed as cancer hazards.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Safety glasses or goggles.</li><li>Gloves and protective clothing to prevent repeated or prolonged skin contact.</li><li>Respirator if work conditions call for one (for example welding or grinding without enough ventilation).</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Do not rub or scratch. Flush thoroughly with water for 15 minutes. If irritation persists, see a physician.</span></div><div class="fa"><b>Skin</b><span>Wash with mild soap and water. If irritation persists, see a physician.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air and stay away until coughing and other symptoms stop. Contact a physician if conditions warrant.</span></div><div class="fa"><b>Swallowed</b><span>Not meant to be eaten. If stomach upset occurs, call a physician.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>No known fire hazard.</li><li>Use water or whatever suits the surrounding fire.</li></ul></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Normal clean-up. No special precautions.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Store cool, dry and ventilated, away from heat and moisture.</li><li>Handle carefully; avoid contact with eyes.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>January 1, 2008 (version 4)</div><div><b>MSDS number</b>52-700-001</div><div><b>Phone on the sheet</b><a href="tel:+18005078899">1 (800) 507-8899</a>  (product safety)</div></div>
+      <a class="btn" href="msds/drywall/usg-paper-faced-metal-bead.html">Open the full sheet (8 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="usg-all-purpose-joint-compound" data-s="sheetrock select all purpose joint compound, ready mixed united states gypsum company (usg) joint compound, taping compound, mud ready-mixed joint compound sanding dust silica">
+    <summary>
+      <div class="pn"><span class="name">SHEETROCK Select All Purpose Joint Compound, Ready Mixed</span><span class="sig warning">WARNING</span></div>
+      <div class="mk">United States Gypsum Company (USG) &middot; Ready-mixed joint compound</div>
+      <div class="tags"><span class="tag ">Sanding dust</span><span class="tag ">Silica</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Joint compound, taping compound, mud</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>Sanding dust may irritate eyes, skin, nose, throat and upper airways.</li><li>Long, repeated breathing of respirable mica dust may cause lung disease (pneumoconiosis).</li><li>Contains under 2% crystalline silica. Long, repeated breathing of respirable silica dust can cause lung disease (silicosis) and lung cancer.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Safety glasses or goggles.</li><li>NIOSH/MSHA-approved particulate respirator when sanding is dusty, in poorly ventilated areas, or if exposure limits are exceeded.</li><li>Gloves and protective clothing to prevent repeated or prolonged skin contact.</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Do not rub or scratch. Flush thoroughly with water for 15 minutes. If irritation persists, see a physician.</span></div><div class="fa"><b>Skin</b><span>Wash with mild soap and water. If irritation persists, see a physician.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air and stay away until coughing and other symptoms stop. Contact a physician if conditions warrant.</span></div><div class="fa"><b>Swallowed</b><span>Not meant to be eaten. If stomach upset occurs, call a physician.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>No known fire hazard.</li><li>Use water or whatever suits the surrounding fire.</li></ul></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Normal clean-up. No special precautions.</li><li>Never discharge large releases into sewers or surface water.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Store cool, dry and ventilated. Keep the container tightly sealed after use.</li><li>Do not use if spoiled (moldy look or bad smell). Close the container and discard properly.</li><li>Wet-sand to cut down dust.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>January 1, 2008 (version 6)</div><div><b>MSDS number</b>61-360-020</div><div><b>Phone on the sheet</b><a href="tel:+18005078899">1 (800) 507-8899</a>  (product safety)</div></div>
+      <a class="btn" href="msds/drywall/usg-all-purpose-joint-compound.html">Open the full sheet (9 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="ivaco-steel" data-s="steel (nail and wire stock) ivaco rolling mills limited partnership hand-labeled &quot;simpson tie steel rod/wire&quot; in the book; listed in the inventory as simpson tie steel nail. steel fume if cut or welded poor scan">
+    <summary>
+      <div class="pn"><span class="name">Steel (nail and wire stock)</span></div>
+      <div class="mk">Ivaco Rolling Mills Limited Partnership &middot; Steel</div>
+      <div class="tags"><span class="tag ">Fume if cut or welded</span><span class="tag ">Poor scan</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Hand-labeled &quot;Simpson Tie Steel Rod/Wire&quot; in the book; listed in the inventory as Simpson Tie Steel Nail.</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>Dust or fume from welding, burning, cutting or grinding may irritate eyes, skin and breathing passages, and can cause metal fume fever (fever and chills).</li><li>Long-term: iron dust can mark the lungs (siderosis); manganese may affect the nervous system and breathing; chromium can cause skin ulcers, allergic reactions, asthma and lung cancer.</li><li>May irritate skin with prolonged contact.</li><li>Molten metal reacts violently with water or ice.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Safety glasses or other eye protection where there are flying objects, molten metal or welding light.</li><li>Protective gloves when welding, burning or handling.</li><li>NIOSH-approved respirator for dust and metal fume when ventilation is not enough.</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Eyes</b><span>Treat as a foreign body in the eye. Get medical attention if necessary.</span></div><div class="fa"><b>Skin</b><span>Wash with mild soap. Get medical attention if conditions persist.</span></div><div class="fa"><b>Breathing</b><span>Move to fresh air. Get medical attention if necessary.</span></div></section><section class=""><h4><span aria-hidden="true">🧹</span> Spill and clean-up</h4><ul><li>Can be recycled or sent to a permitted landfill.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Keep away from acids.</li><li>Use lifting equipment within its rated capacity.</li></ul></section><section class="about"><h4><span aria-hidden="true">📝</span> About this sheet</h4><ul><li>This scan is very poor and much of the sheet cannot be read. Open the full sheet for anything not listed here, and request a current copy.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>Not legible on the scan</div><div><b>Phone on the sheet</b>Not legible on the scan</div></div>
+      <a class="btn" href="msds/drywall/ivaco-steel.html">Open the full sheet (8 pages)</a>
+    </div>
+  </details>
+  <details class="card prod" id="tree-island-nails" data-s="steel nails (wire products) tree island industries ltd. hand-labeled &quot;simpson tie nails&quot; in the book. steel wire and wire products, galvanized nails. steel nails cancer hazard label">
+    <summary>
+      <div class="pn"><span class="name">Steel Nails (wire products)</span><span class="sig warning">WARNING</span></div>
+      <div class="mk">Tree Island Industries Ltd. &middot; Steel nails</div>
+      <div class="tags"><span class="tag hot">Cancer hazard label</span></div>
+    </summary>
+    <div class="body">
+      <p class="also"><b>Also covers:</b> Hand-labeled &quot;Simpson Tie Nails&quot; in the book. Steel wire and wire products, galvanized nails.</p>
+      <section class="haz"><h4><span aria-hidden="true">⚠️</span> Hazards</h4><ul><li>Cancer hazard label: contains chromium and nickel above 0.1%.</li><li>No hazard as solid nails. Welding, burning, sawing, grinding or machining makes metal dust and fume that may be harmful if inhaled.</li><li>Targets: respiratory system, lungs, skin and central nervous system.</li></ul></section><section class=""><h4><span aria-hidden="true">🥽</span> Protective gear</h4><ul><li>Adequate ventilation for welding, burning, sawing, grinding or machining.</li><li>Avoid breathing metal fume or dust.</li></ul></section><section class="aid"><h4><span aria-hidden="true">🩹</span> First aid</h4><div class="fa"><b>Breathing</b><span>Move to fresh air. If breathing is difficult or has stopped, give artificial respiration or oxygen. Get medical attention promptly.</span></div></section><section class=""><h4><span aria-hidden="true">🔥</span> Fire</h4><ul><li>Solid steel is not a fire or explosion hazard.</li></ul></section><section class=""><h4><span aria-hidden="true">📦</span> Handling and storage</h4><ul><li>Keep away from strong acids (reacts to release hydrogen).</li></ul></section><section class="about"><h4><span aria-hidden="true">📝</span> About this sheet</h4><ul><li>This is a faxed copy and parts are hard to read. A cleaner current sheet would be worth requesting.</li></ul></section>
+      <div class="meta"><div><b>Sheet date</b>Revised January 1998 (faxed copy from 2000)</div><div><b>Phone on the sheet</b>Not legible on the scan</div></div>
+      <a class="btn" href="msds/drywall/tree-island-nails.html">Open the full sheet (4 pages)</a>
+    </div>
+  </details>
+  </div>
+  <div class="card none" id="none">No product matches that search. Check the spelling or clear the search box.</div>
+
+  <h3 class="sec">Also in the book</h3>
+  <div>
+    <a class="xlink" href="msds/drywall/book-chemical-inventory-list.html"><b>Chemical inventory list</b><span>The original product and ingredient list from the front of the book (9 pages)</span></a>
+    <a class="xlink" href="msds/drywall/book-general-hazard-communication.html"><b>General hazard communication information</b><span>Labels, NFPA diamond, how to read a sheet, incompatible chemicals and a glossary (28 pages)</span></a>
+  </div>
+
+  <footer>Built from the Builder&#x27;s Bloc Drywall MSDS book, scanned in March 2011. The sheets in it are dated 2003 to 2008, and three have no date. If a product label does not match its sheet, ask the office for a current one.</footer>
+</main>
+
+<script>
+(function(){
+  var q = document.getElementById('q'), cards = [].slice.call(document.querySelectorAll('.prod')),
+      count = document.getElementById('count'), none = document.getElementById('none');
+  function run(){
+    var words = q.value.toLowerCase().split(/\s+/).filter(Boolean), shown = 0;
+    cards.forEach(function(c){
+      var s = c.getAttribute('data-s'), hit = words.every(function(w){ return s.indexOf(w) !== -1; });
+      c.style.display = hit ? '' : 'none'; if (hit) shown++;
+    });
+    count.textContent = words.length ? (shown + ' of ' + cards.length + ' products') : '';
+    none.style.display = shown ? 'none' : 'block';
+  }
+  q.addEventListener('input', run);
+  /* coming back from a full sheet (address ends in #product): reopen that product */
+  var el = location.hash.length > 1 && document.getElementById(location.hash.slice(1));
+  if (el && el.classList.contains('prod')) {
+    el.open = true;
+    setTimeout(function(){ window.scrollTo(0, el.getBoundingClientRect().top + window.pageYOffset - 150); }, 0);
+  }
+  run();
+})();
+</script>
+</body>
+</html>
