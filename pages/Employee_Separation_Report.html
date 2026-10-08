@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Employee Separation Report</title>
+<style>
+  :root {
+    --ink: #161616;   /* printed form text */
+    --pen: #0b2c6f;   /* what the person fills in */
+    --rh: 2.2em;      /* row height (bigger on screen for tapping, tighter in print) */
+    --lh: 2em;        /* comment line height */
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: #dfe1e4;
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.25;
+  }
+
+  /* ---------- Toolbar (screen only) ---------- */
+  .toolbar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+    padding: 10px 16px;
+    background: #22262b; color: #fff;
+  }
+  .toolbar p { margin: 0; flex: 1 1 260px; font-weight: 400; font-size: 14px; line-height: 1.35; }
+  .toolbar button {
+    font-family: inherit; font-size: 15px; font-weight: 600;
+    padding: 11px 16px; border-radius: 8px; border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-primary { background: #fff; color: #16191d; }
+  .btn-quiet { background: transparent; color: #fff; border-color: #6d747d !important; }
+  .toolbar a.back { font-size: 15px; font-weight: 600; padding: 11px 14px; border-radius: 8px; border: 1px solid; text-decoration: none; }
+  .toolbar a.back:focus-visible { outline: 3px solid #8ab4ff; outline-offset: 2px; }
+  .toolbar button:focus-visible { outline: 3px solid #8ab4ff; outline-offset: 2px; }
+
+  /* ---------- The sheet ---------- */
+  .sheet {
+    background: #fff;
+    max-width: 8.5in;
+    margin: 18px auto 48px;
+    padding: clamp(20px, 6vw, 0.6in) clamp(14px, 7vw, 0.8in) clamp(24px, 6vw, 0.7in);
+    box-shadow: 0 1px 3px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.12);
+  }
+  h1 {
+    margin: 0 0 1.9em;
+    text-align: center;
+    font-size: 1.3em; font-weight: 700; letter-spacing: .03em;
+    text-decoration: underline; text-underline-offset: .12em;
+  }
+  h2 {
+    margin: 0;
+    font-size: 1em; font-weight: 600;
+    text-decoration: underline; text-underline-offset: .12em;
+  }
+  section { margin-top: 1.5em; }
+
+  /* Double-ruled boxes (top and bottom of the form) */
+  .box { border: 5px double var(--ink); padding: .7em .9em .9em; }
+  .box.history { padding-left: clamp(.9em, 8%, 4.2em); padding-right: clamp(.9em, 8%, 4.2em); }
+  .box.history h2 { text-decoration: none; margin-bottom: .2em; }
+  .box.history .row { font-size: .92em; }
+
+  /* ---------- Fill-in lines ---------- */
+  .row { display: flex; flex-wrap: wrap; align-items: flex-end; column-gap: 1.6em; min-height: var(--rh); }
+  .row.two { display: grid; grid-template-columns: 1fr 1fr; }
+  .field { display: flex; align-items: flex-end; gap: .3em; min-width: 0; min-height: var(--rh); }
+  .field.grow { flex: 1 1 0; }
+  .field > span { white-space: nowrap; padding-bottom: .12em; }
+
+  input[type=text], input[type=tel], input[type=date] {
+    flex: 1 1 auto; min-width: 0; width: 100%;
+    min-height: 1.7em;
+    margin: 0; padding: .1em .3em .05em;
+    border: 0; border-bottom: 1.5px solid var(--ink); border-radius: 0;
+    background: transparent;
+    font-family: inherit; font-size: 1em; font-weight: 400; color: var(--pen);
+    -webkit-appearance: none; appearance: none;
+    text-align: left;
+  }
+  input[type=date]::-webkit-date-and-time-value { text-align: left; }
+  input[type=date].empty:not(:focus)::-webkit-datetime-edit { color: transparent; }
+  input:focus, textarea:focus { outline: none; background: #fff6c9; }
+  .missing input, input.missing { border-bottom-color: #c22; background: #fdeaea; }
+  textarea::placeholder { color: #8a8f98; font-style: italic; opacity: 1; }
+
+  .w-name { max-width: 34em; }
+  .w-recall { flex: 0 1 11em; }
+
+  /* ---------- Checkboxes ---------- */
+  .cols { display: grid; grid-template-columns: 46% 54%; margin-top: .45em; }
+  .ck { display: flex; align-items: center; min-height: calc(var(--rh) * .82); cursor: pointer; }
+  .ck input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+  .bx {
+    flex: none; position: relative;
+    width: .95em; height: .95em; margin-right: .75em;
+    border: 1.5px solid var(--ink); background: #fff;
+  }
+  .ck input:checked + .bx::after {
+    content: ""; position: absolute; left: 26%; top: -28%;
+    width: 36%; height: 100%;
+    border: solid var(--pen); border-width: 0 .17em .17em 0;
+    transform: rotate(40deg);
+  }
+  .ck input:focus-visible + .bx { outline: 3px solid #4a86ff; outline-offset: 2px; }
+  .col.right .bx { margin-right: 2.6em; }
+
+  .other { display: flex; align-items: flex-end; gap: .3em; }
+  .other .ck { flex: none; }
+  .other input[type=text] { margin-bottom: .2em; }
+  .other-line { margin-top: .15em; }
+
+  .inline-checks { display: flex; flex-wrap: wrap; align-items: center; gap: 0 2.2em; }
+  .inline-checks .bx { margin-right: .4em; width: .85em; height: .85em; }
+
+  .head-row { display: grid; grid-template-columns: 46% 54%; align-items: center; }
+  .head-row .inline-checks { gap: 0 1.1em; }
+
+  /* ---------- Comments (ruled lines that grow with the text) ---------- */
+  .ruled { position: relative; display: grid; overflow: hidden; margin-top: .1em; }
+  .ruled .rules { position: absolute; left: 0; right: 0; top: 0; pointer-events: none; }
+  .ruled .rules i { display: block; height: var(--lh); border-bottom: 1.5px solid var(--ink); }
+  .ruled textarea, .ruled .mirror {
+    grid-area: 1 / 1;
+    min-height: calc(var(--lh) * 4);
+    margin: 0; padding: 0 .3em; border: 0;
+    font-family: inherit; font-size: 1em; font-weight: 400; line-height: var(--lh);
+    color: var(--pen); background: transparent;
+    white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;
+  }
+  .ruled textarea { position: relative; resize: none; overflow: hidden; width: 100%; border-radius: 0; -webkit-appearance: none; appearance: none; }
+  .ruled .mirror { visibility: hidden; }
+  .ruled textarea:focus { background: rgba(255, 232, 110, .28); }
+  .ruled textarea.missing { background: rgba(204, 34, 34, .12); }
+
+  /* ---------- Bottom box ---------- */
+  .signers { display: grid; grid-template-columns: 1fr 1fr; column-gap: 2.2em; }
+  .signers h3 { margin: 0; font-size: 1em; font-weight: 500; }
+  .signers .field { min-height: calc(var(--rh) * .8); }
+  .box.bottom { margin-top: 2.6em; padding: .55em .6em .8em; }
+
+  /* ---------- Phones ---------- */
+  @media screen and (max-width: 600px) {
+    .row.two, .cols, .head-row, .signers { grid-template-columns: 1fr; }
+    .col.right .bx { margin-right: .75em; }
+    .signers > div + div { margin-top: 1em; }
+    .head-row .inline-checks { margin-top: .3em; }
+    .other.recall { flex-wrap: wrap; }
+    .other.recall .ck { flex: 1 1 100%; align-items: flex-start; padding-top: .35em; }
+    .other.recall .bx { margin-top: .1em; }
+    .other.recall .w-recall { flex: 1 1 100%; margin-left: 1.7em; }
+  }
+
+  /* ---------- Print / Save as PDF ---------- */
+  @page { size: letter portrait; margin: 0.5in 0.6in; }
+  @media print {
+    :root { --rh: 1.6em; --lh: 1.6em; }
+    html, body { background: #fff; }
+    body { font-size: 10pt; }
+    .ck { min-height: 1.32em; }
+    .box.history .row, .box.history .field { min-height: 1.75em; }
+    .other input[type=text], .other-line, .w-recall { min-height: 1.45em; }
+    .box.bottom { margin-top: 2em; }
+    .toolbar { display: none !important; }
+    .sheet { max-width: none; margin: 0; padding: .3in .25in 0; box-shadow: none; }
+    h1 { margin-bottom: 1.6em; }
+    section { margin-top: 1.3em; }
+    input:focus, textarea:focus { background: transparent; }
+    .missing input, input.missing { border-bottom-color: var(--ink); background: transparent; }
+    input[type=date]::-webkit-calendar-picker-indicator { display: none; }
+    input[type=date].empty::-webkit-datetime-edit { color: transparent; }
+    .ruled textarea { visibility: hidden; }
+    .ruled .mirror { visibility: visible; }
+    .box, section, .signers { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <p>Fill out the form, tap <strong>Save as PDF / Print</strong>, then share the PDF by Mail to HR: <strong id="hrEmailText"></strong></p>
+  <a class="btn-quiet back" href="../index.html">&lsaquo; Portal</a>
+  <button type="button" class="btn-quiet" id="clearBtn">Clear form</button>
+  <button type="button" class="btn-primary" id="printBtn">Save as PDF / Print</button>
+</div>
+
+<form class="sheet" id="esr" autocomplete="off" novalidate>
+
+  <h1>EMPLOYEE SEPARATION NOTICE</h1>
+
+  <!-- ================= EMPLOYMENT HISTORY ================= -->
+  <div class="box history">
+    <h2>EMPLOYMENT HISTORY:</h2>
+
+    <div class="row">
+      <label class="field grow w-name"><span>EMPLOYEE NAME</span><input type="text" id="empName" autocapitalize="words"></label>
+    </div>
+
+    <div class="row two">
+      <label class="field"><span>Original Hire Date:</span><input type="date" id="hireDate"></label>
+      <label class="field"><span>Last Day Worked:</span><input type="date" id="lastDay"></label>
+    </div>
+  </div>
+
+  <!-- ================= VOLUNTARY RESIGNATION ================= -->
+  <section>
+    <h2>VOLUNTARY RESIGNATION:</h2>
+    <div class="cols">
+      <div class="col">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>To take another job</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Moving from this area</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Personal Reasons</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Health Reasons/Pregnancy</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Family Obligations</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Attend School</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Abandoned the job- no call/no show</label>
+      </div>
+      <div class="col right">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Self employment</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Retirement</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Spousal Transfer</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Working Conditions</label>
+        <div class="other">
+          <label class="ck"><input type="checkbox" class="reason" id="vrOtherCk"><span class="bx"></span>OTHER REASONS:</label>
+          <input type="text" id="vrOther1" data-checks="vrOtherCk" aria-label="Other reasons">
+        </div>
+        <input type="text" class="other-line" id="vrOther2" data-checks="vrOtherCk" aria-label="Other reasons, continued">
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DISCHARGED FOR MISCONDUCT ================= -->
+  <section>
+    <div class="head-row">
+      <h2>DISCHARGED FOR MISCONDUCT:</h2>
+      <div class="inline-checks">
+        <label class="ck"><input type="checkbox" id="dmYes"><span class="bx"></span>YES</label>
+        <label class="ck"><input type="checkbox" id="dmNo"><span class="bx"></span>NO (Not protesting unemployment)</label>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Violation of Company Policy</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Alcohol/Drug Violation</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Failure to Follow Instructions</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Negligence</label>
+      </div>
+      <div class="col right">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Absenteeism/Tardiness</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Insubordination</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Incompetence</label>
+        <div class="other">
+          <label class="ck"><input type="checkbox" class="reason" id="dmOtherCk"><span class="bx"></span>OTHER MISCONDUCT:</label>
+          <input type="text" id="dmOther1" data-checks="dmOtherCk" aria-label="Other misconduct">
+        </div>
+        <input type="text" class="other-line" id="dmOther2" data-checks="dmOtherCk" aria-label="Other misconduct, continued">
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LAYOFF / REDUCTION IN FORCE ================= -->
+  <section>
+    <h2>LAYOFF/REDUCTION IN FORCE:</h2>
+    <div class="cols" style="margin-top:.1em">
+      <div class="col">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Position/Job Eliminated</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Reduction in Hours</label>
+      </div>
+      <div class="col right">
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Lack of Work</label>
+        <label class="ck"><input type="checkbox" class="reason"><span class="bx"></span>Job Over/Seasonal Employee</label>
+      </div>
+    </div>
+    <div class="other recall">
+      <label class="ck"><input type="checkbox" class="reason" id="loRecallCk"><span class="bx"></span>Vacation/Temporary shutdown- Expected Date of Recall:</label>
+      <input type="date" class="w-recall" id="loRecall" data-checks="loRecallCk" aria-label="Expected date of recall">
+    </div>
+  </section>
+
+  <!-- ================= COMMENTS ================= -->
+  <section>
+    <h2><label for="comments">COMMENTS SECTION:</label></h2>
+    <div class="ruled">
+      <div class="rules" aria-hidden="true"></div>
+      <div class="mirror" aria-hidden="true"></div>
+      <textarea id="comments" rows="4" placeholder="Required - describe what happened"></textarea>
+    </div>
+  </section>
+
+  <!-- ================= WHO FILLED THIS OUT ================= -->
+  <div class="box bottom">
+    <div class="signers">
+      <div>
+        <h3>Above information provided by:</h3>
+        <label class="field"><span>Name:</span><input type="text" id="byName" autocapitalize="words"></label>
+        <label class="field"><span>Title:</span><input type="text" id="byTitle" autocapitalize="words"></label>
+        <label class="field"><span>Phone#</span><input type="tel" id="byPhone"></label>
+        <label class="field"><span>Location/Branch:</span><input type="text" id="byLocation" autocapitalize="words"></label>
+      </div>
+      <div>
+        <h3>Employee's Immediate Supervisor:</h3>
+        <label class="field"><span>Name:</span><input type="text" id="supName" autocapitalize="words"></label>
+        <label class="field"><span>Title:</span><input type="text" id="supTitle" autocapitalize="words"></label>
+        <label class="field"><span>Phone#</span><input type="tel" id="supPhone"></label>
+        <label class="field"><span>Location/Branch:</span><input type="text" id="supLocation" autocapitalize="words"></label>
+      </div>
+    </div>
+  </div>
+
+</form>
+
+<script>
+(function () {
+  /* ====== SETTINGS — change these here if they ever need to change ====== */
+  var HR_EMAIL  = "lweppner@buildersbloc.com";  // shown in the bar at the top of the screen
+  var FORM_CODE = "ESR";                        // start of the PDF file name
+  /* ====================================================================== */
+
+  var $ = function (id) { return document.getElementById(id); };
+  var form = $("esr");
+  $("hrEmailText").textContent = HR_EMAIL;
+
+  /* Empty date boxes stay blank instead of showing mm/dd/yyyy */
+  function syncDates() {
+    form.querySelectorAll("input[type=date]").forEach(function (d) {
+      d.classList.toggle("empty", !d.value);
+    });
+  }
+
+  /* PDF file name comes from the page title: ESR_Employee_Name_2026-10-08 */
+  function syncTitle() {
+    var name = $("empName").value.trim().replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    var day = $("lastDay").value;
+    document.title = name ? [FORM_CODE, name, day].filter(Boolean).join("_") : "Employee Separation Report";
+  }
+
+  /* Comment lines grow as the text grows */
+  var ta = $("comments"), mirror = form.querySelector(".mirror"), rules = form.querySelector(".rules");
+  rules.innerHTML = new Array(61).join("<i></i>");
+  function syncComments() { mirror.textContent = ta.value + "\u200b"; }
+
+  /* YES / NO: only one at a time */
+  function exclusive(a, b) {
+    a.addEventListener("change", function () { if (a.checked) b.checked = false; });
+    b.addEventListener("change", function () { if (b.checked) a.checked = false; });
+  }
+  exclusive($("dmYes"), $("dmNo"));
+
+  /* Typing in an "other" line checks its box */
+  form.querySelectorAll("[data-checks]").forEach(function (el) {
+    el.addEventListener("input", function () {
+      if (el.value) $(el.getAttribute("data-checks")).checked = true;
+    });
+  });
+
+  form.addEventListener("input", function (e) {
+    if (e.target.classList) e.target.classList.remove("missing");
+    syncDates(); syncTitle(); syncComments();
+  });
+  form.addEventListener("change", function () { syncDates(); syncTitle(); });
+
+  /* Check the basics before saving */
+  function validate() {
+    var problems = [], first = null;
+    [["empName", "Employee name"], ["lastDay", "Last day worked"], ["comments", "Comments - describe what happened"], ["byName", "Name of the person providing this information"]]
+      .forEach(function (pair) {
+        var el = $(pair[0]);
+        var bad = !el.value.trim();
+        el.classList.toggle("missing", bad);
+        if (bad) { problems.push(pair[1]); first = first || el; }
+      });
+    if (!form.querySelector("input.reason:checked")) {
+      problems.push("At least one reason (Voluntary Resignation, Discharged for Misconduct, or Layoff)");
+    }
+    if (problems.length) {
+      alert("Please fill in before saving:\n\n\u2022 " + problems.join("\n\u2022 "));
+      if (first) { first.scrollIntoView({ block: "center" }); first.focus(); }
+      return false;
+    }
+    return true;
+  }
+
+  $("printBtn").addEventListener("click", function () {
+    if (!validate()) return;
+    syncDates(); syncTitle(); syncComments();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    window.print();
+  });
+
+  $("clearBtn").addEventListener("click", function () {
+    if (!confirm("Clear everything on this form?")) return;
+    form.reset();
+    form.querySelectorAll(".missing").forEach(function (el) { el.classList.remove("missing"); });
+    syncDates(); syncTitle(); syncComments();
+    window.scrollTo(0, 0);
+  });
+
+  syncDates(); syncTitle(); syncComments();
+})();
+</script>
+</body>
+</html>
