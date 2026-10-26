@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Training Sign-Off — Builder's Bloc</title>
+<style>
+  :root{
+    --ink:#1b2430; --muted:#5b6675; --line:#d6dbe1; --bg:#f3f5f7; --card:#fff;
+    --brand:#1f3a5a; --accent:#e8742a; --ok:#1f7a4d; --bad:#c0392b; --soft:#fff4ec;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-text-size-adjust:100%}
+  header{background:var(--brand);color:#fff;padding:14px 16px calc(14px) 16px;
+    padding-top:calc(14px + env(safe-area-inset-top));position:sticky;top:0;z-index:5;
+    display:flex;align-items:center;gap:12px}
+  header a{color:#fff;text-decoration:none;font-size:15px;opacity:.9;white-space:nowrap}
+  header h1{font-size:19px;margin:0;font-weight:700;flex:1}
+  main{max-width:900px;margin:0 auto;padding:16px 16px 120px}
+  .view{display:none}.view.on{display:block}
+  h2{font-size:24px;margin:8px 0 4px}
+  .sub{color:var(--muted);margin:0 0 16px;font-size:15px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 14px}
+  .pick{display:grid;gap:12px}
+  .pick button{all:unset;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .pick button:active{background:#eef2f6}
+  .pick .t{font-size:19px;font-weight:650}
+  .badge{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    padding:4px 8px;border-radius:999px;background:#e7edf4;color:var(--brand)}
+  .badge.q{background:var(--soft);color:#a24c12}
+  .meta{color:var(--muted);font-size:14px;margin-top:4px}
+  /* presenter */
+  .sec h3{font-size:21px;margin:0 0 10px;color:var(--brand)}
+  .sec ul{margin:0;padding-left:22px}
+  .sec li{font-size:18px;line-height:1.45;margin:0 0 8px}
+  .say{background:var(--soft);border-left:5px solid var(--accent);padding:12px 14px;border-radius:8px;
+    font-size:18px;line-height:1.45;margin:0 0 12px}
+  .say b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#a24c12;margin-bottom:4px}
+  .q li{font-size:18px;line-height:1.45;margin-bottom:10px}
+  /* form */
+  label{display:block;font-size:13px;font-weight:650;color:var(--muted);margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em}
+  input,select{width:100%;font-size:18px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);
+    -webkit-appearance:none;appearance:none}
+  select{background-image:linear-gradient(45deg,transparent 50%,#667 50%),linear-gradient(135deg,#667 50%,transparent 50%);
+    background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px;background-repeat:no-repeat}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:640px){.grid{grid-template-columns:1fr}}
+  .stmt{font-size:16px;line-height:1.45;background:#eef3f8;border-radius:10px;padding:12px 14px;margin:0 0 14px}
+  .row{border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 12px;background:#fff}
+  .row.err{border-color:var(--bad);box-shadow:0 0 0 2px rgba(192,57,43,.15)}
+  .rowtop{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+  .num{font-weight:700;color:var(--muted);width:28px;text-align:center;flex:none}
+  .rowtop input{flex:1}
+  .pad{position:relative;-webkit-user-select:none;user-select:none;border:1.5px dashed #aab4c0;border-radius:10px;background:#fcfdfe;height:120px;touch-action:none}
+  .pad canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;border-radius:10px}
+  .pad .hint{position:absolute;left:12px;bottom:8px;color:#9aa5b1;font-size:13px;pointer-events:none}
+  .pad .x{position:absolute;right:8px;top:8px;font-size:13px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;color:var(--muted)}
+  .msg{font-size:14px;color:var(--bad);margin-top:6px;min-height:0}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:18px;font-weight:650;border:0;border-radius:12px;
+    padding:15px 20px;cursor:pointer;background:var(--brand);color:#fff;text-decoration:none}
+  .btn.alt{background:#fff;color:var(--brand);border:1.5px solid var(--brand)}
+  .btn.go{background:var(--accent)}
+  .btn.wide{width:100%}
+  .btn:disabled{opacity:.5}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px;justify-content:center;z-index:6}
+  .bar .btn{flex:1;max-width:430px}
+  .count{font-size:15px;color:var(--muted);text-align:center;margin:4px 0 12px}
+  .errors{background:#fdecea;border:1px solid #f5c2bd;color:#7d2219;border-radius:10px;padding:12px 14px;margin:0 0 14px;display:none}
+  .errors.on{display:block}
+  .errors ul{margin:6px 0 0;padding-left:20px}
+  dialog{border:0;border-radius:16px;padding:22px;max-width:440px;width:calc(100% - 32px)}
+  dialog::backdrop{background:rgba(20,30,40,.55)}
+  dialog h3{margin:0 0 8px;font-size:21px}
+  dialog p{margin:0 0 16px;color:var(--muted);font-size:16px;line-height:1.4}
+  dialog .btn{width:100%;margin-top:8px}
+  .linkbtn{background:none;border:0;color:var(--brand);font-size:16px;text-decoration:underline;padding:10px;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <a href="../index.html" id="homeLink">‹ Portal</a>
+  <h1 id="hdr">Training Sign-Off</h1>
+</header>
+
+<main>
+  <!-- STEP 1: PICK -->
+  <section class="view on" id="vPick">
+    <h2>Pick a training</h2>
+    <p class="sub">Choose the training you're giving today. You'll present it to the crew, then everyone signs.</p>
+    <div class="pick" id="pickList"></div>
+    <div id="resumeBox" class="card" style="display:none;margin-top:16px">
+      <b>Unfinished sign-off found</b>
+      <p class="meta" id="resumeText" style="margin:6px 0 12px"></p>
+      <button class="btn alt" id="resumeBtn">Resume it</button>
+      <button class="linkbtn" id="discardBtn">Discard</button>
+    </div>
+  </section>
+
+  <!-- STEP 2: PRESENT -->
+  <section class="view" id="vPresent">
+    <h2 id="pTitle"></h2>
+    <p class="sub" id="pMeta"></p>
+    <div id="pBody"></div>
+  </section>
+
+  <!-- STEP 3: SIGN -->
+  <section class="view" id="vSign">
+    <h2 id="sTitle"></h2>
+    <p class="sub">Foreman fills in the top, then hand the iPad around. Each employee types their full name and signs with a finger.</p>
+
+    <div class="errors" id="errBox"></div>
+
+    <div class="card">
+      <div class="grid">
+        <div><label for="fDate">Date</label><input type="date" id="fDate"></div>
+        <div><label for="fDiv">Division</label>
+          <select id="fDiv">
+            <option value="">Choose…</option>
+            <option>Carpentry</option><option>Foundations</option><option>Flatwork</option><option>Plumbing</option><option>Drywall</option>
+            <option>Shop / Yard</option><option>Other</option>
+          </select></div>
+        <div><label for="fJob">Job name / number</label><input id="fJob" autocomplete="off" placeholder="e.g. 2614 – Wildwood Estates"></div>
+        <div><label for="fForeman">Foreman</label><input id="fForeman" autocomplete="name" placeholder="Full name"></div>
+        <div style="grid-column:1/-1"><label for="fTrainer">Presented by (if not the foreman)</label><input id="fTrainer" autocomplete="off" placeholder="Leave blank if the foreman presented"></div>
+      </div>
+    </div>
+
+    <p class="stmt"><b>By signing below, I agree:</b> <span id="sStmt"></span></p>
+
+    <div id="rows"></div>
+    <div class="count" id="countLine"></div>
+    <button class="btn alt wide" id="addRow">+ Add another employee</button>
+
+    <div class="card" style="margin-top:22px">
+      <label>Foreman certification</label>
+      <p style="margin:0 0 10px;font-size:16px;line-height:1.4">I certify the employees above attended this training and signed for themselves.</p>
+      <div class="pad" id="foremanPad"><canvas></canvas><span class="hint">Foreman signs here</span><button class="x" type="button">Clear</button></div>
+    </div>
+  </section>
+</main>
+
+<div class="bar" id="bar" style="display:none"></div>
+
+<dialog id="dlg">
+  <h3 id="dTitle">Sign-off ready</h3>
+  <p id="dText"></p>
+  <button class="btn go" id="dSend">Send</button>
+  <button class="btn alt" id="dClose">Back to sign-off</button>
+</dialog>
+
+<script src="trainings.js"></script>
+<script src="pdf-lib.min.js"></script>
+<script>
+/* Fallback: if pdf-lib.min.js wasn't uploaded next to this page, load it from the CDN */
+if(!window.PDFLib){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"><\/script>');}
+</script>
+<script>
+(function(){
+"use strict";
+var TRAININGS = (window.BB_TRAININGS||[]).filter(function(t){return t.active!==false;});
+var DRAFT_KEY = "bb-training-signoff-draft-v1";
+var START_ROWS = 6;
+var $ = function(id){return document.getElementById(id);};
+var state = { training:null, rows:[], foremanPad:null };
+
+/* ---------- storage (never let it break the page) ---------- */
+function store(k,v){try{ if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){}}
+function load(k){try{ var s=localStorage.getItem(k); return s?JSON.parse(s):null; }catch(e){ return null; }}
+
+function freqLabel(f){return f==="quarterly"?"Quarterly":"Annual";}
+function todayISO(){var d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+
+/* ---------- views ---------- */
+function show(view){
+  ["vPick","vPresent","vSign"].forEach(function(v){$(v).classList.toggle("on",v===view);});
+  var bar=$("bar");
+  if(view==="vPick"){ bar.style.display="none"; $("hdr").textContent="Training Sign-Off"; }
+  else if(view==="vPresent"){
+    bar.style.display="flex";
+    bar.innerHTML='<button class="btn alt" id="bBack">‹ Trainings</button><button class="btn go" id="bToSign">Start sign-off ›</button>';
+    $("bBack").onclick=function(){show("vPick");};
+    $("bToSign").onclick=function(){openSign();};
+  } else {
+    bar.style.display="flex";
+    bar.innerHTML='<button class="btn alt" id="bBack2">‹ Training</button><button class="btn go" id="bFinish">Finish &amp; Send</button>';
+    $("bBack2").onclick=function(){show("vPresent");};
+    $("bFinish").onclick=finish;
+  }
+  window.scrollTo(0,0);
+}
+
+/* ---------- step 1 ---------- */
+function renderPick(){
+  var html="";
+  TRAININGS.forEach(function(t,i){
+    html+='<button data-i="'+i+'"><div><div class="t">'+esc(t.title)+'</div><div class="meta">About '+(t.minutes||15)+' minutes</div></div>'+
+      '<span class="badge'+(t.frequency==="quarterly"?" q":"")+'">'+freqLabel(t.frequency)+'</span></button>';
+  });
+  $("pickList").innerHTML=html||'<p class="sub">No trainings are set up yet.</p>';
+  Array.prototype.forEach.call($("pickList").querySelectorAll("button"),function(b){
+    b.onclick=function(){ startTraining(TRAININGS[+b.getAttribute("data-i")]); };
+  });
+  var d=load(DRAFT_KEY), t=d&&findTraining(d.trainingId);
+  if(d && t){
+    var signed=(d.rows||[]).filter(function(r){return r.name&&r.sig;}).length;
+    $("resumeText").textContent=t.title+" — "+(d.job||"no job entered")+" — "+signed+" signed";
+    $("resumeBox").style.display="block";
+    $("resumeBtn").onclick=function(){ state.training=t; renderPresent(); openSign(d); };
+    $("discardBtn").onclick=function(){ if(confirm("Discard the unfinished sign-off? Signatures on it will be lost.")){ store(DRAFT_KEY,null); $("resumeBox").style.display="none"; } };
+  } else $("resumeBox").style.display="none";
+}
+function findTraining(id){for(var i=0;i<TRAININGS.length;i++) if(TRAININGS[i].id===id) return TRAININGS[i]; return null;}
+
+function startTraining(t){
+  var d=load(DRAFT_KEY);
+  if(d && d.trainingId && (d.rows||[]).some(function(r){return r.sig;})){
+    if(!confirm("There's an unfinished sign-off with signatures on it. Starting a new one will erase it. Continue?")) return;
+  }
+  store(DRAFT_KEY,null);
+  state.training=t; state.rows=[];
+  renderPresent(); show("vPresent");
+}
+
+/* ---------- step 2 ---------- */
+function renderPresent(){
+  var t=state.training;
+  $("hdr").textContent=t.title;
+  $("pTitle").textContent=t.title;
+  $("pMeta").innerHTML='<span class="badge'+(t.frequency==="quarterly"?" q":"")+'">'+freqLabel(t.frequency)+'</span> &nbsp;About '+(t.minutes||15)+' minutes · Read through each section with the crew.';
+  var h="";
+  (t.sections||[]).forEach(function(s){
+    h+='<div class="card sec"><h3>'+esc(s.heading)+'</h3>';
+    if(s.say) h+='<div class="say"><b>Read aloud</b>'+esc(s.say)+'</div>';
+    if(s.points&&s.points.length) h+='<ul>'+s.points.map(function(p){return '<li>'+esc(p)+'</li>';}).join("")+'</ul>';
+    h+='</div>';
+  });
+  if(t.questions&&t.questions.length){
+    h+='<div class="card sec q"><h3>Ask the crew</h3><ol>'+t.questions.map(function(q){return '<li>'+esc(q)+'</li>';}).join("")+'</ol></div>';
+  }
+  $("pBody").innerHTML=h;
+}
+
+/* ---------- signature pad ---------- */
+function SigPad(wrap,onChange){
+  var canvas=wrap.querySelector("canvas"), ctx=canvas.getContext("2d"), hint=wrap.querySelector(".hint");
+  var drawing=false,last=null,self=this;
+  this.data=null; // PNG data URL
+  function size(){
+    var r=canvas.getBoundingClientRect(), dpr=Math.max(window.devicePixelRatio||1,2);
+    if(!r.width) return;
+    canvas.width=Math.round(r.width*dpr); canvas.height=Math.round(r.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.lineWidth=2.6; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.strokeStyle="#0d1b2a";
+    if(self.data){ var img=new Image(); img.onload=function(){ ctx.drawImage(img,0,0,r.width,r.height); }; img.src=self.data; }
+  }
+  function pos(e){var r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
+  canvas.addEventListener("pointerdown",function(e){ e.preventDefault(); canvas.setPointerCapture(e.pointerId); drawing=true; last=pos(e);
+    ctx.beginPath(); ctx.arc(last.x,last.y,1.2,0,Math.PI*2); ctx.fillStyle="#0d1b2a"; ctx.fill(); if(hint) hint.style.display="none"; });
+  canvas.addEventListener("pointermove",function(e){ if(!drawing) return; e.preventDefault(); var p=pos(e);
+    ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; });
+  function end(){ if(!drawing) return; drawing=false; self.data=canvas.toDataURL("image/png"); onChange&&onChange(); }
+  canvas.addEventListener("pointerup",end); canvas.addEventListener("pointercancel",end); canvas.addEventListener("pointerleave",end);
+  wrap.querySelector(".x").onclick=function(){ self.clear(); onChange&&onChange(); };
+  this.clear=function(){ ctx.clearRect(0,0,canvas.width,canvas.height); self.data=null; if(hint) hint.style.display=""; };
+  this.set=function(d){ self.data=d||null; if(hint) hint.style.display=d?"none":""; size(); };
+  this.resize=size;
+  size();
+}
+
+/* ---------- step 3 ---------- */
+function openSign(draft){
+  var t=state.training;
+  $("sTitle").textContent=t.title+" — Sign-Off";
+  $("sStmt").textContent=t.statement||"I attended this training.";
+  $("errBox").classList.remove("on");
+  $("rows").innerHTML=""; state.rows=[];
+  $("fDate").value=(draft&&draft.date)||todayISO();
+  $("fDiv").value=(draft&&draft.division)||"";
+  $("fJob").value=(draft&&draft.job)||"";
+  $("fForeman").value=(draft&&draft.foreman)||load("bb-training-foreman")||"";
+  $("fTrainer").value=(draft&&draft.trainer)||"";
+  show("vSign");
+  var saved=(draft&&draft.rows)||[];
+  var n=Math.max(START_ROWS,saved.length+1);
+  for(var i=0;i<n;i++) addRow(saved[i]);
+  if(!state.foremanPad) state.foremanPad=new SigPad($("foremanPad"),saveDraft);
+  state.foremanPad.set(draft&&draft.foremanSig);
+  updateCount();
+}
+
+function addRow(data){
+  var idx=state.rows.length;
+  var el=document.createElement("div"); el.className="row";
+  el.innerHTML='<div class="rowtop"><span class="num">'+(idx+1)+'</span><input placeholder="Employee full name (first and last)" autocomplete="off" autocapitalize="words" spellcheck="false"></div>'+
+    '<div class="pad"><canvas></canvas><span class="hint">Sign here with your finger</span><button class="x" type="button">Clear</button></div><div class="msg"></div>';
+  $("rows").appendChild(el);
+  var input=el.querySelector("input");
+  var row={el:el,input:input,pad:null};
+  row.pad=new SigPad(el.querySelector(".pad"),function(){ el.classList.remove("err"); el.querySelector(".msg").textContent=""; saveDraft(); updateCount(); autoGrow(); });
+  input.value=(data&&data.name)||"";
+  if(data&&data.sig) row.pad.set(data.sig);
+  input.addEventListener("input",function(){ el.classList.remove("err"); el.querySelector(".msg").textContent=""; saveDraft(); updateCount(); autoGrow(); });
+  state.rows.push(row);
+  return row;
+}
+function autoGrow(){ var lastRow=state.rows[state.rows.length-1]; if(lastRow && (lastRow.input.value.trim()||lastRow.pad.data)) addRow(); }
+function cleanName(s){return String(s||"").replace(/\s+/g," ").trim();}
+function updateCount(){
+  var n=state.rows.filter(function(r){return cleanName(r.input.value)&&r.pad.data;}).length;
+  $("countLine").textContent=n+" employee"+(n===1?"":"s")+" signed";
+}
+var saveTimer=null;
+function saveDraft(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(function(){
+    if(!state.training) return;
+    store(DRAFT_KEY,{
+      trainingId:state.training.id, date:$("fDate").value, division:$("fDiv").value, job:$("fJob").value,
+      foreman:$("fForeman").value, trainer:$("fTrainer").value,
+      rows:state.rows.map(function(r){return {name:r.input.value,sig:r.pad.data};}).filter(function(r){return r.name||r.sig;}),
+      foremanSig:state.foremanPad&&state.foremanPad.data
+    });
+  },300);
+}
+["fDate","fDiv","fJob","fForeman","fTrainer"].forEach(function(id){ $(id).addEventListener("input",saveDraft); $(id).addEventListener("change",saveDraft); });
+$("addRow").onclick=function(){ var r=addRow(); r.input.focus(); };
+var rTimer; window.addEventListener("resize",function(){ clearTimeout(rTimer); rTimer=setTimeout(function(){
+  state.rows.forEach(function(r){r.pad.resize();}); if(state.foremanPad) state.foremanPad.resize(); },200); });
+
+/* ---------- validate ---------- */
+function collect(){
+  var errs=[], attendees=[], seen={};
+  if(!$("fDate").value) errs.push("Enter the date.");
+  if(!$("fDiv").value) errs.push("Choose the division.");
+  if(!cleanName($("fJob").value)) errs.push("Enter the job name or number.");
+  if(cleanName($("fForeman").value).split(" ").length<2) errs.push("Enter the foreman's first and last name.");
+  if(!state.foremanPad.data) errs.push("The foreman needs to sign the certification at the bottom.");
+  state.rows.forEach(function(r,i){
+    var name=cleanName(r.input.value), msg=r.el.querySelector(".msg");
+    r.el.classList.remove("err"); msg.textContent="";
+    if(!name && !r.pad.data) return;
+    var problem="";
+    if(!name) problem="Type the employee's name for this signature.";
+    else if(!r.pad.data) problem="This employee still needs to sign.";
+    else if(name.split(" ").length<2) problem="Use first AND last name.";
+    else if(seen[name.toLowerCase()]) problem="This name is already on the sheet (row "+seen[name.toLowerCase()]+").";
+    if(problem){ r.el.classList.add("err"); msg.textContent=problem; errs.push("Row "+(i+1)+": "+problem); }
+    else { seen[name.toLowerCase()]=i+1; attendees.push({name:name,sig:r.pad.data}); }
+  });
+  if(!attendees.length && !errs.some(function(e){return /^Row/.test(e);})) errs.push("At least one employee needs to sign.");
+  return {errs:errs,attendees:attendees};
+}
+
+/* ---------- PDF ---------- */
+function b64utf8(s){ return btoa(unescape(encodeURIComponent(s))); }
+function winAnsi(s){ // keep only characters the built-in PDF font can draw
+  return String(s||"").normalize("NFC").replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/[–—]/g,"-")
+    .replace(/[^\x20-\x7E -ÿ]/g,"");
+}
+function fmtDate(iso){ var p=iso.split("-"); return p[1]+"/"+p[2]+"/"+p[0]; }
+
+async function buildPdf(info){
+  var L=window.PDFLib, doc=await L.PDFDocument.create();
+  var font=await doc.embedFont(L.StandardFonts.Helvetica), bold=await doc.embedFont(L.StandardFonts.HelveticaBold);
+  var W=612,H=792,M=40, navy=L.rgb(0.12,0.23,0.35), grey=L.rgb(0.4,0.43,0.47), lineC=L.rgb(0.82,0.85,0.88);
+  var t=state.training;
+  function wrap(text,f,size,maxW){
+    var words=winAnsi(text).split(" "), lines=[], cur="";
+    words.forEach(function(w){ var test=cur?cur+" "+w:w; if(f.widthOfTextAtSize(test,size)>maxW && cur){ lines.push(cur); cur=w; } else cur=test; });
+    if(cur) lines.push(cur); return lines;
+  }
+  var pages=[], page, y;
+  function newPage(first){
+    page=doc.addPage([W,H]); pages.push(page); y=H-M;
+    page.drawRectangle({x:0,y:H-8,width:W,height:8,color:L.rgb(0.91,0.45,0.16)});
+    page.drawText("BUILDER'S BLOC",{x:M,y:y-6,size:10,font:bold,color:grey});
+    page.drawText("TRAINING SIGN-OFF",{x:W-M-bold.widthOfTextAtSize("TRAINING SIGN-OFF",10),y:y-6,size:10,font:bold,color:grey});
+    y-=30;
+    if(!first){ page.drawText(winAnsi(t.title+" - "+info.job+" - "+fmtDate(info.date)+" (continued)"),{x:M,y:y,size:11,font:bold,color:navy}); y-=22; tableHead(); }
+  }
+  function tableHead(){
+    page.drawRectangle({x:M,y:y-18,width:W-2*M,height:20,color:L.rgb(0.93,0.95,0.97)});
+    page.drawText("#",{x:M+8,y:y-12,size:9,font:bold,color:grey});
+    page.drawText("PRINTED NAME",{x:M+34,y:y-12,size:9,font:bold,color:grey});
+    page.drawText("SIGNATURE",{x:M+290,y:y-12,size:9,font:bold,color:grey});
+    y-=20;
+  }
+  newPage(true);
+  page.drawText(winAnsi(t.title),{x:M,y:y,size:20,font:bold,color:navy}); y-=20;
+  page.drawText(winAnsi(freqLabel(t.frequency)+" training  |  Training ID: "+t.id),{x:M,y:y,size:10,font:font,color:grey}); y-=24;
+  var fields=[["Date",fmtDate(info.date)],["Division",info.division],["Job",info.job],["Foreman",info.foreman],["Presented by",info.trainer||info.foreman],["Employees signed",String(info.attendees.length)]];
+  for(var i=0;i<fields.length;i+=2){
+    for(var j=0;j<2&&i+j<fields.length;j++){
+      var x=M+j*266;
+      page.drawText(fields[i+j][0].toUpperCase(),{x:x,y:y,size:8,font:bold,color:grey});
+      page.drawText(winAnsi(fields[i+j][1]).slice(0,48),{x:x,y:y-13,size:11,font:font,color:L.rgb(0,0,0)});
+    }
+    y-=32;
+  }
+  var topics=(t.sections||[]).map(function(s){return s.heading;}).join("; ");
+  wrap("Topics covered: "+topics,font,9.5,W-2*M).forEach(function(l){ page.drawText(l,{x:M,y:y,size:9.5,font:font,color:grey}); y-=13; });
+  y-=4;
+  wrap("By signing, each employee agrees: "+(t.statement||"I attended this training."),bold,10,W-2*M).forEach(function(l){ page.drawText(l,{x:M,y:y,size:10,font:bold,color:navy}); y-=14; });
+  y-=8; tableHead();
+
+  var rowH=46;
+  for(var k=0;k<info.attendees.length;k++){
+    if(y-rowH<M+30){ newPage(false); }
+    var a=info.attendees[k], top=y;
+    page.drawText(String(k+1),{x:M+8,y:top-27,size:10,font:font,color:grey});
+    page.drawText(winAnsi(a.name).slice(0,40),{x:M+34,y:top-27,size:12,font:font,color:L.rgb(0,0,0)});
+    var png=await doc.embedPng(a.sig), boxW=W-M-(M+290)-8, boxH=rowH-8, sc=Math.min(boxW/png.width,boxH/png.height);
+    page.drawImage(png,{x:M+290,y:top-rowH+4,width:png.width*sc,height:png.height*sc});
+    page.drawLine({start:{x:M,y:top-rowH},end:{x:W-M,y:top-rowH},thickness:0.6,color:lineC});
+    y-=rowH;
+  }
+  // foreman certification
+  if(y-110<M+20) newPage(false);
+  y-=26;
+  page.drawText("FOREMAN CERTIFICATION",{x:M,y:y,size:9,font:bold,color:grey}); y-=14;
+  page.drawText("I certify the employees above attended this training and signed for themselves.",{x:M,y:y,size:10,font:font}); y-=8;
+  var fpng=await doc.embedPng(info.foremanSig), fsc=Math.min(220/fpng.width,52/fpng.height);
+  page.drawImage(fpng,{x:M,y:y-56,width:fpng.width*fsc,height:fpng.height*fsc});
+  page.drawLine({start:{x:M,y:y-58},end:{x:M+250,y:y-58},thickness:0.8,color:grey});
+  page.drawText(winAnsi(info.foreman)+"   "+fmtDate(info.date),{x:M,y:y-71,size:10,font:font,color:grey});
+
+  pages.forEach(function(p,ix){
+    var s="Page "+(ix+1)+" of "+pages.length+"   |   Sent "+new Date(info.submittedAt).toLocaleString();
+    p.drawText(s,{x:M,y:22,size:8,font:font,color:grey});
+  });
+
+  // machine-readable copy for the compliance checker (names only, no signatures)
+  var data={v:1,trainingId:t.id,title:t.title,frequency:t.frequency,date:info.date,division:info.division,job:info.job,
+    foreman:info.foreman,trainer:info.trainer||info.foreman,submittedAt:info.submittedAt,attendees:info.attendees.map(function(a){return a.name;})};
+  doc.setTitle(winAnsi(t.title+" Sign-Off - "+info.job+" - "+fmtDate(info.date)));
+  doc.setAuthor(winAnsi(info.foreman));
+  doc.setSubject("BBTRAINING1:"+b64utf8(JSON.stringify(data)));
+  doc.setKeywords(["Builders Bloc","training sign-off",t.id]);
+  doc.setCreator("Builder's Bloc Field Portal");
+  doc.setProducer("Builder's Bloc Field Portal");
+  return await doc.save();
+}
+
+var readyFile=null;
+async function finish(){
+  var c=collect(), box=$("errBox");
+  if(c.errs.length){
+    box.innerHTML="<b>Fix these before sending:</b><ul>"+c.errs.map(function(e){return "<li>"+esc(e)+"</li>";}).join("")+"</ul>";
+    box.classList.add("on"); window.scrollTo(0,0); return;
+  }
+  box.classList.remove("on");
+  if(!window.PDFLib){ alert("The PDF tool didn't load. Connect to the internet once and reload this page."); return; }
+  var btn=$("bFinish"); btn.disabled=true; btn.textContent="Building PDF…";
+  try{
+    store("bb-training-foreman",cleanName($("fForeman").value));
+    var info={date:$("fDate").value,division:$("fDiv").value,job:cleanName($("fJob").value),foreman:cleanName($("fForeman").value),
+      trainer:cleanName($("fTrainer").value),attendees:c.attendees,foremanSig:state.foremanPad.data,submittedAt:new Date().toISOString()};
+    var bytes=await buildPdf(info);
+    var slug=function(s){return winAnsi(s).replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,30);};
+    var fname="Training_"+slug(state.training.title)+"_"+info.date+"_"+slug(info.job)+".pdf";
+    readyFile=new File([bytes],fname,{type:"application/pdf"});
+    $("dTitle").textContent="Sign-off ready";
+    $("dText").textContent=info.attendees.length+" employee"+(info.attendees.length===1?"":"s")+" signed for "+state.training.title+". Tap Send, choose Mail, and send it to HR.";
+    $("dSend").textContent="Send";
+    $("dSend").onclick=sendFile;
+    $("dlg").showModal();
+  }catch(e){ alert("Couldn't build the PDF: "+e.message); }
+  btn.disabled=false; btn.textContent="Finish & Send";
+}
+async function sendFile(){
+  if(!readyFile) return;
+  try{
+    if(navigator.canShare && navigator.canShare({files:[readyFile]})){
+      await navigator.share({files:[readyFile],title:readyFile.name.replace(/\.pdf$/,"").replace(/_/g," ")});
+    } else {
+      var a=document.createElement("a"); a.href=URL.createObjectURL(readyFile); a.download=readyFile.name; document.body.appendChild(a); a.click(); a.remove();
+    }
+    sentDone();
+  }catch(e){
+    if(e && e.name==="AbortError") return; // they closed the share sheet; keep everything
+    alert("Sharing didn't work: "+e.message);
+  }
+}
+function sentDone(){
+  $("dTitle").textContent="Sent?";
+  $("dText").textContent="If the email went out, tap Done to clear this sign-off. If not, go back and send it again — nothing has been erased.";
+  $("dSend").textContent="Done — clear sign-off";
+  $("dSend").onclick=function(){ store(DRAFT_KEY,null); readyFile=null; $("dlg").close(); state.training=null; renderPick(); show("vPick"); };
+}
+$("dClose").onclick=function(){ $("dlg").close(); };
+
+renderPick();
+})();
+</script>
+</body>
+</html>
