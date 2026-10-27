@@ -1,4 +1,4 @@
-const CACHE_NAME = "buildersbloc-fieldportal-v25";
+const CACHE_NAME = "buildersbloc-fieldportal-v26";
 
 const FILES_TO_CACHE = [
     "./",
