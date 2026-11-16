@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Safety Training — Builder's Bloc</title>
+<style>
+  :root{
+    --ink:#1b2430; --muted:#5b6675; --line:#d6dbe1; --bg:#f3f5f7; --card:#fff;
+    --brand:#1f3a5a; --accent:#e8742a; --ok:#1f7a4d; --bad:#c0392b; --soft:#fff4ec;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-text-size-adjust:100%}
+  header{background:var(--brand);color:#fff;padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top));
+    position:sticky;top:0;z-index:5}
+  header .co{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
+  header h1{font-size:20px;margin:2px 0 0;font-weight:700}
+  main{max-width:720px;margin:0 auto;padding:16px 16px 140px}
+  h2{font-size:24px;margin:8px 0 4px}
+  .sub{color:var(--muted);margin:0 0 16px;font-size:17px;line-height:1.45}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 14px}
+  .hello{background:#eaf1f8;border:1px solid #c9d8e8;border-radius:14px;padding:16px;margin:0 0 16px;font-size:18px;line-height:1.45}
+  .hello b{color:var(--brand)}
+  .steps{margin:10px 0 0;padding-left:22px}
+  .steps li{margin:0 0 4px}
+  .sec h3{font-size:21px;margin:0 0 10px;color:var(--brand)}
+  .sec ul{margin:0;padding-left:22px}
+  .sec li{font-size:18px;line-height:1.45;margin:0 0 8px}
+  .say{background:var(--soft);border-left:5px solid var(--accent);padding:12px 14px;border-radius:8px;
+    font-size:18px;line-height:1.45;margin:0 0 12px}
+  .q li{font-size:18px;line-height:1.45;margin-bottom:10px}
+  .ans{margin:8px 0 4px}
+  .ans summary{display:inline-block;cursor:pointer;font-size:16px;font-weight:650;color:var(--brand);border:1.5px solid var(--brand);border-radius:8px;padding:8px 14px;list-style:none}
+  .ans summary::-webkit-details-marker{display:none}
+  .ans[open] summary{background:var(--brand);color:#fff}
+  .ans div{margin-top:8px;background:#eaf5ee;border-left:5px solid var(--ok);border-radius:8px;padding:10px 12px;font-size:17px;line-height:1.45}
+  label{display:block;font-size:13px;font-weight:650;color:var(--muted);margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em}
+  input{width:100%;font-size:19px;padding:13px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);-webkit-appearance:none;appearance:none}
+  .stmt{font-size:17px;line-height:1.45;background:#eef3f8;border-radius:10px;padding:12px 14px;margin:14px 0}
+  .pad{position:relative;-webkit-user-select:none;user-select:none;border:2px dashed #aab4c0;border-radius:12px;background:#fcfdfe;height:170px;touch-action:none}
+  .pad canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;border-radius:12px}
+  .pad .hint{position:absolute;left:14px;bottom:10px;color:#9aa5b1;font-size:16px;pointer-events:none}
+  .pad .x{position:absolute;right:8px;top:8px;font-size:15px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;color:var(--muted)}
+  .msg{font-size:15px;color:var(--bad);margin-top:8px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:20px;font-weight:700;border:0;border-radius:14px;
+    padding:17px 20px;cursor:pointer;background:var(--accent);color:#fff;text-decoration:none;width:100%}
+  .btn.alt{background:#fff;color:var(--brand);border:1.5px solid var(--brand);font-size:17px;padding:13px}
+  .btn:disabled{opacity:.5}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);border-top:1px solid var(--line);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));z-index:6}
+  .bar .btn{max-width:688px;margin:0 auto;display:flex}
+  .done{text-align:center;padding:30px 16px}
+  .done .big{font-size:56px;line-height:1}
+  dialog{border:0;border-radius:16px;padding:22px;max-width:440px;width:calc(100% - 32px)}
+  dialog::backdrop{background:rgba(20,30,40,.55)}
+  dialog h3{margin:0 0 8px;font-size:22px}
+  dialog p{margin:0 0 14px;color:var(--ink);font-size:17px;line-height:1.45}
+  dialog .btn{margin-top:8px}
+  .hide{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="co">Builder's Bloc</div>
+  <h1 id="hdr">Safety Training</h1>
+</header>
+
+<main>
+  <div id="vErr" class="card hide"></div>
+
+  <div id="vTrain" class="hide">
+    <div class="hello" id="hello"></div>
+    <div id="body"></div>
+
+    <div class="card" id="signCard">
+      <h2 style="margin-top:0">Sign here</h2>
+      <p class="sub" style="margin-bottom:12px">When you've read the whole training, check your name, sign in the box with your finger, then tap <b>Sign &amp; Send</b>.</p>
+      <label for="fName">Your full name</label>
+      <input id="fName" autocomplete="name" autocapitalize="words" spellcheck="false">
+      <div class="msg" id="nameMsg"></div>
+      <p class="stmt"><b>By signing, I agree:</b> <span id="stmt"></span></p>
+      <div class="pad" id="pad"><canvas></canvas><span class="hint">Sign here with your finger</span><button class="x" type="button">Clear</button></div>
+      <div class="msg" id="sigMsg"></div>
+    </div>
+  </div>
+
+  <div id="vDone" class="done hide">
+    <div class="big">✅</div>
+    <h2>All done — thank you!</h2>
+    <p class="sub" id="doneText"></p>
+    <button class="btn alt" id="again" type="button">I didn't send it — send again</button>
+  </div>
+</main>
+
+<div class="bar hide" id="bar"><button class="btn" id="go" type="button">Sign &amp; Send</button></div>
+
+<dialog id="dlg">
+  <h3>Almost done</h3>
+  <p id="dText"></p>
+  <button class="btn" id="dSend" type="button">Send</button>
+  <button class="btn alt" id="dClose" type="button">Go back</button>
+</dialog>
+
+<script src="trainings.js"></script>
+<script src="pdf-lib.min.js"></script>
+<script>
+if(!window.PDFLib){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"><\/script>');}
+</script>
+<script>
+/* Individual (solo) training acknowledgment.
+   For employees who work alone or don't have a foreman's iPad. HR texts them a link made by the
+   Field Compliance Center. Everything about the person is in the part of the link after "#",
+   which the browser never sends to the website, so names and numbers never reach GitHub.
+   Link: training-solo.html#t=<training id>&n=<name>&d=<division>&e=<employee id>&s=<HR first name>&p=<HR cell> */
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+var ALL=(window.BB_TRAININGS||[]);
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+function todayISO(){var d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10);}
+function fmtDate(iso){ var p=iso.split("-"); return p[1]+"/"+p[2]+"/"+p[0]; }
+function cleanName(s){return String(s||"").replace(/\s+/g," ").trim();}
+function store(k,v){try{ if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){}}
+function load(k){try{ var s=localStorage.getItem(k); return s?JSON.parse(s):null; }catch(e){ return null; }}
+function fmtPhone(p){ p=String(p||"").replace(/\D/g,""); if(p.length===11&&p[0]==="1") p=p.slice(1); return p.length===10?"("+p.slice(0,3)+") "+p.slice(3,6)+"-"+p.slice(6):p; }
+
+/* ---- read the link ---- */
+var P={}; String(location.hash||"").replace(/^#/,"").split("&").forEach(function(kv){ if(!kv) return; var i=kv.indexOf("="); var k=i<0?kv:kv.slice(0,i), v=i<0?"":kv.slice(i+1);
+  try{ P[decodeURIComponent(k)]=decodeURIComponent(v.replace(/\+/g," ")); }catch(e){} });
+var T=null; for(var i=0;i<ALL.length;i++) if(ALL[i].id===P.t) T=ALL[i];
+var HR=cleanName(P.s)||"HR", HRPHONE=fmtPhone(P.p);
+var KEY="bb-training-solo-"+(P.t||"")+"-"+(P.n||"").toLowerCase();
+
+function fail(msg){
+  $("vErr").innerHTML='<h2 style="margin-top:0">This link didn\'t open the training</h2><p class="sub">'+msg+'</p><p class="sub">Text '+esc(HR)+(HRPHONE?' at <b>'+esc(HRPHONE)+'</b>':'')+' and ask for a new link.</p>';
+  $("vErr").classList.remove("hide");
+}
+if(!ALL.length){ fail("The training list didn't load. Check that you have a signal, then tap the link again."); return; }
+if(!T){ fail("This link is missing part of its address, or the training is no longer available."); return; }
+
+/* ---- show the training ---- */
+document.title=T.title+" — Builder's Bloc";
+$("hdr").textContent=T.title;
+var first=cleanName(P.n).split(" ")[0];
+$("hello").innerHTML=(first?'Hi <b>'+esc(first)+'</b>! ':'')+'This is your <b>'+esc(T.title)+'</b> training from '+esc(HR)+' at Builder\'s Bloc. It takes about '+(T.minutes||15)+' minutes.'+
+  '<ol class="steps"><li>Read each section below.</li><li>Try the questions at the end.</li><li>Sign at the bottom and tap <b>Sign &amp; Send</b>.</li></ol>';
+var h="";
+(T.sections||[]).forEach(function(s){
+  h+='<div class="card sec"><h3>'+esc(s.heading)+'</h3>';
+  if(s.say) h+='<div class="say">'+esc(s.say)+'</div>';
+  if(s.points&&s.points.length) h+='<ul>'+s.points.map(function(p){return '<li>'+esc(p)+'</li>';}).join("")+'</ul>';
+  h+='</div>';
+});
+if(T.questions&&T.questions.length){
+  h+='<div class="card sec q"><h3>Check yourself</h3><p class="sub" style="margin:-4px 0 12px;font-size:16px">Think of your answer first, then tap to see the right one.</p><ol>'+
+    T.questions.map(function(q){ var qq=typeof q==="string"?q:q.q, aa=typeof q==="string"?"":q.a;
+      return '<li>'+esc(qq)+(aa?'<details class="ans"><summary>Show answer</summary><div>'+esc(aa)+'</div></details>':'')+'</li>'; }).join("")+'</ol></div>';
+}
+$("body").innerHTML=h;
+$("stmt").textContent=T.statement||"I completed this training.";
+$("fName").value=cleanName(P.n);
+$("vTrain").classList.remove("hide"); $("bar").classList.remove("hide");
+
+/* ---- signature pad (same as the crew sign-off) ---- */
+function SigPad(wrap,onChange){
+  var canvas=wrap.querySelector("canvas"), ctx=canvas.getContext("2d"), hint=wrap.querySelector(".hint");
+  var drawing=false,last=null,self=this; this.data=null;
+  function size(){ var r=canvas.getBoundingClientRect(), dpr=Math.max(window.devicePixelRatio||1,2); if(!r.width) return;
+    canvas.width=Math.round(r.width*dpr); canvas.height=Math.round(r.height*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.lineWidth=2.8; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.strokeStyle="#0d1b2a";
+    if(self.data){ var img=new Image(); img.onload=function(){ ctx.drawImage(img,0,0,r.width,r.height); }; img.src=self.data; } }
+  function pos(e){var r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
+  canvas.addEventListener("pointerdown",function(e){ e.preventDefault(); canvas.setPointerCapture(e.pointerId); drawing=true; last=pos(e);
+    ctx.beginPath(); ctx.arc(last.x,last.y,1.3,0,Math.PI*2); ctx.fillStyle="#0d1b2a"; ctx.fill(); if(hint) hint.style.display="none"; });
+  canvas.addEventListener("pointermove",function(e){ if(!drawing) return; e.preventDefault(); var p=pos(e);
+    ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; });
+  function end(){ if(!drawing) return; drawing=false; self.data=canvas.toDataURL("image/png"); onChange&&onChange(); }
+  canvas.addEventListener("pointerup",end); canvas.addEventListener("pointercancel",end); canvas.addEventListener("pointerleave",end);
+  wrap.querySelector(".x").onclick=function(){ self.clear(); onChange&&onChange(); };
+  this.clear=function(){ ctx.clearRect(0,0,canvas.width,canvas.height); self.data=null; if(hint) hint.style.display=""; };
+  this.set=function(d){ self.data=d||null; if(hint) hint.style.display=d?"none":""; size(); };
+  this.resize=size; size();
+}
+var draft=load(KEY)||{};
+var pad=new SigPad($("pad"),function(){ $("sigMsg").textContent=""; draft.sig=pad.data; store(KEY,draft); });
+if(draft.name) $("fName").value=draft.name;
+if(draft.sig) pad.set(draft.sig);
+$("fName").addEventListener("input",function(){ $("nameMsg").textContent=""; draft.name=$("fName").value; store(KEY,draft); });
+var rT; window.addEventListener("resize",function(){ clearTimeout(rT); rT=setTimeout(function(){ pad.resize(); },200); });
+
+/* ---- PDF (same machine-readable format as the crew sign-off, marked solo) ---- */
+function b64utf8(s){ return btoa(unescape(encodeURIComponent(s))); }
+function winAnsi(s){ return String(s||"").normalize("NFC").replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/[–—]/g,"-").replace(/[^\x20-\x7E\xA0-\xFF]/g,""); }
+async function buildPdf(info){
+  var L=window.PDFLib, doc=await L.PDFDocument.create();
+  var font=await doc.embedFont(L.StandardFonts.Helvetica), bold=await doc.embedFont(L.StandardFonts.HelveticaBold);
+  var W=612,H=792,M=40, navy=L.rgb(0.12,0.23,0.35), grey=L.rgb(0.4,0.43,0.47);
+  function wrap(text,f,size,maxW){ var words=winAnsi(text).split(" "), lines=[], cur="";
+    words.forEach(function(w){ var test=cur?cur+" "+w:w; if(f.widthOfTextAtSize(test,size)>maxW && cur){ lines.push(cur); cur=w; } else cur=test; });
+    if(cur) lines.push(cur); return lines; }
+  var page=doc.addPage([W,H]), y=H-M;
+  page.drawRectangle({x:0,y:H-8,width:W,height:8,color:L.rgb(0.91,0.45,0.16)});
+  page.drawText("BUILDER'S BLOC",{x:M,y:y-6,size:10,font:bold,color:grey});
+  var tag="INDIVIDUAL TRAINING ACKNOWLEDGMENT";
+  page.drawText(tag,{x:W-M-bold.widthOfTextAtSize(tag,10),y:y-6,size:10,font:bold,color:grey});
+  y-=36;
+  page.drawText(winAnsi(T.title),{x:M,y:y,size:20,font:bold,color:navy}); y-=20;
+  page.drawText(winAnsi((T.frequency==="quarterly"?"Quarterly":"Annual")+" training  |  Training ID: "+T.id+"  |  Completed on own (solo)"),{x:M,y:y,size:10,font:font,color:grey}); y-=26;
+  var fields=[["Date",fmtDate(info.date)],["Employee",info.name],["Division",info.division||"-"],["Sent by",HR+(HRPHONE?" at "+HRPHONE:"")]];
+  for(var i=0;i<fields.length;i+=2){ for(var j=0;j<2&&i+j<fields.length;j++){ var x=M+j*266;
+      page.drawText(fields[i+j][0].toUpperCase(),{x:x,y:y,size:8,font:bold,color:grey});
+      page.drawText(winAnsi(fields[i+j][1]).slice(0,48),{x:x,y:y-13,size:11,font:font,color:L.rgb(0,0,0)}); }
+    y-=32; }
+  var topics=(T.sections||[]).map(function(s){return s.heading;}).join("; ");
+  wrap("Topics covered: "+topics,font,9.5,W-2*M).forEach(function(l){ page.drawText(l,{x:M,y:y,size:9.5,font:font,color:grey}); y-=13; });
+  y-=6;
+  wrap("By signing, I agree: "+(T.statement||"I completed this training."),bold,11,W-2*M).forEach(function(l){ page.drawText(l,{x:M,y:y,size:11,font:bold,color:navy}); y-=15; });
+  y-=16;
+  page.drawText("EMPLOYEE SIGNATURE",{x:M,y:y,size:9,font:bold,color:grey}); y-=8;
+  var png=await doc.embedPng(info.sig), sc=Math.min(300/png.width,80/png.height);
+  page.drawImage(png,{x:M,y:y-84,width:png.width*sc,height:png.height*sc});
+  page.drawLine({start:{x:M,y:y-86},end:{x:M+320,y:y-86},thickness:0.8,color:grey});
+  page.drawText(winAnsi(info.name)+"   "+fmtDate(info.date),{x:M,y:y-100,size:10,font:font,color:grey});
+  y-=130;
+  wrap("This employee read the training on their own phone from a personal link sent by "+HR+", then signed and sent this acknowledgment. There was no crew presenter.",font,9,W-2*M).forEach(function(l){ page.drawText(l,{x:M,y:y,size:9,font:font,color:grey}); y-=12; });
+  page.drawText("Page 1 of 1   |   Sent "+new Date(info.submittedAt).toLocaleString(),{x:M,y:22,size:8,font:font,color:grey});
+  /* machine-readable copy for the Field Compliance Center (no signature) */
+  var data={v:1,solo:true,trainingId:T.id,title:T.title,frequency:T.frequency,audience:T.audience||"all",date:info.date,division:info.division||"",
+    job:"Solo acknowledgment",foreman:"Self (solo)",trainer:"Self-study (link from "+HR+")",submittedAt:info.submittedAt,attendees:[info.name],empId:info.empId||""};
+  doc.setTitle(winAnsi(T.title+" Acknowledgment - "+info.name+" - "+fmtDate(info.date)));
+  doc.setAuthor(winAnsi(info.name));
+  doc.setSubject("BBTRAINING1:"+b64utf8(JSON.stringify(data)));
+  doc.setKeywords(["Builders Bloc","training sign-off","solo",T.id]);
+  doc.setCreator("Builder's Bloc Field Portal");
+  doc.setProducer("Builder's Bloc Field Portal");
+  return await doc.save();
+}
+
+var readyFile=null, lastInfo=null;
+async function finish(){
+  var name=cleanName($("fName").value), ok=true;
+  if(name.split(" ").length<2){ $("nameMsg").textContent="Type your first AND last name."; ok=false; }
+  if(!pad.data){ $("sigMsg").textContent="Sign in the box with your finger."; ok=false; }
+  if(!ok){ $("signCard").scrollIntoView({behavior:"smooth",block:"start"}); return; }
+  if(!window.PDFLib){ alert("Part of the page didn't load. Check that you have a signal, then tap the link again."); return; }
+  var btn=$("go"); btn.disabled=true; btn.textContent="Getting it ready…";
+  try{
+    lastInfo={date:todayISO(),name:name,division:cleanName(P.d),empId:cleanName(P.e),sig:pad.data,submittedAt:new Date().toISOString()};
+    var bytes=await buildPdf(lastInfo);
+    var slug=function(s){return winAnsi(s).replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,30);};
+    readyFile=new File([bytes],"Training_"+slug(T.title)+"_"+lastInfo.date+"_Solo-"+slug(name)+".pdf",{type:"application/pdf"});
+    $("dText").innerHTML='Tap <b>Send</b>, then choose <b>Messages</b> and pick <b>'+esc(HR)+'</b>'+(HRPHONE?' at <b>'+esc(HRPHONE)+'</b>':'')+'. '+esc(HR)+' is usually at the top of the list, since that\'s who sent you this link.';
+    $("dlg").showModal();
+  }catch(e){ alert("Something went wrong getting it ready: "+e.message); }
+  btn.disabled=false; btn.textContent="Sign & Send";
+}
+async function sendFile(){
+  if(!readyFile) return;
+  try{
+    if(navigator.canShare && navigator.canShare({files:[readyFile]})){
+      await navigator.share({files:[readyFile],title:T.title+" acknowledgment"});
+    } else {
+      var a=document.createElement("a"); a.href=URL.createObjectURL(readyFile); a.download=readyFile.name; document.body.appendChild(a); a.click(); a.remove();
+      alert("Your phone saved the signed copy to your downloads. Text that file to "+HR+(HRPHONE?" at "+HRPHONE:"")+".");
+    }
+    $("dlg").close(); doneView();
+  }catch(e){
+    if(e && e.name==="AbortError") return; /* closed the share screen: keep everything */
+    alert("Sending didn't work: "+e.message);
+  }
+}
+function doneView(){
+  store(KEY,null);
+  $("vTrain").classList.add("hide"); $("bar").classList.add("hide");
+  $("doneText").textContent="Your signed "+T.title+" acknowledgment was sent to "+HR+". You can close this page.";
+  $("vDone").classList.remove("hide"); window.scrollTo(0,0);
+}
+$("go").onclick=finish;
+$("dSend").onclick=sendFile;
+$("dClose").onclick=function(){ $("dlg").close(); };
+$("again").onclick=function(){ if(readyFile){ $("dlg").showModal(); } };
+})();
+</script>
+</body>
+</html>
